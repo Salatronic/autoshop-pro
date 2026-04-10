@@ -1,9 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AutoShop Pro</title>
+<meta name="theme-color" content="#0f1923">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Makaniko">
+<link rel="manifest" href="manifest.json">
+<title>AutoShop Pro — Makaniko Automotive</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -25,13 +31,13 @@
   --radius-lg: 14px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; overflow-x: hidden; }
 .mono { font-family: 'DM Mono', monospace; }
 
 /* LAYOUT */
 .app { display: flex; min-height: 100vh; }
-.sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 0; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-.main { margin-left: 220px; flex: 1; padding: 28px; max-width: 1100px; }
+.sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 0; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto; }
+.main { margin-left: 220px; flex: 1; padding: 28px; min-width: 0; max-width: calc(100vw - 220px); overflow-x: auto; }
 
 /* SIDEBAR */
 .logo { padding: 22px 20px 18px; border-bottom: 1px solid var(--border); }
@@ -167,6 +173,16 @@ tr:hover td { background: var(--surface2); }
   .print-disclaimer { margin-top: 20px; border: 1px solid #ccc; border-left: 4px solid #c07000; padding: 10px 12px; font-size: 10px; color: #555; line-height: 1.6; }
   .print-sig { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
   .print-sig-line { border-top: 1px solid #333; padding-top: 6px; font-size: 11px; color: #666; }
+  /* Reports page print */
+  #page-reports:not(.hidden) ~ * { display: none !important; }
+  .main > #page-reports:not(.hidden) { display: block !important; color: #111 !important; }
+  .main > #page-reports:not(.hidden) .card { border: 1px solid #ddd; background: white; color: #111; padding: 14px; margin-bottom: 12px; }
+  .main > #page-reports:not(.hidden) .metric { background: #f5f5f5; border: 1px solid #ddd; color: #111; }
+  .main > #page-reports:not(.hidden) .metric-label { color: #666; }
+  .main > #page-reports:not(.hidden) .metric-value { color: #111; }
+  .main > #page-reports:not(.hidden) .page-header button { display: none; }
+  .main > #page-reports:not(.hidden) button { display: none; }
+  .sidebar, .login-overlay, .modal-overlay { display: none !important; }
 }
 
 /* CUSTOMER STYLES */
@@ -505,8 +521,9 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       Sales Records
     </button>
     <div class="nav-section" id="nav-section-management">Management</div>
-    <button class="nav-item" onclick="showPage('inventory')" id="nav-inventory">
+    <button class="nav-item" onclick="showPage('inventory')" id="nav-inventory" style="position:relative;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <span id="inv-badge" style="display:none;position:absolute;top:4px;right:8px;background:var(--red);color:#fff;border-radius:20px;font-size:9px;padding:1px 5px;font-weight:700;"></span>
       Inventory
     </button>
     <button class="nav-item" onclick="showPage('mechanics')" id="nav-mechanics">
@@ -522,6 +539,10 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Creditors
     </button>
+    <button class="nav-item" onclick="showPage('reports')" id="nav-reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </button>
     <button class="nav-item" onclick="showPage('activity')" id="nav-activity">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Activity Log
@@ -536,11 +557,21 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="user-pill-name" id="sidebar-user-name">—</div>
     </div>
     <button class="btn btn-sm btn-red" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="doLogout()">Sign Out</button>
-    <div class="drive-status">
-      <div class="drive-dot" id="drive-dot"></div>
-      <span id="drive-label">Google Drive: not connected</span>
+    <!-- Admin Drive section -->
+    <div id="drive-admin-section">
+      <div class="drive-status">
+        <div class="drive-dot" id="drive-dot"></div>
+        <span id="drive-label">Google Drive: not connected</span>
+      </div>
+      <button class="btn btn-sm mt-8" style="width:100%;justify-content:center;" id="drive-connect-btn" onclick="connectDrive()">Connect Drive</button>
     </div>
-    <button class="btn btn-sm mt-8" style="width:100%;justify-content:center;" id="drive-connect-btn" onclick="connectDrive()">Connect Drive</button>
+    <!-- Employee Drive section -->
+    <div id="drive-employee-section" style="display:none;">
+      <div class="drive-status" style="font-size:11px;opacity:0.7;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="employee-sync-label">Data synced by admin</span>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -558,6 +589,19 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New Quote / Invoice
     </button>
+  </div>
+  <!-- Date range filter -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+    <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">PERIOD:</span>
+    <button class="btn btn-sm active" id="dr-today" onclick="setDashRange('today')">Today</button>
+    <button class="btn btn-sm" id="dr-week" onclick="setDashRange('week')">This Week</button>
+    <button class="btn btn-sm" id="dr-month" onclick="setDashRange('month')">This Month</button>
+    <button class="btn btn-sm" id="dr-year" onclick="setDashRange('year')">This Year</button>
+    <button class="btn btn-sm" id="dr-all" onclick="setDashRange('all')">All Time</button>
+    <span style="font-size:11px;color:var(--text3);margin-left:4px;">or</span>
+    <input type="date" class="form-input" id="dr-from" style="width:130px;padding:5px 8px;font-size:12px;" onchange="setDashRange('custom')" />
+    <span style="font-size:11px;color:var(--text3);">→</span>
+    <input type="date" class="form-input" id="dr-to" style="width:130px;padding:5px 8px;font-size:12px;" onchange="setDashRange('custom')" />
   </div>
   <div class="metrics" id="dash-metrics"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -617,7 +661,10 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="page-title">Sales Records</div>
       <div class="page-sub">Internal view — cost & profit visible to shop only</div>
     </div>
-    <button class="btn btn-accent" onclick="openNewSale()">+ Record Sale</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-accent" onclick="openNewSale()">+ Full Sale</button>
+      <button class="btn btn-green" onclick="openQuickSale()">⚡ Quick Sale</button>
+    </div>
   </div>
 
   <!-- Sales metrics -->
@@ -664,6 +711,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div class="tabs">
     <button class="tab active" onclick="switchInvTab('parts')">Parts & Materials</button>
     <button class="tab" onclick="switchInvTab('services')">Services</button>
+    <button class="tab" onclick="switchInvTab('orders')">Purchase Orders</button>
   </div>
   <div class="card" id="inv-parts-tab">
     <div class="table-wrap"><table>
@@ -675,6 +723,16 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <div class="table-wrap"><table>
       <thead><tr><th>Service Name</th><th>Category</th><th>Rate</th><th>Est. Time</th><th></th></tr></thead>
       <tbody id="services-table"></tbody>
+    </table></div>
+  </div>
+  <div class="card hidden" id="inv-orders-tab">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;color:var(--text2);">Track parts ordered from suppliers. Mark as received to auto-update inventory.</div>
+      <button class="btn btn-accent btn-sm" onclick="openAddPO()">+ New Order</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Order #</th><th>Supplier</th><th>Date</th><th>Items</th><th>Total Cost</th><th>Status</th><th></th></tr></thead>
+      <tbody id="po-table"></tbody>
     </table></div>
   </div>
 </div>
@@ -696,7 +754,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 <!-- SETTINGS -->
 <div id="page-settings" class="hidden">
   <div class="page-header"><div class="page-title">Settings</div></div>
-  <div class="card">
+  <div class="card" id="settings-shop-info">
     <div class="card-title">Shop Information</div>
     <div class="form-grid form-grid-2">
       <div class="form-group"><label class="form-label">Shop Name</label><input class="form-input" id="set-name" placeholder="e.g. Pro Auto Repairs Ltd." /></div>
@@ -708,11 +766,10 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     </div>
     <button class="btn btn-accent mt-16" onclick="saveSettings()">Save Settings</button>
   </div>
-  <div class="card">
+  <div class="card" id="settings-tax">
     <div class="card-title">Tax Settings</div>
     <div class="form-grid form-grid-2">
       <div class="form-group"><label class="form-label">GST Rate (%)</label><input class="form-input" id="set-gst-rate" type="number" value="5" /></div>
-      <div class="form-group"><label class="form-label">Default Labour Rate ($/hr)</label><input class="form-input" id="set-labour" type="number" value="110" /></div>
     </div>
     <button class="btn btn-accent mt-16" onclick="saveSettings()">Save</button>
   </div>
@@ -726,7 +783,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     </div>
     <p style="color:var(--text3);font-size:11px;margin-top:10px;">Your data is saved privately in your Google Drive app folder — not visible to others. Sync keeps all devices up to date.</p>
   </div>
-  <div class="card">
+  <div class="card" id="settings-changepw">
     <div class="card-title">Change Password</div>
     <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">Change your own login password. Admins can change any user's password.</p>
     <div class="form-grid form-grid-2" style="max-width:480px;">
@@ -743,7 +800,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <button class="btn btn-accent mt-16" onclick="changePassword()">Update Password</button>
     <div id="cp-status" style="margin-top:10px;font-size:13px;"></div>
   </div>
-  <div class="card">
+  <div class="card" id="settings-backup">
     <div class="card-title">Data Backup &amp; Restore</div>
     <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">All your data (customers, sales, invoices, inventory) is saved in your browser. Use these buttons to back it up to a file so you never lose it, and restore it any time.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -805,6 +862,46 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <thead><tr><th>Customer</th><th>Invoice(s)</th><th>Count</th><th>Total Owing</th><th>Oldest Invoice</th><th>Overdue</th><th>Action</th></tr></thead>
         <tbody id="creditors-table"></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS (admin only) -->
+<div id="page-reports" class="hidden">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Reports</div>
+      <div class="page-sub">Business performance, GST summary, and trends</div>
+    </div>
+    <button class="btn btn-accent" onclick="window.print()">🖨 Print Report</button>
+  </div>
+  <!-- Report period selector -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+    <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">PERIOD:</span>
+    <button class="btn btn-sm active" id="rpt-month" onclick="setReportPeriod('month')">This Month</button>
+    <button class="btn btn-sm" id="rpt-quarter" onclick="setReportPeriod('quarter')">This Quarter</button>
+    <button class="btn btn-sm" id="rpt-year" onclick="setReportPeriod('year')">This Year</button>
+    <button class="btn btn-sm" id="rpt-all" onclick="setReportPeriod('all')">All Time</button>
+  </div>
+  <div class="metrics" id="rpt-metrics"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="card">
+      <div class="card-title">GST Summary (CRA)</div>
+      <div id="rpt-gst"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Services by Revenue</div>
+      <div id="rpt-services"></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="card">
+      <div class="card-title">Monthly Breakdown</div>
+      <div id="rpt-monthly"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Customers</div>
+      <div id="rpt-customers"></div>
     </div>
   </div>
 </div>
@@ -1301,7 +1398,11 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     </div>
     <div id="cust-profile-balance"></div>
     <div class="card">
-      <div class="card-title">Repair History</div>
+      <div class="card-title">Vehicle History</div>
+      <div id="cust-profile-vehicles"></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="card-title">All Service History</div>
       <div id="cust-profile-history"></div>
     </div>
   </div>
@@ -1347,34 +1448,262 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 </div>
 </div>
 
+<!-- MODAL: Quick Sale -->
+<div class="modal-overlay hidden" id="quick-sale-modal">
+<div class="modal" style="max-width:520px;">
+  <div class="modal-header">
+    <div class="modal-title">⚡ Quick Sale</div>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('quick-sale-modal').classList.add('hidden')">✕ Close</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid form-grid-2" style="margin-bottom:14px;">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="qs-date" type="date" /></div>
+      <div class="form-group"><label class="form-label">Customer Name</label><input class="form-input" id="qs-customer" placeholder="Walk-in" /></div>
+      <div class="form-group"><label class="form-label">Phone (optional)</label><input class="form-input" id="qs-phone" placeholder="(780) 000-0000" /></div>
+      <div class="form-group"><label class="form-label">Mechanic</label><select class="form-input" id="qs-mechanic"><option value="">— Select —</option></select></div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Service / Description</label>
+      <input class="form-input" id="qs-desc" placeholder="e.g. Oil Change, Brake Pads, Tire Rotation..." />
+    </div>
+    <div class="form-grid form-grid-2" style="margin-bottom:14px;">
+      <div class="form-group"><label class="form-label">Total Amount ($)</label><input class="form-input" id="qs-total" type="number" step="0.01" min="0" placeholder="0.00" oninput="qsUpdateBalance()" /></div>
+      <div class="form-group"><label class="form-label">Payment Method</label>
+        <select class="form-input" id="qs-method"><option>Cash</option><option>Debit</option><option>Credit Card</option><option>E-Transfer</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Amount Paid ($)</label><input class="form-input" id="qs-paid" type="number" step="0.01" min="0" placeholder="0.00" oninput="qsUpdateBalance()" /></div>
+      <div class="form-group"><label class="form-label">Balance Owing</label>
+        <div class="form-input mono" id="qs-balance" style="color:var(--red);font-weight:600;">$0.00</div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="qs-notes" placeholder="Optional notes" /></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="document.getElementById('quick-sale-modal').classList.add('hidden')">Cancel</button>
+    <button class="btn btn-accent" onclick="saveQuickSale()">Save Sale</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Sale Payment (for sales records with balance) -->
+<div class="modal-overlay hidden" id="sale-pay-modal">
+<div class="modal" style="max-width:440px;">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">Record Payment</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="sp-label"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('sale-pay-modal').classList.add('hidden')">✕ Close</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:4px;"><span>Sale Total</span><span id="sp-total" class="mono">$0.00</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:4px;"><span>Previously Paid</span><span id="sp-paid" class="mono text-green">$0.00</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--red);border-top:1px solid var(--border);padding-top:8px;margin-top:6px;"><span>Balance Owing</span><span id="sp-balance" class="mono">$0.00</span></div>
+    </div>
+    <div class="form-grid form-grid-2">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="sp-date" type="date" /></div>
+      <div class="form-group"><label class="form-label">Amount ($)</label><input class="form-input" id="sp-amount" type="number" step="0.01" min="0.01" placeholder="0.00" /></div>
+      <div class="form-group"><label class="form-label">Method</label>
+        <select class="form-input" id="sp-method"><option>Cash</option><option>Debit</option><option>Credit Card</option><option>E-Transfer</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sp-note" placeholder="e.g. Second payment" /></div>
+    </div>
+    <div id="sp-history" style="margin-top:14px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="document.getElementById('sale-pay-modal').classList.add('hidden')">Cancel</button>
+    <button class="btn btn-green" onclick="saveSalePayment()">Record Payment</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Purchase Order -->
+<div class="modal-overlay hidden" id="po-modal">
+<div class="modal" style="max-width:640px;">
+  <div class="modal-header">
+    <div class="modal-title" id="po-modal-title">New Purchase Order</div>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('po-modal').classList.add('hidden')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid form-grid-2">
+      <div class="form-group"><label class="form-label">Supplier / Vendor</label>
+        <input class="form-input" id="po-supplier" placeholder="e.g. NAPA, Partsource, Worldpac" list="po-supplier-list" />
+        <datalist id="po-supplier-list">
+          <option>NAPA</option><option>Partsource</option><option>Worldpac</option><option>Best Value</option><option>Bumper 2 Bumper</option><option>Rock Auto</option><option>Other</option>
+        </datalist>
+      </div>
+      <div class="form-group"><label class="form-label">Order Date</label>
+        <input class="form-input" id="po-date" type="date" />
+      </div>
+      <div class="form-group"><label class="form-label">Expected Delivery</label>
+        <input class="form-input" id="po-eta" type="date" />
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-input" id="po-status">
+          <option value="ordered">Ordered</option>
+          <option value="received">Received</option>
+          <option value="partial">Partially Received</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace;">ITEMS ORDERED</div>
+    <div id="po-items-body"></div>
+    <button class="btn btn-sm mt-8" onclick="addPOItem()">+ Add Item</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <div class="form-group"><label class="form-label">Notes</label>
+        <input class="form-input" id="po-notes" placeholder="Reference #, tracking, etc." />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="document.getElementById('po-modal').classList.add('hidden')">Cancel</button>
+    <button class="btn btn-accent" onclick="savePO()">Save Order</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Session Timeout Warning -->
+<div id="session-warn-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;">
+<div class="modal" style="max-width:360px;text-align:center;">
+  <div class="modal-body" style="padding:28px 24px;">
+    <div style="font-size:40px;margin-bottom:12px;">⏱</div>
+    <div style="font-size:17px;font-weight:600;margin-bottom:8px;">Still there?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">You'll be signed out in <strong id="session-warn-count">2</strong> minute(s) due to inactivity.</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-accent" onclick="extendSession()">Yes, keep me in</button>
+      <button class="btn btn-red" onclick="doLogout()">Sign Out Now</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Force Password Change (shown on first login with default password) -->
+<div class="modal-overlay" id="force-pw-overlay" style="display:none;z-index:9999;">
+<div class="modal" style="max-width:400px;">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">Set Your Password</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">You must set a new password before continuing</div>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div style="background:rgba(255,160,0,0.12);border:1px solid rgba(255,160,0,0.4);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#ffb300;">
+      ⚠ For security, you cannot use the default password. Please choose a unique password only you know.
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Password</label>
+      <input class="form-input" id="fcp-new" type="password" placeholder="At least 8 characters" autocomplete="new-password" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm Password</label>
+      <input class="form-input" id="fcp-confirm" type="password" placeholder="Repeat password" autocomplete="new-password" />
+    </div>
+    <div id="fcp-err" style="display:none;color:var(--red);font-size:13px;margin-top:8px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-accent" onclick="saveForceChangePw()">Set Password &amp; Sign In</button>
+  </div>
+</div>
+</div>
+
 <script>
 // ─── AUTH ────────────────────────────────────────────────────────────────────
-// Passwords: stored as SHA-256 hashes computed by JS itself (no cross-platform mismatch)
-// Defaults are bootstrapped from plaintext on first run, then stored in localStorage
+// NO plaintext usernames or passwords in source — both stored as SHA-256 hashes only.
+// usernameHash = SHA-256 of the login username.
+// defaultHash  = SHA-256 of the initial setup password.
+// First login forces a new password; afterwards only the user's own browser hash is used.
 const USERS_DEF = [
-  { username: 'abdiyare', defaultPw: 'canada123', displayName: 'Abdiyare', level: 1, phone: '7808637307', last4: '7307' },
-  { username: 'nasra',    defaultPw: 'canada123', displayName: 'Nasra',    level: 1, phone: '6478557676', last4: '7676' },
-  { username: 'makaniko', defaultPw: 'mkauto123', displayName: 'Makaniko', level: 99 },
+  { id:'u1', usernameHash:'e88b0422296b49d75c94f54c1988d8cc194b10e18a69a9b6d55878e649032198', defaultHash:'37469c5c59c08474fe00cefa3f696be7af622335a65a91ce6be184c474f9fec2', displayName:'Abdiyare', level:1, phone:'7808637307', last4:'7307' },
+  { id:'u2', usernameHash:'c34fffb2b7ca5ca1aae21a9598dd44a5d4634857d3214fa798706935872b7a52', defaultHash:'37469c5c59c08474fe00cefa3f696be7af622335a65a91ce6be184c474f9fec2', displayName:'Nasra',    level:1, phone:'6478557676', last4:'7676' },
+  { id:'u3', usernameHash:'be21dfb02b2f35125dda82e2f190fd61381ad840b5ca836dba87a1ee7b7cc793', defaultHash:'c5a8fe39a02d0b2030beeb6e6a9ba91061c0ea931f744b46f2284509cf8693c4', displayName:'Makaniko', level:99 },
 ];
-const USERS = USERS_DEF; // alias used elsewhere
+const USERS = USERS_DEF;
 
-async function hashPassword(pw) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+async function hashStr(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+const hashPassword = hashStr; // alias for password hashing
 
-// Bootstrap hashes on first load — computes via JS so hashes are always correct
+// Bootstrap: migrate from old key format, then seed defaults
 async function initPasswordHashes() {
+  if(!localStorage.getItem('auth_v2')) {
+    // Clear any old plaintext-username-keyed entries
+    ['abdiyare','nasra','makaniko'].forEach(n => localStorage.removeItem('pw_'+n));
+    localStorage.setItem('auth_v2','1');
+  }
   for(const u of USERS_DEF) {
-    const key = 'pw_' + u.username;
-    if(!localStorage.getItem(key)) {
-      localStorage.setItem(key, await hashPassword(u.defaultPw));
-    }
+    if(!localStorage.getItem('pw_'+u.id)) localStorage.setItem('pw_'+u.id, u.defaultHash);
   }
 }
 
+// True if user hasn't changed their password yet (still on default)
+function isDefaultPassword(user, currentHash) {
+  return currentHash === user.defaultHash;
+}
+
+// ─── LOGIN LOCKOUT ───────────────────────────────────────────────────────────
+function getLockout(uid) {
+  return JSON.parse(localStorage.getItem('lk_'+uid)||'{"attempts":0,"until":0}');
+}
+function recordLoginFailure(uid) {
+  const lk = getLockout(uid);
+  lk.attempts = (lk.attempts||0) + 1;
+  if(lk.attempts >= 5) { lk.until = Date.now() + 15*60*1000; lk.attempts = 0; }
+  localStorage.setItem('lk_'+uid, JSON.stringify(lk));
+}
+function clearLockout(uid) { localStorage.removeItem('lk_'+uid); }
+
+// ─── SESSION TIMEOUT ────────────────────────────────────────────────────────
+let _lastActivity = Date.now();
+let _sessionTimer = null;
+const SESSION_MS = 20 * 60 * 1000;  // 20 min idle timeout
+const SESSION_WARN_MS = 2 * 60 * 1000; // warn 2 min before
+
+function resetActivity() { _lastActivity = Date.now(); }
+['click','keydown','mousemove','touchstart','scroll'].forEach(ev =>
+  document.addEventListener(ev, resetActivity, { passive: true })
+);
+
+function startSessionTimer() {
+  clearInterval(_sessionTimer);
+  _sessionTimer = setInterval(() => {
+    if(!currentUser) return;
+    const idle = Date.now() - _lastActivity;
+    const left = SESSION_MS - idle;
+    if(left <= 0) { autoLogout(); }
+    else if(left <= SESSION_WARN_MS) {
+      const el = document.getElementById('session-warn-overlay');
+      if(el) { el.style.display = 'flex'; document.getElementById('session-warn-count').textContent = Math.ceil(left/60000); }
+    } else {
+      const el = document.getElementById('session-warn-overlay');
+      if(el) el.style.display = 'none';
+    }
+  }, 15000);
+}
+
+function extendSession() {
+  resetActivity();
+  const el = document.getElementById('session-warn-overlay');
+  if(el) el.style.display = 'none';
+}
+
+function autoLogout() {
+  clearInterval(_sessionTimer);
+  if(currentUser) logActivity('LOGOUT','Auto-logout: inactivity');
+  clearSession(); currentUser = null;
+  const el = document.getElementById('session-warn-overlay');
+  if(el) el.style.display = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  showPage('dashboard');
+  showToast('Signed out due to inactivity.');
+}
+
 // Pages restricted from Level 1 users
-const LEVEL1_BLOCKED = ['quotes', 'invoices', 'mechanics', 'customers', 'settings', 'activity'];
+const LEVEL1_BLOCKED = ['quotes', 'invoices', 'mechanics', 'customers', 'activity', 'reports', 'settings'];
 
 let currentUser = null;
 
@@ -1383,22 +1712,49 @@ async function doLogin() {
   try {
     const username = (document.getElementById('login-user').value||'').trim().toLowerCase();
     const password = document.getElementById('login-pass').value;
-    const userDef = USERS.find(u => u.username === username);
+    if(!username || !password) { errEl.style.display = 'block'; return; }
+    // Hash username to find the matching user — no plaintext usernames in source
+    const uHash = await hashStr(username);
+    const userDef = USERS_DEF.find(u => u.usernameHash === uHash);
     if(!userDef) {
       errEl.style.display = 'block';
       document.getElementById('login-pass').value = '';
       document.getElementById('login-pass').focus();
       return;
     }
+    // Check lockout
+    const lk = getLockout(userDef.id);
+    if(lk.until > Date.now()) {
+      const mins = Math.ceil((lk.until - Date.now()) / 60000);
+      errEl.textContent = `Account locked. Try again in ${mins} minute(s).`;
+      errEl.style.display = 'block';
+      document.getElementById('login-pass').value = '';
+      return;
+    }
     const inputHash = await hashPassword(password);
-    const storedHash = localStorage.getItem('pw_' + username);
+    const storedHash = localStorage.getItem('pw_' + userDef.id);
     if(!storedHash || inputHash !== storedHash) {
+      recordLoginFailure(userDef.id);
+      const lk2 = getLockout(userDef.id);
+      if(lk2.until > Date.now()) {
+        errEl.textContent = 'Too many failed attempts. Account locked for 15 minutes.';
+      } else {
+        const left = 5 - (lk2.attempts||0);
+        errEl.textContent = `Incorrect password. ${left} attempt(s) remaining.`;
+      }
       errEl.style.display = 'block';
       document.getElementById('login-pass').value = '';
       document.getElementById('login-pass').focus();
       return;
     }
+    clearLockout(userDef.id);
     errEl.style.display = 'none';
+    errEl.textContent = 'Invalid username or password.';
+    // Block entry if still on default password — force a new one
+    if(isDefaultPassword(userDef, storedHash)) {
+      openForceChangePw(userDef);
+      return;
+    }
     completeLogin(userDef);
   } catch(e) {
     errEl.textContent = 'Login error: ' + e.message;
@@ -1406,20 +1762,77 @@ async function doLogin() {
   }
 }
 
+let _forcePwUser = null;
+function openForceChangePw(userDef) {
+  _forcePwUser = userDef;
+  document.getElementById('fcp-new').value = '';
+  document.getElementById('fcp-confirm').value = '';
+  document.getElementById('fcp-err').style.display = 'none';
+  document.getElementById('force-pw-overlay').style.display = 'flex';
+  document.getElementById('fcp-new').focus();
+}
+
+async function saveForceChangePw() {
+  const errEl = document.getElementById('fcp-err');
+  const newPw = document.getElementById('fcp-new').value;
+  const confirm = document.getElementById('fcp-confirm').value;
+  if(newPw.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.style.display = 'block'; return;
+  }
+  if(newPw !== confirm) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block'; return;
+  }
+  const hash = await hashPassword(newPw);
+  // Make sure they're not re-using the default
+  if(isDefaultPassword(_forcePwUser, hash)) {
+    errEl.textContent = 'You cannot use the default password. Please choose a different one.';
+    errEl.style.display = 'block'; return;
+  }
+  localStorage.setItem('pw_' + _forcePwUser.id, hash);
+  document.getElementById('force-pw-overlay').style.display = 'none';
+  completeLogin(_forcePwUser);
+}
+
+
 function completeLogin(user) {
   currentUser = user;
+  resetActivity();
+  startSessionTimer();
   document.getElementById('login-overlay').style.display = 'none';
   document.getElementById('sidebar-user-name').textContent = user.displayName;
   logActivity('LOGIN', 'Signed in');
   applyAccessControl();
   saveSession('dashboard');
   renderDashboard();
-  document.getElementById('drive-dot').className = 'drive-dot' + (store.driveConnected?' connected':'');
-  document.getElementById('drive-label').textContent = 'Google Drive: ' + (store.driveConnected?'connected':'not connected');
+  updateDriveUI(!!driveAccessToken);
+  // Backup reminder: warn admin if no backup in 7+ days
+  if(user.level !== 1) {
+    const last = store.lastBackupDate;
+    if(!last || (Date.now() - new Date(last).getTime()) > 7*24*60*60*1000) {
+      setTimeout(() => showToast('⚠ No backup in 7+ days — export a backup from Settings!', 6000), 2000);
+    }
+  }
+  // Auto-reconnect Drive silently if previously connected
+  if(store.driveConnected && typeof google !== 'undefined' && google.accounts) {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID, scope: DRIVE_SCOPES, prompt: '',
+      callback: async (resp) => {
+        if(!resp.error) {
+          driveAccessToken = resp.access_token;
+          updateDriveUI(true);
+          await driveSync();
+        }
+      }
+    });
+    client.requestAccessToken({ prompt: '' });
+  }
 }
 
 function doLogout() {
   if(!confirm('Sign out?')) return;
+  clearInterval(_sessionTimer);
   logActivity('LOGOUT', 'Signed out');
   clearSession();
   currentUser = null;
@@ -1440,9 +1853,21 @@ function applyAccessControl() {
   // Nav section labels
   document.getElementById('nav-section-management').style.display = isLevel1 ? 'none' : '';
   document.getElementById('nav-section-customers').style.display = isLevel1 ? 'none' : '';
-  // Hide Connect Drive button for Level 1 — admin only
-  const driveBtn = document.getElementById('drive-connect-btn');
-  if(driveBtn) driveBtn.style.display = isLevel1 ? 'none' : '';
+  // Settings + Reports: admin only
+  const navSettings = document.getElementById('nav-settings');
+  if(navSettings) navSettings.style.display = isLevel1 ? 'none' : '';
+  const navReports = document.getElementById('nav-reports');
+  if(navReports) navReports.style.display = isLevel1 ? 'none' : '';
+  // Drive: admin sees connect section, employees see sync-status only
+  const driveAdminSection = document.getElementById('drive-admin-section');
+  const driveEmployeeSection = document.getElementById('drive-employee-section');
+  if(driveAdminSection) driveAdminSection.style.display = isLevel1 ? 'none' : '';
+  if(driveEmployeeSection) driveEmployeeSection.style.display = isLevel1 ? '' : 'none';
+  // Settings page: hide admin-only cards for level 1 (level 1 shouldn't reach settings, but just in case)
+  ['settings-shop-info','settings-tax','settings-backup','settings-changepw'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = isLevel1 ? 'none' : '';
+  });
   // If currently on a blocked page, bounce to dashboard
   if(isLevel1) {
     const activePage = pages.find(p => {
@@ -1458,7 +1883,7 @@ let store = {
   docs: [], parts: [], services: [], mechanics: [], salesRecords: [], customers: [], activityLog: [],
   settings: {
     name: "Pro Auto Repairs", phone: "(780) 000-0000", address: "Edmonton, AB",
-    email: "", gst: "", amvic: "", gstRate: 5, labourRate: 110
+    email: "", gst: "", amvic: "", gstRate: 5
   },
   invCounter: 1, qteCounter: 1, saleCounter: 1, custCounter: 1,
   driveConnected: false
@@ -1470,17 +1895,57 @@ try { const s = localStorage.getItem('autoshop'); if(s) { const loaded = JSON.pa
 if(!store.customers) store.customers = [];
 if(!store.custCounter) store.custCounter = 1;
 if(!store.activityLog) store.activityLog = [];
+if(!store.purchaseOrders) store.purchaseOrders = [];
+if(!store.poCounter) store.poCounter = 1;
 
 function save() {
-  try { localStorage.setItem('autoshop', JSON.stringify(store)); } catch(e){}
-  // Auto-push to Drive if connected (debounced)
+  try {
+    const data = JSON.stringify(store);
+    localStorage.setItem('autoshop', data);
+    // Storage size warning
+    const kb = Math.round((data.length * 2) / 1024);
+    if(kb > 4500) showToast(`⚠ Storage nearly full (${kb}KB / 5120KB) — export a backup now!`, 7000);
+    else if(kb > 3800) showToast(`Storage at ${kb}KB — consider exporting a backup soon.`);
+  } catch(e){ showToast('⚠ Storage error — data may not have saved. Export a backup immediately!', 8000); }
+  // Auto-push to Drive if connected (debounced 3s)
   if(typeof driveAccessToken !== 'undefined' && driveAccessToken) {
     clearTimeout(save._driveTimer);
     save._driveTimer = setTimeout(()=>driveSaveNow().catch(()=>{}), 3000);
   }
 }
 
+// Cross-tab sync: when another tab saves, reload data and refresh current page
+window.addEventListener('storage', (e) => {
+  if(e.key !== 'autoshop' || !e.newValue || !currentUser) return;
+  try {
+    store = JSON.parse(e.newValue);
+    // Refresh whichever page is visible
+    const active = pages.find(p => !document.getElementById('page-'+p)?.classList.contains('hidden'));
+    if(active === 'dashboard') renderDashboard();
+    else if(active === 'sales') renderSalesPage();
+    else if(active === 'invoices') renderDocs('invoice');
+    else if(active === 'quotes') renderDocs('quote');
+    else if(active === 'inventory') renderInventory();
+    else if(active === 'customers') renderCustomers();
+    else if(active === 'creditors') renderCreditors();
+    // Update employee sync label if data changed
+    const empLbl = document.getElementById('employee-sync-label');
+    if(empLbl && store.lastDriveSync) {
+      const d = new Date(store.lastDriveSync);
+      empLbl.textContent = 'Last synced: ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' ' + d.toLocaleDateString();
+    }
+  } catch(err) {}
+});
+
+// Periodic Drive sync every 90 seconds when connected
+setInterval(() => {
+  if(typeof driveAccessToken !== 'undefined' && driveAccessToken && currentUser) {
+    driveSync().catch(()=>{});
+  }
+}, 90000);
+
 function exportData() {
+  store.lastBackupDate = new Date().toISOString();
   const date = new Date().toISOString().slice(0,10);
   const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -1488,7 +1953,8 @@ function exportData() {
   a.download = `autoshop-backup-${date}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
-  showToast('Backup downloaded!');
+  save();
+  showToast('Backup downloaded! ✓');
 }
 
 function importData(event) {
@@ -1601,7 +2067,7 @@ function populateModels() {
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────────────
-const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','creditors','settings','activity'];
+const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','creditors','reports','settings','activity'];
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -1633,40 +2099,109 @@ function showPage(name) {
   if(name==='creditors') renderCreditors();
   if(name==='activity') renderActivityLog();
   if(name==='settings') loadSettings();
+  if(name==='reports') renderReports();
 }
 
 // ─── DASHBOARD ──────────────────────────────────────────────────────────────
+let dashRange = 'today';
+function setDashRange(range) {
+  dashRange = range;
+  ['today','week','month','year','all'].forEach(r => {
+    const btn = document.getElementById('dr-'+r);
+    if(btn) btn.classList.toggle('active', r===range);
+  });
+  renderDashboard();
+}
+
+function getDashDates() {
+  const today = new Date().toISOString().slice(0,10);
+  const now = new Date();
+  if(dashRange==='custom') {
+    return { from: document.getElementById('dr-from').value||'2000-01-01', to: document.getElementById('dr-to').value||today };
+  }
+  if(dashRange==='today') return { from: today, to: today };
+  if(dashRange==='week') {
+    const d = new Date(); d.setDate(d.getDate()-d.getDay());
+    return { from: d.toISOString().slice(0,10), to: today };
+  }
+  if(dashRange==='month') return { from: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, to: today };
+  if(dashRange==='year') return { from: `${now.getFullYear()}-01-01`, to: today };
+  return { from: '2000-01-01', to: '2099-12-31' }; // all time
+}
+
 function renderDashboard() {
+  const today = new Date().toISOString().slice(0,10);
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-CA', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const invoices = store.docs.filter(d=>d.type==='invoice');
-  const quotes = store.docs.filter(d=>d.type==='quote');
-  const revenue = store.salesRecords.reduce((a,s)=>a+s.charged,0);
-  const profit = store.salesRecords.reduce((a,s)=>a+s.profit,0);
+  const isLevel1 = currentUser?.level === 1;
+
+  if(isLevel1) {
+    // ── EMPLOYEE DASHBOARD ──────────────────────────────────────────────────
+    const todaySales = store.salesRecords.filter(s => s.date === today);
+    const totalCollected = todaySales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
+    const pending = todaySales.filter(s => s.saleStatus === 'pending' || s.saleBalance > 0);
+
+    document.getElementById('dash-metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">JOBS TODAY</div><div class="metric-value">${todaySales.length}</div></div>
+      <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${totalCollected.toFixed(2)}</div></div>
+      <div class="metric"><div class="metric-label">PENDING BALANCE</div><div class="metric-value red">${pending.length}</div></div>
+    `;
+
+    document.getElementById('dash-recent').innerHTML = todaySales.length ? `
+      <table><thead><tr><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr></thead><tbody>
+      ${[...todaySales].reverse().map(s => `<tr>
+        <td>${s.custName||'—'}</td>
+        <td style="font-size:12px;color:var(--text2)">${s.service||s.items?.[0]?.desc||'—'}</td>
+        <td><span class="badge badge-${s.saleStatus==='paid'?'paid':s.saleStatus==='partial'?'partial':'pending'}">${s.saleStatus||'pending'}</span></td>
+        <td>${(s.saleBalance||0)>0 ? `<button class="btn btn-sm btn-green" onclick="openSalePayment('${s.id}')">💳 Pay</button>` : '✓'}</td>
+      </tr>`).join('')}
+      </tbody></table>` : `<p style="color:var(--text3);font-size:13px">No jobs recorded today yet.</p>`;
+
+    document.getElementById('dash-alerts').innerHTML = `
+      <div style="padding:10px 0;">
+        <button class="btn btn-accent" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="openQuickSale()">⚡ Quick Sale / New Job</button>
+        <button class="btn" style="width:100%;justify-content:center;" onclick="showPage('sales')">View All Sales →</button>
+      </div>`;
+
+    // Hide admin-only rows
+    const row2 = document.querySelector('#page-dashboard > div:nth-child(4)');
+    if(row2) row2.style.display = 'none';
+    renderServiceFrequency();
+    updateNavBadges();
+    return;
+  }
+
+  // ── ADMIN DASHBOARD ─────────────────────────────────────────────────────────
+  const row2 = document.querySelector('#page-dashboard > div:nth-child(4)');
+  if(row2) row2.style.display = '';
+
+  const { from, to } = getDashDates();
+  const filteredSales = store.salesRecords.filter(s => s.date >= from && s.date <= to);
+  const revenue = filteredSales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
+  const profit = filteredSales.reduce((a,s) => a + (s.profit||0), 0);
+  const collected = filteredSales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
   const lowStock = store.parts.filter(p=>p.qty<=p.reorder && p.qty>0).length;
   const outStock = store.parts.filter(p=>p.qty===0).length;
-  const isLevel1 = currentUser?.level === 1;
+  const gstRate = (store.settings?.gstRate||5)/100;
+  const gstCollected = filteredSales.reduce((a,s) => { const t=s.saleTotal||s.charged||0; return a + t - t/(1+gstRate); }, 0);
+
   document.getElementById('dash-metrics').innerHTML = `
-    ${isLevel1 ? '' : `<div class="metric"><div class="metric-label">TOTAL REVENUE</div><div class="metric-value green">$${revenue.toFixed(2)}</div></div>`}
-    ${isLevel1 ? '' : `<div class="metric"><div class="metric-label">NET PROFIT (🔒)</div><div class="metric-value accent">$${profit.toFixed(2)}</div></div>`}
-    <div class="metric"><div class="metric-label">INVOICES CREATED</div><div class="metric-value">${store.docs.filter(d=>d.type==='invoice').length}</div></div>
-    <div class="metric"><div class="metric-label">OPEN QUOTES</div><div class="metric-value accent">${store.docs.filter(d=>d.type==='quote'&&d.status==='open').length}</div></div>
-    ${isLevel1 ? '' : `<div class="metric"><div class="metric-label">STOCK ALERTS</div><div class="metric-value red">${lowStock+outStock}</div></div>`}
+    <div class="metric"><div class="metric-label">GROSS REVENUE</div><div class="metric-value green">$${revenue.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${collected.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">GST COLLECTED</div><div class="metric-value accent">$${gstCollected.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">NET PROFIT</div><div class="metric-value">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">JOBS</div><div class="metric-value">${filteredSales.length}</div></div>
+    <div class="metric"><div class="metric-label">STOCK ALERTS</div><div class="metric-value red">${lowStock+outStock}</div></div>
   `;
-  const recent = [...store.salesRecords].reverse().slice(0,6);
+  const recent = [...filteredSales].reverse().slice(0,6);
   document.getElementById('dash-recent').innerHTML = recent.length ? `<table><thead><tr><th>Customer</th><th>Service</th><th>Charged</th><th>Date</th></tr></thead><tbody>
-    ${recent.map(s=>`<tr><td>${s.custName}</td><td>${s.items[0]?.desc||'—'}</td><td class="mono text-green">$${s.charged.toFixed(2)}</td><td class="text-muted">${s.date}</td></tr>`).join('')}
-  </tbody></table>` : '<p style="color:var(--text3);font-size:13px">No sales recorded yet</p>';
+    ${recent.map(s=>`<tr><td>${s.custName}</td><td>${s.service||s.items?.[0]?.desc||'—'}</td><td class="mono text-green">$${(s.saleTotal||s.charged).toFixed(2)}</td><td class="text-muted">${s.date}</td></tr>`).join('')}
+  </tbody></table>` : `<p style="color:var(--text3);font-size:13px">No sales in this period</p>`;
   const alerts = store.parts.filter(p=>p.qty<=p.reorder);
   document.getElementById('dash-alerts').innerHTML = alerts.length ? `<table><thead><tr><th>Part</th><th>Qty</th><th>Status</th></tr></thead><tbody>
     ${alerts.map(p=>`<tr><td>${p.name}</td><td>${p.qty}</td><td><span class="badge badge-${p.qty===0?'out':'low'}">${p.qty===0?'Out':'Low'}</span></td></tr>`).join('')}
   </tbody></table>` : '<p style="color:var(--text3);font-size:13px">All parts in stock ✓</p>';
   renderServiceFrequency();
-  // Outstanding balances quick view — hidden for Level 1
-  const balanceRow = document.getElementById('dash-service-freq')?.parentElement?.parentElement;
-  if(balanceRow) {
-    const secondCard = balanceRow.children[1];
-    if(secondCard) secondCard.style.display = isLevel1 ? 'none' : '';
-  }
+  updateNavBadges();
   const unpaid = store.docs.filter(d => d.type==='invoice' && (d.status==='pending' || d.status==='partial'));
   const totalOwing = unpaid.reduce((a, d) => a + getInvoiceBalance(d), 0);
   const countEl = document.getElementById('dash-balance-count');
@@ -1676,15 +2211,99 @@ function renderDashboard() {
     <table><thead><tr><th>Customer</th><th>Invoice</th><th>Balance</th></tr></thead><tbody>
     ${unpaid.map(d => {
       const bal = getInvoiceBalance(d);
-      const paid = getInvoiceAmountPaid(d);
+      const pd = getInvoiceAmountPaid(d);
       return `<tr>
         <td style="font-size:13px">${d.customer}</td>
-        <td class="mono text-accent" style="font-size:12px">${d.num}${paid>0?` <span style="font-size:10px;color:var(--green)">(part paid)</span>`:''}</td>
+        <td class="mono text-accent" style="font-size:12px">${d.num}${pd>0?` <span style="font-size:10px;color:var(--green)">(part paid)</span>`:''}</td>
         <td class="mono text-red" style="font-weight:600">$${bal.toFixed(2)}</td>
       </tr>`;
     }).join('')}</tbody></table>
     <div style="margin-top:10px;"><button class="btn btn-sm" onclick="showPage('creditors')">View Creditors →</button></div>
   ` : '<p style="color:var(--text3);font-size:13px;">No outstanding balances ✓</p>';
+}
+
+// ─── REPORTS ────────────────────────────────────────────────────────────────
+let reportPeriod = 'month';
+function setReportPeriod(p) {
+  reportPeriod = p;
+  ['month','quarter','year','all'].forEach(x => document.getElementById('rpt-'+x)?.classList.toggle('active', x===p));
+  renderReports();
+}
+
+function getReportDates() {
+  const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
+  if(reportPeriod === 'month') return { from: new Date(y,m,1).toISOString().slice(0,10), to: new Date(y,m+1,0).toISOString().slice(0,10) };
+  if(reportPeriod === 'quarter') { const q = Math.floor(m/3)*3; return { from: new Date(y,q,1).toISOString().slice(0,10), to: new Date(y,q+3,0).toISOString().slice(0,10) }; }
+  if(reportPeriod === 'year') return { from: `${y}-01-01`, to: `${y}-12-31` };
+  return { from: '2000-01-01', to: '2099-12-31' };
+}
+
+function renderReports() {
+  const { from, to } = getReportDates();
+  const sales = store.salesRecords.filter(s => s.date >= from && s.date <= to);
+  const revenue = sales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
+  const gstRate = (store.settings?.gstRate||5) / 100;
+  const gstCollected = sales.reduce((a,s) => {
+    const total = s.saleTotal||s.charged||0;
+    return a + total - (total / (1 + gstRate));
+  }, 0);
+  const profit = sales.reduce((a,s) => a + (s.profit||0), 0);
+  const paid = sales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
+
+  document.getElementById('rpt-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">GROSS REVENUE</div><div class="metric-value green">$${revenue.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">GST COLLECTED</div><div class="metric-value accent">$${gstCollected.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">NET PROFIT</div><div class="metric-value">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">TOTAL JOBS</div><div class="metric-value">${sales.length}</div></div>
+    <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${paid.toFixed(2)}</div></div>
+  `;
+
+  // GST Summary
+  const preGST = revenue / (1 + gstRate);
+  document.getElementById('rpt-gst').innerHTML = `
+    <table><tbody>
+      <tr><td style="padding:6px 0;color:var(--text2)">GST Rate</td><td class="mono" style="text-align:right">${(gstRate*100).toFixed(1)}%</td></tr>
+      <tr><td style="padding:6px 0;color:var(--text2)">Total Revenue (incl. GST)</td><td class="mono text-green" style="text-align:right;font-weight:600">$${revenue.toFixed(2)}</td></tr>
+      <tr><td style="padding:6px 0;color:var(--text2)">Revenue before GST</td><td class="mono" style="text-align:right">$${preGST.toFixed(2)}</td></tr>
+      <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0 4px;font-weight:600">GST to Remit (CRA)</td><td class="mono text-accent" style="text-align:right;font-weight:700;font-size:16px">$${gstCollected.toFixed(2)}</td></tr>
+    </tbody></table>
+    <p style="font-size:11px;color:var(--text3);margin-top:10px;">Based on ${sales.length} sale(s) from ${from} to ${to}</p>
+  `;
+
+  // Top services by revenue
+  const svcMap = {};
+  sales.forEach(s => {
+    (s.items||[{desc:s.service||'Service',sell:s.charged}]).forEach(it => {
+      const k = it.desc||it.cat||'Other';
+      svcMap[k] = (svcMap[k]||0) + (it.sell||0);
+    });
+  });
+  const topSvc = Object.entries(svcMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('rpt-services').innerHTML = topSvc.length ? `
+    <table><thead><tr><th>Service</th><th style="text-align:right">Revenue</th></tr></thead><tbody>
+    ${topSvc.map(([k,v])=>`<tr><td style="font-size:13px">${k}</td><td class="mono text-green" style="text-align:right">$${v.toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>` : '<p style="color:var(--text3);font-size:13px">No data yet.</p>';
+
+  // Monthly breakdown
+  const monthly = {};
+  sales.forEach(s => {
+    const mo = (s.date||'').slice(0,7);
+    if(mo) { if(!monthly[mo]) monthly[mo]={rev:0,jobs:0,gst:0}; monthly[mo].rev += (s.saleTotal||s.charged||0); monthly[mo].jobs++; monthly[mo].gst += (s.saleTotal||s.charged||0) - ((s.saleTotal||s.charged||0)/(1+gstRate)); }
+  });
+  const months = Object.keys(monthly).sort().reverse().slice(0,12);
+  document.getElementById('rpt-monthly').innerHTML = months.length ? `
+    <table><thead><tr><th>Month</th><th style="text-align:right">Revenue</th><th style="text-align:right">GST</th><th style="text-align:right">Jobs</th></tr></thead><tbody>
+    ${months.map(mo=>`<tr><td style="font-size:13px">${mo}</td><td class="mono text-green" style="text-align:right">$${monthly[mo].rev.toFixed(2)}</td><td class="mono text-accent" style="text-align:right">$${monthly[mo].gst.toFixed(2)}</td><td class="mono" style="text-align:right">${monthly[mo].jobs}</td></tr>`).join('')}
+    </tbody></table>` : '<p style="color:var(--text3);font-size:13px">No data yet.</p>';
+
+  // Top customers
+  const custMap = {};
+  sales.forEach(s => { const k=s.custName||'Unknown'; custMap[k]=(custMap[k]||0)+(s.saleTotal||s.charged||0); });
+  const topCust = Object.entries(custMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('rpt-customers').innerHTML = topCust.length ? `
+    <table><thead><tr><th>Customer</th><th style="text-align:right">Total Spent</th></tr></thead><tbody>
+    ${topCust.map(([k,v])=>`<tr><td style="font-size:13px">${k}</td><td class="mono text-green" style="text-align:right">$${v.toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>` : '<p style="color:var(--text3);font-size:13px">No data yet.</p>';
 }
 
 // ─── DOCS ────────────────────────────────────────────────────────────────────
@@ -1889,7 +2508,8 @@ function renderDocs(type) {
       <td class="mono">$${d.total.toFixed(2)}${type==='invoice'&&amtPaid>0&&isPending?`<div style="font-size:10px;color:var(--green)">paid $${amtPaid.toFixed(2)}</div><div style="font-size:10px;color:var(--red)">bal $${bal.toFixed(2)}</div>`:''}</td>
       <td><span class="badge badge-${badgeClass}">${statusLabel}</span></td>
       <td style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-sm" onclick="openEditDoc(${d.id})">Edit</button>
+        ${d.phone ? `<button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;" onclick="notifyInvoiceWhatsApp(${d.id})" title="WhatsApp customer">📱</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="openEditDoc(${d.id})">Edit</button>
         <button class="btn btn-sm" onclick="printDocById(${d.id})">Print</button>
         ${type==='invoice'&&isPending?`<button class="btn btn-sm" onclick="openPartialPay(${d.id})">💳 Pay</button>
         <button class="btn btn-sm btn-green" onclick="markPaid(${d.id})">Full Paid</button>`:''}
@@ -1938,7 +2558,9 @@ function renderInventory() {
 function switchInvTab(tab) {
   document.getElementById('inv-parts-tab').classList.toggle('hidden', tab!=='parts');
   document.getElementById('inv-services-tab').classList.toggle('hidden', tab!=='services');
-  document.querySelectorAll('.tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='parts'?0:1)));
+  document.getElementById('inv-orders-tab').classList.toggle('hidden', tab!=='orders');
+  document.querySelectorAll('.tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='parts'?0:tab==='services'?1:2)));
+  if(tab==='orders') renderPOs();
 }
 let partEditId = null;
 function openAddPart() {
@@ -2059,6 +2681,136 @@ function closeBarcodeScanner() {
   if(barcodeStream) { barcodeStream.getTracks().forEach(t=>t.stop()); barcodeStream=null; }
 }
 
+// ─── PURCHASE ORDERS ─────────────────────────────────────────────────────────
+if(!store.purchaseOrders) store.purchaseOrders = [];
+if(!store.poCounter) store.poCounter = 1;
+
+function renderPOs() {
+  if(!store.purchaseOrders) store.purchaseOrders = [];
+  const pos = [...store.purchaseOrders].sort((a,b) => b.date.localeCompare(a.date));
+  document.getElementById('po-table').innerHTML = pos.length ? pos.map(po => {
+    const totalCost = (po.items||[]).reduce((a,i) => a + (i.qty||0)*(i.cost||0), 0);
+    const statusColor = po.status==='received'?'var(--green)':po.status==='cancelled'?'var(--red)':po.status==='partial'?'var(--accent)':'var(--blue)';
+    return `<tr>
+      <td class="mono" style="font-size:12px">${po.num}</td>
+      <td style="font-weight:500">${po.supplier||'—'}</td>
+      <td class="mono text-muted" style="font-size:12px">${po.date}</td>
+      <td style="font-size:12px;color:var(--text2)">${(po.items||[]).map(i=>`${i.name} ×${i.qty}`).join(', ')||'—'}</td>
+      <td class="mono text-green">$${totalCost.toFixed(2)}</td>
+      <td><span style="font-size:11px;font-weight:600;color:${statusColor};text-transform:uppercase">${po.status||'ordered'}</span></td>
+      <td style="display:flex;gap:6px;">
+        ${po.status!=='received'&&po.status!=='cancelled' ? `<button class="btn btn-sm btn-green" onclick="receivePO('${po.id}')">✓ Received</button>` : ''}
+        <button class="btn btn-sm" onclick="openEditPO('${po.id}')">Edit</button>
+        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deletePO('${po.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px;">No purchase orders yet. Click "+ New Order" to track a parts order.</td></tr>`;
+}
+
+let _poEditId = null;
+function openAddPO() {
+  _poEditId = null;
+  document.getElementById('po-modal-title').textContent = 'New Purchase Order';
+  document.getElementById('po-supplier').value = '';
+  document.getElementById('po-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('po-eta').value = '';
+  document.getElementById('po-status').value = 'ordered';
+  document.getElementById('po-notes').value = '';
+  document.getElementById('po-items-body').innerHTML = '';
+  addPOItem();
+  document.getElementById('po-modal').classList.remove('hidden');
+}
+
+function openEditPO(id) {
+  const po = store.purchaseOrders.find(p => p.id === id);
+  if(!po) return;
+  _poEditId = id;
+  document.getElementById('po-modal-title').textContent = 'Edit Purchase Order';
+  document.getElementById('po-supplier').value = po.supplier||'';
+  document.getElementById('po-date').value = po.date||'';
+  document.getElementById('po-eta').value = po.eta||'';
+  document.getElementById('po-status').value = po.status||'ordered';
+  document.getElementById('po-notes').value = po.notes||'';
+  document.getElementById('po-items-body').innerHTML = '';
+  (po.items||[]).forEach(item => addPOItemWithData(item));
+  document.getElementById('po-modal').classList.remove('hidden');
+}
+
+let _poItemCounter = 0;
+function addPOItem() { addPOItemWithData({ name:'', qty:1, cost:0, partId:'' }); }
+function addPOItemWithData(item) {
+  const id = _poItemCounter++;
+  const partOpts = store.parts.map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
+  const row = document.createElement('div');
+  row.id = 'po-item-'+id;
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 90px auto;gap:8px;margin-bottom:8px;align-items:center;';
+  row.innerHTML = `
+    <input class="form-input" placeholder="Part / item name" value="${item.name||''}" style="font-size:13px;" list="po-parts-list-${id}" oninput="this.dataset.name=this.value" data-name="${item.name||''}" />
+    <datalist id="po-parts-list-${id}">${partOpts}</datalist>
+    <input class="form-input" type="number" placeholder="Qty" min="1" value="${item.qty||1}" style="font-size:13px;" />
+    <input class="form-input" type="number" placeholder="Unit cost" min="0" step="0.01" value="${item.cost||''}" style="font-size:13px;" />
+    <button class="btn btn-sm btn-ghost" style="color:var(--red);padding:6px 8px;" onclick="document.getElementById('po-item-${id}').remove()">✕</button>
+  `;
+  document.getElementById('po-items-body').appendChild(row);
+}
+
+function getPOItems() {
+  return [...document.getElementById('po-items-body').children].map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { name: inputs[0]?.value||'', qty: parseFloat(inputs[1]?.value)||1, cost: parseFloat(inputs[2]?.value)||0 };
+  }).filter(i => i.name);
+}
+
+function savePO() {
+  const supplier = document.getElementById('po-supplier').value.trim();
+  if(!supplier) { showToast('Supplier name required'); return; }
+  const items = getPOItems();
+  if(!items.length) { showToast('Add at least one item'); return; }
+  const status = document.getElementById('po-status').value;
+  if(_poEditId) {
+    const po = store.purchaseOrders.find(p => p.id === _poEditId);
+    if(po) { Object.assign(po, { supplier, date: document.getElementById('po-date').value, eta: document.getElementById('po-eta').value, status, items, notes: document.getElementById('po-notes').value }); }
+  } else {
+    store.purchaseOrders.push({
+      id: 'PO'+Date.now(), num: 'PO-'+String(store.poCounter).padStart(4,'0'),
+      supplier, date: document.getElementById('po-date').value,
+      eta: document.getElementById('po-eta').value,
+      status, items, notes: document.getElementById('po-notes').value,
+      createdBy: currentUser?.displayName||''
+    });
+    store.poCounter++;
+  }
+  // If status is received, update inventory quantities
+  if(status === 'received') {
+    const po = _poEditId ? store.purchaseOrders.find(p=>p.id===_poEditId) : store.purchaseOrders[store.purchaseOrders.length-1];
+    items.forEach(item => {
+      const part = store.parts.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+      if(part) { part.qty = (part.qty||0) + item.qty; }
+    });
+    showToast('Order marked received — inventory updated ✓');
+  }
+  save(); document.getElementById('po-modal').classList.add('hidden'); renderPOs(); updateNavBadges();
+  if(status !== 'received') showToast('Purchase order saved');
+}
+
+function receivePO(id) {
+  const po = store.purchaseOrders.find(p => p.id === id);
+  if(!po || !confirm(`Mark PO ${po.num} as received? This will update inventory quantities.`)) return;
+  po.status = 'received'; po.receivedDate = new Date().toISOString().slice(0,10);
+  (po.items||[]).forEach(item => {
+    const part = store.parts.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+    if(part) { part.qty = (part.qty||0) + item.qty; }
+  });
+  save(); renderPOs(); renderInventory(); updateNavBadges();
+  showToast(`PO ${po.num} received — inventory updated ✓`);
+}
+
+function deletePO(id) {
+  if(!confirm('Delete this purchase order?')) return;
+  store.purchaseOrders = store.purchaseOrders.filter(p => p.id !== id);
+  save(); renderPOs();
+}
+
 // ─── MECHANICS ───────────────────────────────────────────────────────────────
 function renderMechanics() {
   document.getElementById('mechanics-table').innerHTML = store.mechanics.map(m=>{
@@ -2085,39 +2837,39 @@ function loadSettings() {
   document.getElementById('set-name').value=s.name||''; document.getElementById('set-phone').value=s.phone||'';
   document.getElementById('set-address').value=s.address||''; document.getElementById('set-email').value=s.email||'';
   document.getElementById('set-gst').value=s.gst||''; document.getElementById('set-amvic').value=s.amvic||'';
-  document.getElementById('set-gst-rate').value=s.gstRate||5; document.getElementById('set-labour').value=s.labourRate||110;
-  // Populate change-password username dropdown
+  document.getElementById('set-gst-rate').value=s.gstRate||5;
+  // Populate change-password username dropdown (admin only page)
   const cpUser = document.getElementById('cp-user');
   if(cpUser) {
-    const isAdmin = currentUser?.level !== 1;
-    cpUser.innerHTML = isAdmin
-      ? USERS.map(u=>`<option value="${u.username}">${u.displayName} (${u.username})</option>`).join('')
-      : `<option value="${currentUser.username}">${currentUser.displayName}</option>`;
+    cpUser.innerHTML = USERS.map(u=>`<option value="${u.id}">${u.displayName}</option>`).join('');
+    if(currentUser) cpUser.value = currentUser.id;
   }
   document.getElementById('cp-status').textContent = '';
 }
 
 async function changePassword() {
-  const username = document.getElementById('cp-user').value;
+  const userId = document.getElementById('cp-user').value;
+  const targetUser = USERS_DEF.find(u => u.id === userId);
   const newPw = document.getElementById('cp-newpw').value;
   const confirmPw = document.getElementById('cp-confirmpw').value;
   const statusEl = document.getElementById('cp-status');
-  // Only admin can change other users' passwords
-  if(currentUser?.level === 1 && username !== currentUser.username) {
-    statusEl.innerHTML = '<span style="color:var(--red)">You can only change your own password.</span>'; return;
-  }
-  if(newPw.length < 6) {
-    statusEl.innerHTML = '<span style="color:var(--red)">Password must be at least 6 characters.</span>'; return;
+  if(!targetUser) { statusEl.innerHTML = '<span style="color:var(--red)">User not found.</span>'; return; }
+  if(newPw.length < 8) {
+    statusEl.innerHTML = '<span style="color:var(--red)">Password must be at least 8 characters.</span>'; return;
   }
   if(newPw !== confirmPw) {
     statusEl.innerHTML = '<span style="color:var(--red)">Passwords do not match.</span>'; return;
   }
   const hash = await hashPassword(newPw);
-  localStorage.setItem('pw_' + username, hash);
+  if(isDefaultPassword(targetUser, hash)) {
+    statusEl.innerHTML = '<span style="color:var(--red)">Cannot reuse the default password.</span>'; return;
+  }
+  localStorage.setItem('pw_' + userId, hash);
+  clearLockout(userId);
   document.getElementById('cp-newpw').value = '';
   document.getElementById('cp-confirmpw').value = '';
-  statusEl.innerHTML = `<span style="color:var(--green)">Password updated for ${username}.</span>`;
-  logActivity('EDIT', 'Password changed for ' + username);
+  statusEl.innerHTML = `<span style="color:var(--green)">Password updated for ${targetUser.displayName}.</span>`;
+  logActivity('EDIT', 'Password changed for ' + targetUser.displayName);
 }
 function saveSettings() {
   store.settings = { ...store.settings,
@@ -2128,7 +2880,6 @@ function saveSettings() {
     gst:document.getElementById('set-gst').value,
     amvic:document.getElementById('set-amvic').value,
     gstRate:parseFloat(document.getElementById('set-gst-rate').value)||5,
-    labourRate:parseFloat(document.getElementById('set-labour').value)||110,
   };
   save(); showToast('Settings saved');
 }
@@ -2369,6 +3120,15 @@ function updateDriveUI(connected) {
   if(dot) dot.className = 'drive-dot' + (connected ? ' connected' : '');
   if(lbl) lbl.textContent = 'Google Drive: ' + (connected ? 'connected ✓' : 'not connected');
   if(btn) { btn.textContent = connected ? 'Sync Now' : 'Connect Drive'; btn.onclick = connected ? driveSync : connectDrive; }
+  // Update employee sync label
+  const empLbl = document.getElementById('employee-sync-label');
+  if(empLbl) {
+    const ts = store.lastDriveSync;
+    if(ts) {
+      const d = new Date(ts);
+      empLbl.textContent = 'Last synced: ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' ' + d.toLocaleDateString();
+    }
+  }
 }
 
 async function driveFetch(url, opts={}) {
@@ -2407,6 +3167,8 @@ async function driveSync() {
       }
     }
     await driveSaveNow();
+    store.lastDriveSync = new Date().toISOString(); save();
+    updateDriveUI(true);
     showToast('Drive sync complete ✓');
   } catch(e) { showToast('Drive sync error: ' + e.message); }
 }
@@ -2439,9 +3201,10 @@ function saveToDrive(doc) {
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
-function showToast(msg) {
+function showToast(msg, duration=2500) {
   const t = document.getElementById('toast'); t.textContent = msg; t.style.display='block';
-  setTimeout(()=>t.style.display='none', 2500);
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=>t.style.display='none', duration);
 }
 
 // ─── SALES RECORDS ────────────────────────────────────────────────────────────
@@ -2600,18 +3363,27 @@ function addSaleLineWithData(data) {
   const svcOpts = SERVICE_TYPES.map(s=>`<option${s===svcVal?' selected':''}>${s}</option>`).join('');
   const inStyle = (col) => `width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--text);font-size:12px;`;
   const autoL = isAdmin ? `oninput="autoCalcLabour(this.closest('tr'));calcSaleTotals()"` : `oninput="calcSaleTotals()"`;
+  const partOpts = store.parts.map(p=>`<option value="${p.name}" data-cost="${p.cost||0}" data-sell="${p.price||0}" data-vendor="${p.vendor||''}" data-sku="${p.sku||''}" data-qty="${p.qty||0}">${p.name} [${p.qty||0} in stock]</option>`).join('');
+  const warrantyOpts = ['No Warranty','30 Days','90 Days','6 Months','1 Year','2 Years'].map(w=>`<option${w===(data.warranty||'No Warranty')?' selected':''}>${w}</option>`).join('');
   tr.innerHTML = `
-    <td><input type="text" value="${data.desc||''}" placeholder="Description" oninput="calcSaleTotals()" style="${inStyle()}font-family:'Sora',sans-serif;" /></td>
+    <td style="min-width:160px;">
+      <input type="text" value="${data.desc||''}" placeholder="Description or pick from stock" oninput="sAutoFill(this,'sl-${id}');calcSaleTotals()" list="sl-parts-${id}" style="${inStyle()}font-family:'Sora',sans-serif;" data-vendor="${data.vendor||''}" />
+      <datalist id="sl-parts-${id}">${partOpts}</datalist>
+      <span id="sl-stock-${id}" style="font-size:10px;margin-top:2px;display:block;"></span>
+    </td>
     <td><select onchange="calcSaleTotals()" style="${inStyle()}">${catOpts}</select></td>
     <td><select style="${inStyle()}">${vtypeOpts}</select></td>
     <td><select style="${inStyle()}">${svcOpts}</select></td>
-    <td><input type="number" value="${data.qty||1}" min="0.5" step="0.5" oninput="calcSaleTotals()" style="width:52px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--text);font-size:12px;" /></td>
+    <td><input type="number" value="${data.qty||1}" min="0.5" step="0.5" oninput="sCheckStock('sl-${id}');calcSaleTotals()" style="width:52px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--text);font-size:12px;" /></td>
     <td class="col-cost"><input type="number" value="${(data.cost||0).toFixed(2)}" step="0.01" min="0" ${autoL} style="width:74px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:#e05555;font-size:12px;" /></td>
     <td><input type="number" value="${(data.sell||0).toFixed(2)}" step="0.01" min="0" ${autoL} style="width:74px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--text);font-size:12px;" /></td>
     <td class="col-labour"><input type="number" value="${(data.labour||0).toFixed(2)}" step="0.01" min="0" oninput="calcSaleTotals()" style="width:74px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--accent);font-size:12px;" /></td>
     <td><span class="mono" style="font-size:12px;color:var(--green)">$0.00</span></td>
     <td class="col-profit"><span class="mono" style="font-size:12px;color:var(--accent)">$0.00</span></td>
-    <td><button onclick="document.getElementById('sl-${id}').remove();calcSaleTotals()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;padding:4px;">✕</button></td>
+    <td>
+      <select title="Warranty" style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:3px 4px;color:var(--text2);margin-bottom:4px;display:block;width:80px;">${warrantyOpts}</select>
+      <button onclick="document.getElementById('sl-${id}').remove();calcSaleTotals()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;padding:2px 4px;">✕</button>
+    </td>
   `;
   body.appendChild(tr);
   calcSaleTotals();
@@ -2672,6 +3444,8 @@ function getSaleItems() {
       vehicleType: allInputs[2]?.value||'',
       serviceType: allInputs[3]?.value||'',
       oilType: allInputs[3]?.value||'', // keep for backward compat
+      vendor: row.querySelector('input[type="text"]')?.dataset?.vendor||'',
+      warranty: row.querySelector('select[title="Warranty"]')?.value||'No Warranty',
       qty, cost, sell, labour,
       lineCharged: qty*sell+labour,
       lineProfit: qty*sell+labour - qty*cost
@@ -2806,26 +3580,33 @@ function renderSalesPage() {
   });
   const canDelete = currentUser?.level !== 1;
   const tbody=document.getElementById('sales-table');
-  tbody.innerHTML=rows.length?rows.map(s=>`
-    <tr>
+  tbody.innerHTML=rows.length?rows.map(s=>{
+    const bal = getSaleBalance(s);
+    const hasBal = bal > 0.01;
+    const statusBadge = hasBal
+      ? `<span class="badge badge-partial" style="font-size:10px;">Balance $${bal.toFixed(2)}</span>`
+      : (s.saleStatus==='unpaid' ? `<span class="badge badge-out" style="font-size:10px;">Unpaid</span>` : '');
+    return `<tr>
       <td class="mono text-muted" style="font-size:12px">${s.date}</td>
       <td><div style="font-weight:500">${s.custName}</div><div style="font-size:11px;color:var(--text3)">${s.custPhone||''}</div></td>
-      <td style="font-size:12px">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}<br><span class="mono" style="font-size:10px;color:var(--text3)">${s.vin||''}</span></td>
+      <td style="font-size:12px">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}</td>
       <td style="font-size:12px">${s.mainService}</td>
       <td>${s.oilTypes?`<span class="badge badge-quote">${s.oilTypes}</span>`:'—'}</td>
       <td style="font-size:12px">${s.mechanicName||'—'}</td>
-      <td class="mono col-cost" style="color:var(--red);font-size:12px">$${s.totalCost.toFixed(2)}</td>
-      <td class="mono col-labour" style="color:var(--accent);font-size:12px">$${s.items.reduce((a,i)=>a+i.labour,0).toFixed(2)}</td>
-      <td class="mono" style="color:var(--green);font-weight:600">$${s.charged.toFixed(2)}</td>
-      <td class="mono col-profit" style="color:var(--accent);font-weight:600">$${s.profit.toFixed(2)}</td>
+      <td class="mono col-cost" style="color:var(--red);font-size:12px">$${(s.totalCost||0).toFixed(2)}</td>
+      <td class="mono col-labour" style="color:var(--accent);font-size:12px">$${(s.items||[]).reduce((a,i)=>a+i.labour,0).toFixed(2)}</td>
+      <td class="mono" style="color:var(--green);font-weight:600">$${s.charged.toFixed(2)}<br>${statusBadge}</td>
+      <td class="mono col-profit" style="color:var(--accent);font-weight:600">$${(s.profit||0).toFixed(2)}</td>
       <td style="display:flex;gap:4px;flex-wrap:wrap;">
+        ${hasBal ? `<button class="btn btn-sm btn-green" onclick="openSalePayment(${s.id})" title="Record payment">💳 Pay</button>` : ''}
+        ${s.custPhone ? `<button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;" onclick="notifySaleWhatsApp('${s.id}')" title="WhatsApp customer">📱</button>` : ''}
         <button class="btn btn-sm" onclick="openEditSale(${s.id})" title="Edit sale">Edit</button>
-        <button class="btn btn-sm" onclick="printSaleAsInvoice(${s.id})" title="Print invoice">🖨 Print</button>
-        <button class="btn btn-sm" onclick="emailSaleAsInvoice(${s.id})" title="Email invoice">📧 Email</button>
+        <button class="btn btn-sm" onclick="printSaleAsInvoice(${s.id})" title="Print">🖨</button>
         <button class="btn btn-sm btn-ghost" onclick="makeSaleInvoice(${s.id})" title="Create invoice">🧾</button>
         ${canDelete ? `<button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deleteSale(${s.id})">✕</button>` : ''}
       </td>
-    </tr>`).join('') : `<tr><td colspan="11" style="color:var(--text3);text-align:center;padding:24px;">No sales recorded yet. Click "+ Record Sale" to start.</td></tr>`;
+    </tr>`;
+  }).join('') : `<tr><td colspan="11" style="color:var(--text3);text-align:center;padding:24px;">No sales yet. Use ⚡ Quick Sale or + Full Sale to start.</td></tr>`;
 }
 
 function makeSaleInvoice(id) {
@@ -2856,6 +3637,122 @@ function deleteSale(id){
   if(!confirm('Delete this sale record?')) return;
   store.salesRecords=store.salesRecords.filter(s=>s.id!==id);
   save(); renderSalesPage(); showToast('Sale deleted');
+}
+
+// ─── QUICK SALE ───────────────────────────────────────────────────────────────
+function openQuickSale() {
+  document.getElementById('qs-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('qs-customer').value = '';
+  document.getElementById('qs-phone').value = '';
+  document.getElementById('qs-desc').value = '';
+  document.getElementById('qs-total').value = '';
+  document.getElementById('qs-paid').value = '';
+  document.getElementById('qs-notes').value = '';
+  document.getElementById('qs-balance').textContent = '$0.00';
+  const ms = document.getElementById('qs-mechanic');
+  ms.innerHTML = '<option value="">— Select —</option>';
+  store.mechanics.forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name}</option>`);
+  document.getElementById('quick-sale-modal').classList.remove('hidden');
+}
+
+function qsUpdateBalance() {
+  const total = parseFloat(document.getElementById('qs-total').value)||0;
+  const paid = parseFloat(document.getElementById('qs-paid').value)||0;
+  const bal = Math.max(0, total - paid);
+  document.getElementById('qs-balance').textContent = '$' + bal.toFixed(2);
+  document.getElementById('qs-balance').style.color = bal > 0 ? 'var(--red)' : 'var(--green)';
+}
+
+function saveQuickSale() {
+  const total = parseFloat(document.getElementById('qs-total').value)||0;
+  const paid = parseFloat(document.getElementById('qs-paid').value)||0;
+  const desc = document.getElementById('qs-desc').value.trim();
+  const customer = document.getElementById('qs-customer').value.trim() || 'Walk-in';
+  if(!desc) { showToast('Enter a service description'); return; }
+  if(total <= 0) { showToast('Enter a total amount'); return; }
+  const gstRate = (parseFloat(store.settings.gstRate)||5)/100;
+  const mechId = document.getElementById('qs-mechanic').value;
+  const mech = store.mechanics.find(m=>m.id==mechId);
+  const balance = Math.max(0, total - paid);
+  const rec = {
+    id: Date.now(), num: `SAL-${String(store.saleCounter).padStart(4,'0')}`,
+    date: document.getElementById('qs-date').value,
+    custName: customer, custPhone: document.getElementById('qs-phone').value,
+    mechanicId: mechId, mechanicName: mech?.name||'',
+    items: [{ desc, cat:'Service', vehicleType:'', serviceType:'', qty:1, cost:0, sell:total, labour:0, lineCharged:total, lineProfit:total }],
+    totalCost: 0, gst: 0, charged: total, profit: total,
+    notes: document.getElementById('qs-notes').value,
+    mainService: desc, cat: 'Service',
+    oilTypes: '',
+    // Payment tracking on sales records
+    saleTotal: total, salePaid: paid, saleBalance: balance,
+    salePayments: paid > 0 ? [{ date: document.getElementById('qs-date').value, amount: paid, method: document.getElementById('qs-method').value, note: 'Initial payment' }] : [],
+    saleStatus: balance <= 0.01 ? 'paid' : (paid > 0 ? 'partial' : 'unpaid')
+  };
+  store.salesRecords.push(rec);
+  store.saleCounter++;
+  linkOrCreateCustomer(rec);
+  logActivity('SALE', `Quick sale ${rec.num} — ${customer} $${total.toFixed(2)}`);
+  save();
+  document.getElementById('quick-sale-modal').classList.add('hidden');
+  renderSalesPage();
+  showToast(`Sale saved — Balance: $${balance.toFixed(2)}`);
+}
+
+// ─── SALE PAYMENT (for sales with balance) ───────────────────────────────────
+let spSaleId = null;
+function openSalePayment(saleId) {
+  const s = store.salesRecords.find(r=>r.id===saleId);
+  if(!s) return;
+  spSaleId = saleId;
+  const total = s.saleTotal || s.charged;
+  const paid = getSaleTotalPaid(s);
+  const bal = Math.max(0, total - paid);
+  document.getElementById('sp-label').textContent = s.num + ' — ' + s.custName;
+  document.getElementById('sp-total').textContent = '$' + total.toFixed(2);
+  document.getElementById('sp-paid').textContent = '$' + paid.toFixed(2);
+  document.getElementById('sp-balance').textContent = '$' + bal.toFixed(2);
+  document.getElementById('sp-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('sp-amount').value = bal.toFixed(2);
+  document.getElementById('sp-note').value = '';
+  const hist = s.salePayments || [];
+  document.getElementById('sp-history').innerHTML = hist.length ? `
+    <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;">PAYMENT HISTORY</div>
+    <table style="width:100%;font-size:12px;"><thead><tr>
+      <th style="text-align:left;padding:4px 6px;color:var(--text3)">Date</th>
+      <th style="text-align:left;padding:4px 6px;color:var(--text3)">Method</th>
+      <th style="text-align:right;padding:4px 6px;color:var(--text3)">Amount</th>
+    </tr></thead><tbody>
+    ${hist.map(p=>`<tr><td style="padding:4px 6px">${p.date}</td><td style="padding:4px 6px;color:var(--text2)">${p.method||''}</td><td style="padding:4px 6px;text-align:right;color:var(--green);font-family:'DM Mono',monospace">$${(p.amount||0).toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>` : '';
+  document.getElementById('sale-pay-modal').classList.remove('hidden');
+}
+
+function getSaleTotalPaid(s) {
+  return (s.salePayments||[]).reduce((a,p)=>a+(p.amount||0), 0);
+}
+
+function getSaleBalance(s) {
+  return Math.max(0, (s.saleTotal||s.charged) - getSaleTotalPaid(s));
+}
+
+function saveSalePayment() {
+  const s = store.salesRecords.find(r=>r.id===spSaleId);
+  if(!s) return;
+  const amount = parseFloat(document.getElementById('sp-amount').value)||0;
+  if(amount <= 0) { showToast('Enter a valid amount'); return; }
+  const bal = getSaleBalance(s);
+  if(amount > bal + 0.01) { showToast('Exceeds balance of $' + bal.toFixed(2)); return; }
+  if(!s.salePayments) s.salePayments = [];
+  s.salePayments.push({ date: document.getElementById('sp-date').value, amount, method: document.getElementById('sp-method').value, note: document.getElementById('sp-note').value });
+  s.salePaid = getSaleTotalPaid(s);
+  s.saleBalance = getSaleBalance(s);
+  s.saleStatus = s.saleBalance <= 0.01 ? 'paid' : 'partial';
+  logActivity('PAYMENT', `Payment $${amount.toFixed(2)} on sale ${s.num} — ${s.custName}`);
+  save();
+  document.getElementById('sale-pay-modal').classList.add('hidden');
+  renderSalesPage();
+  showToast(s.saleStatus === 'paid' ? 'Sale fully paid!' : `Payment recorded. Balance: $${s.saleBalance.toFixed(2)}`);
 }
 
 // ─── CUSTOMERS ───────────────────────────────────────────────────────────────
@@ -2905,8 +3802,16 @@ function getCustomerStats(cust) {
   const docs = store.docs.filter(d => nm(d.customer) || ph(d.phone));
   const invoices = docs.filter(d => d.type==='invoice');
   const pendingInvoices = invoices.filter(d => d.status==='pending' || d.status==='partial');
-  const totalRevenue = sales.reduce((a,s)=>a+s.charged,0);
-  const balance = pendingInvoices.reduce((a,d)=>a+getInvoiceBalance(d),0);
+  const totalRevenue = sales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
+  const balance = pendingInvoices.reduce((a,d) => a + getInvoiceBalance(d), 0);
+  // Build per-vehicle history
+  const vehicleMap = {};
+  sales.filter(s=>s.make||s.vin).forEach(s => {
+    const key = s.vin || [s.year,s.make,s.model].filter(Boolean).join(' ') || 'Unknown';
+    if(!vehicleMap[key]) vehicleMap[key] = { label: [s.year,s.make,s.model].filter(Boolean).join(' ')||'Unknown', vin: s.vin||'', jobs:[], mileages:[] };
+    vehicleMap[key].jobs.push(s);
+    if(s.mileage) vehicleMap[key].mileages.push({ date: s.date, km: parseInt(s.mileage) });
+  });
   const vehicleSet = new Set(sales.filter(s=>s.make).map(s=>[s.year,s.make,s.model].filter(Boolean).join(' ')));
   const newPartsCount = sales.flatMap(s=>s.items.filter(i=>i.cat!=='Labour'&&i.cat!=='Service'&&!i.desc.toLowerCase().includes('used'))).length;
   const usedPartsCount = sales.flatMap(s=>s.items.filter(i=>i.desc&&i.desc.toLowerCase().includes('used'))).length;
@@ -2914,6 +3819,7 @@ function getCustomerStats(cust) {
     visits: sales.length,
     totalRevenue, balance,
     vehicles: [...vehicleSet],
+    vehicleHistory: vehicleMap,
     newPartsCount, usedPartsCount,
     pendingInvoices, sales,
     status: sales.length <= 1 ? 'New' : 'Returning'
@@ -3041,8 +3947,6 @@ function openCustomerProfile(id) {
       <div><span style="color:var(--text3)">Referred By:</span> ${c.referredBy||'—'}</div>
       <div><span style="color:var(--text3)">Notes:</span> ${c.notes||'—'}</div>
     </div>
-    ${stats.vehicles.length ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:6px;">VEHICLES SERVICED</div>
-      ${stats.vehicles.map(v=>`<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:3px 10px;font-size:12px;margin:2px 4px 2px 0;">${v}</span>`).join('')}` : ''}
   `;
   document.getElementById('cust-profile-balance').innerHTML = stats.pendingInvoices.length ? `
     <div style="background:#3a1010;border:1px solid var(--red);border-radius:var(--radius);padding:14px;margin-bottom:12px;">
@@ -3060,13 +3964,48 @@ function openCustomerProfile(id) {
         </div>`;
       }).join('')}
     </div>` : '';
+  // Per-vehicle history cards
+  const vh = stats.vehicleHistory;
+  const vKeys = Object.keys(vh);
+  document.getElementById('cust-profile-vehicles').innerHTML = vKeys.length ? vKeys.map(key => {
+    const v = vh[key];
+    const sortedJobs = [...v.jobs].sort((a,b) => b.date.localeCompare(a.date));
+    const firstDate = sortedJobs[sortedJobs.length-1]?.date||'';
+    const lastDate = sortedJobs[0]?.date||'';
+    const milesSorted = v.mileages.sort((a,b)=>a.date.localeCompare(b.date));
+    const firstMile = milesSorted[0]?.km;
+    const lastMile = milesSorted[milesSorted.length-1]?.km;
+    return `<div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div>
+          <div style="font-weight:600;font-size:14px;">${v.label||'Unknown Vehicle'}</div>
+          ${v.vin ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">VIN: ${v.vin}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:12px;font-size:12px;color:var(--text2);">
+          <span><b>${sortedJobs.length}</b> visit${sortedJobs.length!==1?'s':''}</span>
+          ${firstMile&&lastMile&&firstMile!==lastMile ? `<span>Mileage: <b>${firstMile.toLocaleString()}</b> → <b>${lastMile.toLocaleString()}</b> km</span>` : lastMile ? `<span>Last mileage: <b>${lastMile.toLocaleString()} km</b></span>` : ''}
+          <span>${firstDate} ${firstDate!==lastDate?'→ '+lastDate:''}</span>
+        </div>
+      </div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead><tr style="background:var(--surface2)"><th style="padding:5px 8px;text-align:left">Date</th><th style="padding:5px 8px;text-align:left">Services Done</th><th style="padding:5px 8px;text-align:right">Charged</th><th style="padding:5px 8px;text-align:right">Mileage</th></tr></thead>
+        <tbody>${sortedJobs.map(s=>`<tr style="border-top:1px solid var(--border)">
+          <td style="padding:5px 8px;color:var(--text2)">${s.date}</td>
+          <td style="padding:5px 8px">${s.items?.map(i=>i.desc).join(', ')||s.service||'—'}</td>
+          <td style="padding:5px 8px;text-align:right;color:var(--green);font-family:'DM Mono',monospace">$${(s.saleTotal||s.charged||0).toFixed(2)}</td>
+          <td style="padding:5px 8px;text-align:right;color:var(--text3);font-family:'DM Mono',monospace">${s.mileage?s.mileage+' km':'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('') : '<p style="color:var(--text3);font-size:13px;">No vehicles on record yet — vehicles appear automatically from sales.</p>';
+
   document.getElementById('cust-profile-history').innerHTML = stats.sales.length ? `
     <div class="table-wrap"><table><thead><tr><th>Date</th><th>Service</th><th>Vehicle</th><th>Charged</th><th>Payment</th></tr></thead>
     <tbody>${[...stats.sales].reverse().map(s=>`<tr>
       <td class="mono text-muted" style="font-size:12px">${s.date}</td>
-      <td style="font-size:12px">${s.mainService}</td>
+      <td style="font-size:12px">${s.mainService||s.service||s.items?.[0]?.desc||'—'}</td>
       <td style="font-size:12px">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}</td>
-      <td class="mono text-green">$${s.charged.toFixed(2)}</td>
+      <td class="mono text-green">$${(s.saleTotal||s.charged||0).toFixed(2)}</td>
       <td style="font-size:12px">${s.payment||'—'}</td>
     </tr>`).join('')}</tbody></table></div>
   ` : '<p style="color:var(--text3);font-size:13px;">No repair history yet.</p>';
@@ -3121,6 +4060,16 @@ function renderCreditors() {
       <td></td>
     </tr>`;
   }).join('') : `<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px;">No outstanding balances — all invoices paid ✓</td></tr>`;
+}
+
+// ─── NAV BADGES ────────────────────────────────────────────────────────────────
+function updateNavBadges() {
+  const lowStockCount = store.parts.filter(p => p.qty <= p.reorder).length;
+  const badge = document.getElementById('inv-badge');
+  if(badge) {
+    if(lowStockCount > 0) { badge.textContent = lowStockCount; badge.style.display = ''; }
+    else badge.style.display = 'none';
+  }
 }
 
 // ─── SERVICE FREQUENCY ────────────────────────────────────────────────────────
@@ -3232,9 +4181,51 @@ function showLogoFallback() {
   if(img) { img.style.display = 'block'; img.style.width = '220px'; }
 }
 
+// ─── INVENTORY LIVE SEARCH & STOCK CHECK ─────────────────────────────────────
+function sAutoFill(input, rowId) {
+  const name = input.value.trim();
+  const part = store.parts.find(p => p.name.toLowerCase() === name.toLowerCase());
+  const badge = document.getElementById('sl-stock-'+rowId.replace('sl-',''));
+  if(part) {
+    input.dataset.vendor = part.vendor||'';
+    // Auto-fill cost and sell price
+    const row = document.getElementById(rowId);
+    if(row) {
+      const nums = row.querySelectorAll('input[type="number"]');
+      if(nums[1] && parseFloat(nums[1].value)===0) nums[1].value = (part.cost||0).toFixed(2);
+      if(nums[2] && parseFloat(nums[2].value)===0) nums[2].value = (part.price||0).toFixed(2);
+    }
+    if(badge) {
+      if(part.qty === 0) { badge.textContent = '❌ Out of stock'; badge.style.color = 'var(--red)'; }
+      else if(part.qty <= part.reorder) { badge.textContent = `⚠ Only ${part.qty} left`; badge.style.color = 'var(--accent)'; }
+      else { badge.textContent = `✓ ${part.qty} in stock`; badge.style.color = 'var(--green)'; }
+    }
+    calcSaleTotals();
+  } else {
+    if(badge) { badge.textContent = ''; }
+  }
+}
+
+function sCheckStock(rowId) {
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  const descInput = row.querySelector('input[type="text"]');
+  const qtyInput = row.querySelectorAll('input[type="number"]')[0];
+  if(!descInput || !qtyInput) return;
+  const part = store.parts.find(p => p.name.toLowerCase() === (descInput.value||'').toLowerCase().trim());
+  const badge = document.getElementById('sl-stock-'+rowId.replace('sl-',''));
+  if(part && badge) {
+    const needed = parseFloat(qtyInput.value)||1;
+    if(needed > part.qty) { badge.textContent = `⚠ Need ${needed}, only ${part.qty} in stock`; badge.style.color='var(--red)'; }
+    else if(part.qty === 0) { badge.textContent = '❌ Out of stock'; badge.style.color='var(--red)'; }
+    else { badge.textContent = `✓ ${part.qty} in stock`; badge.style.color='var(--green)'; }
+  }
+}
+
 // ─── INVENTORY DEDUCTION ON SALE ─────────────────────────────────────────────
 function deductInventoryFromSale(rec) {
   const nonStock = ['Labour','Service'];
+  const updates = [];
   rec.items.forEach(item => {
     if(nonStock.includes(item.cat)) return;
     const descLower = (item.desc || '').toLowerCase().trim();
@@ -3242,11 +4233,48 @@ function deductInventoryFromSale(rec) {
       const nameLower = p.name.toLowerCase().trim();
       return nameLower === descLower || descLower.startsWith(nameLower) || nameLower.startsWith(descLower);
     });
-    if(part && part.qty > 0) {
-      part.qty = Math.max(0, part.qty - (item.qty || 1));
+    if(part) {
+      const used = item.qty || 1;
+      const before = part.qty;
+      part.qty = Math.max(0, before - used);
+      updates.push(`${part.name}: ${before} → ${part.qty}`);
     }
   });
+  if(updates.length) {
+    setTimeout(() => showToast('Stock updated: ' + updates.join(' | '), 4000), 500);
+    updateNavBadges();
+  }
   save();
+}
+
+// ─── WHATSAPP CUSTOMER NOTIFY ────────────────────────────────────────────────
+function notifyWhatsApp(phone, custName, vehicle, invoiceNum, total, status) {
+  if(!phone) { showToast('No phone number on record for this customer'); return; }
+  const shop = store.settings?.name || 'Makaniko Automotive';
+  const shopPhone = store.settings?.phone || '';
+  const statusMsg = status === 'ready'
+    ? `Your ${vehicle||'vehicle'} is ready for pickup at ${shop}!`
+    : status === 'in-progress'
+    ? `Your ${vehicle||'vehicle'} is currently being serviced at ${shop}.`
+    : `Update from ${shop} regarding your ${vehicle||'vehicle'}.`;
+  const msg = `Hi ${custName||'valued customer'},\n\n${statusMsg}\n${invoiceNum ? `Invoice: ${invoiceNum}\n` : ''}${total ? `Total: $${parseFloat(total).toFixed(2)}\n` : ''}\nPlease call us at ${shopPhone} to confirm pickup.\n\nThank you for choosing ${shop}!`;
+  const cleaned = phone.replace(/\D/g,'');
+  const waPhone = cleaned.startsWith('1') ? cleaned : '1'+cleaned;
+  window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function notifySaleWhatsApp(saleId) {
+  const s = store.salesRecords.find(r => r.id === saleId);
+  if(!s) return;
+  const vehicle = [s.year, s.make, s.model].filter(Boolean).join(' ');
+  notifyWhatsApp(s.custPhone, s.custName, vehicle, s.num, s.saleTotal||s.charged, 'ready');
+}
+
+function notifyInvoiceWhatsApp(docId) {
+  const d = store.docs.find(x => x.id === docId);
+  if(!d) return;
+  const vehicle = [d.year, d.make, d.model].filter(Boolean).join(' ');
+  notifyWhatsApp(d.phone, d.customer, vehicle, d.num, d.total, 'ready');
 }
 
 // ─── INVOICE BALANCE HELPERS ─────────────────────────────────────────────────
@@ -3345,6 +4373,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savedPage = sessionStorage.getItem('autoshop_page') || 'dashboard';
     if(savedUser) {
       currentUser = JSON.parse(savedUser);
+      resetActivity();
+      startSessionTimer();
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('sidebar-user-name').textContent = currentUser.displayName;
       applyAccessControl();
@@ -3358,6 +4388,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('login-user').focus();
   }
 });
+
+// ─── PWA SERVICE WORKER REGISTRATION ────────────────────────────────────────
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
