@@ -150,29 +150,61 @@ tr:hover td { background: var(--surface2); }
 /* PRINT DOC */
 .print-doc { display: none; }
 @media print {
-  body { background: white; color: #111; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: white; color: #111; margin: 0; }
   .app { display: block; }
-  .sidebar, .main > *:not(.print-doc) { display: none !important; }
-  .main { margin: 0; padding: 0; }
-  .print-doc { display: block !important; font-family: Arial, sans-serif; font-size: 12px; color: #111; max-width: 800px; margin: 0 auto; padding: 30px; }
-  .print-header { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid #333; padding-bottom: 16px; }
-  .print-shop { font-size: 20px; font-weight: bold; }
-  .print-doc-type { font-size: 28px; font-weight: bold; color: #c07000; }
+  .sidebar, .login-overlay, .modal-overlay, .main > *:not(.print-doc) { display: none !important; }
+  .main { margin: 0; padding: 0; max-width: 100%; }
+  .print-doc { display: block !important; font-family: Arial, Helvetica, sans-serif; font-size: 11.5px; color: #111; width: 100%; max-width: 760px; margin: 0 auto; padding: 24px 28px; }
+
+  /* HEADER */
+  .print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 3px solid #111; }
+  .print-shop-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #111; margin-bottom: 3px; }
+  .print-shop-info { font-size: 10.5px; color: #444; line-height: 1.6; }
+  .print-doc-badge { display: inline-block; font-size: 22px; font-weight: 800; letter-spacing: 1px; padding: 4px 14px; border-radius: 4px; margin-bottom: 6px; }
+  .print-doc-badge.invoice { background: #111; color: #fff; }
+  .print-doc-badge.quote   { background: #c07000; color: #fff; }
+  .print-doc-num  { font-family: monospace; font-size: 14px; font-weight: 700; color: #111; }
+  .print-doc-meta { font-size: 11px; color: #555; margin-top: 2px; }
+
+  /* SECTIONS */
+  .print-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   .print-section { margin-bottom: 16px; }
-  .print-section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-  .print-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .print-field { margin-bottom: 5px; }
-  .print-field-label { font-size: 10px; color: #888; }
-  .print-field-value { font-weight: 500; }
-  .print-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-  .print-table th { background: #f5f5f5; padding: 7px 10px; text-align: left; font-size: 11px; border: 1px solid #ddd; }
-  .print-table td { padding: 7px 10px; border: 1px solid #ddd; font-size: 12px; }
-  .print-totals { text-align: right; margin-top: 10px; }
-  .print-total-row { display: flex; justify-content: flex-end; gap: 40px; margin-bottom: 4px; font-size: 13px; }
-  .print-grand { font-size: 16px; font-weight: bold; border-top: 2px solid #333; padding-top: 6px; margin-top: 6px; }
-  .print-disclaimer { margin-top: 20px; border: 1px solid #ccc; border-left: 4px solid #c07000; padding: 10px 12px; font-size: 10px; color: #555; line-height: 1.6; }
-  .print-sig { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-  .print-sig-line { border-top: 1px solid #333; padding-top: 6px; font-size: 11px; color: #666; }
+  .print-section-title { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; background: #444; padding: 3px 8px; margin-bottom: 8px; border-radius: 2px; }
+  .print-field { margin-bottom: 4px; display: flex; gap: 6px; align-items: baseline; }
+  .print-field-label { font-size: 9.5px; color: #888; min-width: 70px; }
+  .print-field-value { font-weight: 600; font-size: 11.5px; }
+
+  /* TABLE */
+  .print-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .print-table thead tr { background: #111; }
+  .print-table th { color: #fff; padding: 6px 9px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; }
+  .print-table th:last-child, .print-table td:last-child { text-align: right; }
+  .print-table td { padding: 6px 9px; border-bottom: 1px solid #e8e8e8; font-size: 11px; vertical-align: top; }
+  .print-table tbody tr:nth-child(even) td { background: #fafafa; }
+
+  /* TOTALS */
+  .print-totals-wrap { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .print-totals { width: 240px; }
+  .print-total-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; border-bottom: 1px solid #eee; }
+  .print-total-row span:last-child { font-family: monospace; }
+  .print-grand { display: flex; justify-content: space-between; padding: 6px 0 2px; font-size: 15px; font-weight: 800; border-top: 2.5px solid #111; margin-top: 4px; }
+  .print-grand span:last-child { font-family: monospace; }
+  .print-paid-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; color: #2a7a2a; }
+  .print-balance-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; font-weight: 700; color: #c00; }
+
+  /* PAYMENT STATUS BANNER */
+  .print-status-banner { text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 3px; padding: 6px; border: 3px solid; border-radius: 4px; margin: 14px 0; opacity: 0.85; }
+  .print-status-banner.paid { color: #1a7a1a; border-color: #1a7a1a; }
+  .print-status-banner.unpaid { color: #c00; border-color: #c00; }
+  .print-status-banner.partial { color: #c07000; border-color: #c07000; }
+
+  /* FOOTER */
+  .print-disclaimer { margin-top: 16px; border-left: 3px solid #c07000; padding: 8px 10px; font-size: 9.5px; color: #555; line-height: 1.65; background: #fffbf5; }
+  .print-notes { margin-top: 12px; padding: 8px 10px; border: 1px dashed #bbb; font-size: 11px; color: #333; border-radius: 3px; }
+  .print-sig { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .print-sig-line { border-top: 1.5px solid #555; padding-top: 5px; font-size: 10px; color: #666; }
+
   /* Reports page print */
   #page-reports:not(.hidden) ~ * { display: none !important; }
   .main > #page-reports:not(.hidden) { display: block !important; color: #111 !important; }
@@ -180,9 +212,7 @@ tr:hover td { background: var(--surface2); }
   .main > #page-reports:not(.hidden) .metric { background: #f5f5f5; border: 1px solid #ddd; color: #111; }
   .main > #page-reports:not(.hidden) .metric-label { color: #666; }
   .main > #page-reports:not(.hidden) .metric-value { color: #111; }
-  .main > #page-reports:not(.hidden) .page-header button { display: none; }
-  .main > #page-reports:not(.hidden) button { display: none; }
-  .sidebar, .login-overlay, .modal-overlay { display: none !important; }
+  .main > #page-reports:not(.hidden) .page-header button, .main > #page-reports:not(.hidden) button { display: none; }
 }
 
 /* CUSTOMER STYLES */
@@ -539,6 +569,11 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Creditors
     </button>
+    <button class="nav-item" onclick="showPage('reminders')" id="nav-reminders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Reminders
+      <span id="reminder-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;border-radius:999px;padding:1px 6px;margin-left:auto;font-weight:700;"></span>
+    </button>
     <button class="nav-item" onclick="showPage('reports')" id="nav-reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Reports
@@ -557,20 +592,15 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="user-pill-name" id="sidebar-user-name">—</div>
     </div>
     <button class="btn btn-sm btn-red" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="doLogout()">Sign Out</button>
-    <!-- Admin Drive section -->
-    <div id="drive-admin-section">
-      <div class="drive-status">
+    <!-- Drive Sync (all users) -->
+    <div id="drive-section">
+      <div class="drive-status" style="margin-bottom:6px;">
         <div class="drive-dot" id="drive-dot"></div>
-        <span id="drive-label">Google Drive: not connected</span>
+        <span id="drive-label" style="font-size:11px;">Not connected</span>
       </div>
-      <button class="btn btn-sm mt-8" style="width:100%;justify-content:center;" id="drive-connect-btn" onclick="connectDrive()">Connect Drive</button>
-    </div>
-    <!-- Employee Drive section -->
-    <div id="drive-employee-section" style="display:none;">
-      <div class="drive-status" style="font-size:11px;opacity:0.7;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span id="employee-sync-label">Data synced by admin</span>
-      </div>
+      <div id="drive-sync-time" style="font-size:10px;color:var(--text3);margin-bottom:6px;display:none;line-height:1.4;"></div>
+      <button class="btn btn-sm" style="width:100%;justify-content:center;margin-bottom:6px;" id="drive-connect-btn" onclick="connectDrive()">Connect Drive</button>
+      <div style="font-size:10px;color:var(--text3);text-align:center;line-height:1.5;">Use the shop's<br>shared Google account</div>
     </div>
   </div>
 </nav>
@@ -624,6 +654,14 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div id="dash-quick-balance"><p style="color:var(--text3);font-size:13px;">No outstanding balances ✓</p></div>
     </div>
   </div>
+  <!-- Reminders widget -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Upcoming Reminders</span>
+      <button class="btn btn-sm" onclick="showPage('reminders')">View All</button>
+    </div>
+    <div id="dash-reminders"><p style="color:var(--text3);font-size:13px;">No pending reminders ✓</p></div>
+  </div>
 </div>
 
 <!-- QUOTES -->
@@ -662,7 +700,6 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="page-sub">Internal view — cost & profit visible to shop only</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-accent" onclick="openNewSale()">+ Full Sale</button>
       <button class="btn btn-green" onclick="openQuickSale()">⚡ Quick Sale</button>
     </div>
   </div>
@@ -774,14 +811,14 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <button class="btn btn-accent mt-16" onclick="saveSettings()">Save</button>
   </div>
   <div class="card">
-    <div class="card-title">Google Drive Integration</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">Connect Google Drive to automatically save invoices and quotes as files in your Drive.</p>
+    <div class="card-title">Google Drive Sync</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:6px;">All users (admin + employees) connect using the <strong>same shared shop Google account</strong>. This ensures everyone reads and writes the same data across all devices.</p>
+    <p style="color:var(--text3);font-size:11px;margin-bottom:14px;">Data is stored in the shop account's private app folder — not visible to others. Sync merges records from all devices so nothing is lost.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-accent" id="drive-connect-btn" onclick="connectDrive()">Connect Google Drive</button>
+      <button class="btn btn-accent" onclick="connectDrive()">Connect Drive</button>
       <button class="btn" onclick="driveSync()">↺ Sync Now</button>
       <button class="btn btn-ghost" onclick="disconnectDrive()" style="color:var(--red)">Disconnect</button>
     </div>
-    <p style="color:var(--text3);font-size:11px;margin-top:10px;">Your data is saved privately in your Google Drive app folder — not visible to others. Sync keeps all devices up to date.</p>
   </div>
   <div class="card" id="settings-changepw">
     <div class="card-title">Change Password</div>
@@ -833,7 +870,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;gap:10px;align-items:center;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text3);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="form-input" id="cust-search-bar" placeholder="Search by name, phone, or email..." oninput="renderCustomers()" style="flex:1;" />
+      <input class="form-input" id="cust-search-bar" placeholder="Search by name, phone, email, or car (year/make/model)..." oninput="renderCustomers()" style="flex:1;" />
     </div>
   </div>
   <div class="card">
@@ -864,6 +901,61 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       </table>
     </div>
   </div>
+</div>
+
+<!-- REMINDERS -->
+<div id="page-reminders" class="hidden">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Reminders</div>
+      <div class="page-sub">Orders, pickups, balances, and follow-ups</div>
+    </div>
+    <button class="btn btn-accent" onclick="openAddReminder()">+ Add Reminder</button>
+  </div>
+  <div class="metrics" id="reminder-metrics"></div>
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="btn btn-sm active" id="rem-filter-pending" onclick="setReminderFilter('pending')">Pending</button>
+      <button class="btn btn-sm" id="rem-filter-done" onclick="setReminderFilter('done')">Done</button>
+      <button class="btn btn-sm" id="rem-filter-all" onclick="setReminderFilter('all')">All</button>
+    </div>
+    <div id="reminders-list"></div>
+  </div>
+</div>
+
+<!-- MODAL: Add/Edit Reminder -->
+<div class="modal-overlay hidden" id="reminder-modal">
+<div class="modal" style="max-width:460px;">
+  <div class="modal-header">
+    <div class="modal-title" id="rem-modal-title">Add Reminder</div>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('reminder-modal').classList.add('hidden')">✕ Close</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid form-grid-2" style="margin-bottom:14px;">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-input" id="rem-type">
+          <option value="Order">Order</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Balance">Balance Owing</option>
+          <option value="Followup">Follow-up</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" id="rem-date" type="date" /></div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Customer / Description</label>
+      <input class="form-input" id="rem-customer" placeholder="e.g. John Smith — brake pads" />
+    </div>
+    <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Note</label>
+      <textarea class="form-input" id="rem-note" rows="3" placeholder="Details, amount owing, part info, etc." style="resize:vertical;"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="document.getElementById('reminder-modal').classList.add('hidden')">Cancel</button>
+    <button class="btn btn-accent" onclick="saveReminder()">Save</button>
+  </div>
+</div>
 </div>
 
 <!-- REPORTS (admin only) -->
@@ -1450,7 +1542,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 
 <!-- MODAL: Quick Sale -->
 <div class="modal-overlay hidden" id="quick-sale-modal">
-<div class="modal" style="max-width:520px;">
+<div class="modal" style="max-width:560px;">
   <div class="modal-header">
     <div class="modal-title">⚡ Quick Sale</div>
     <button class="btn btn-ghost btn-sm" onclick="document.getElementById('quick-sale-modal').classList.add('hidden')">✕ Close</button>
@@ -1461,6 +1553,23 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="form-group"><label class="form-label">Customer Name</label><input class="form-input" id="qs-customer" placeholder="Walk-in" /></div>
       <div class="form-group"><label class="form-label">Phone (optional)</label><input class="form-input" id="qs-phone" placeholder="(780) 000-0000" /></div>
       <div class="form-group"><label class="form-label">Mechanic</label><select class="form-input" id="qs-mechanic"><option value="">— Select —</option></select></div>
+    </div>
+    <!-- Vehicle Details -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;">
+      <div class="form-label" style="margin-bottom:10px;color:var(--accent);font-weight:600;">VEHICLE DETAILS</div>
+      <div class="vin-row" style="margin-bottom:10px;">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">VIN (optional)</label>
+          <input class="form-input mono" id="qs-vin" placeholder="17-digit VIN" oninput="if(this.value.length===17)qsDecodeVin()" maxlength="17" style="text-transform:uppercase;" />
+        </div>
+        <button class="btn btn-sm" onclick="qsDecodeVin()" style="margin-bottom:1px;">🔍 Decode</button>
+      </div>
+      <div class="form-grid form-grid-4">
+        <div class="form-group"><label class="form-label">Year</label><input class="form-input" id="qs-year" placeholder="2020" maxlength="4" /></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Make / Brand</label><input class="form-input" id="qs-make" placeholder="Toyota" /></div>
+        <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="qs-model" placeholder="Camry" /></div>
+      </div>
+      <div class="form-group" style="margin-top:10px;"><label class="form-label">Mileage (km)</label><input class="form-input" id="qs-mileage" type="number" placeholder="e.g. 120000" /></div>
     </div>
     <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Service / Description</label>
       <input class="form-input" id="qs-desc" placeholder="e.g. Oil Change, Brake Pads, Tire Rotation..." />
@@ -1751,7 +1860,7 @@ async function doLogin() {
     errEl.style.display = 'none';
     errEl.textContent = 'Invalid username or password.';
     // Block entry if still on default password — force a new one
-    if(isDefaultPassword(userDef, storedHash)) {
+    if(isDefaultPassword(userDef, storedHash) && !localStorage.getItem('pwCustom_' + userDef.id)) {
       openForceChangePw(userDef);
       return;
     }
@@ -1791,6 +1900,7 @@ async function saveForceChangePw() {
     errEl.style.display = 'block'; return;
   }
   localStorage.setItem('pw_' + _forcePwUser.id, hash);
+  localStorage.setItem('pwCustom_' + _forcePwUser.id, '1');
   document.getElementById('force-pw-overlay').style.display = 'none';
   completeLogin(_forcePwUser);
 }
@@ -1858,11 +1968,7 @@ function applyAccessControl() {
   if(navSettings) navSettings.style.display = isLevel1 ? 'none' : '';
   const navReports = document.getElementById('nav-reports');
   if(navReports) navReports.style.display = isLevel1 ? 'none' : '';
-  // Drive: admin sees connect section, employees see sync-status only
-  const driveAdminSection = document.getElementById('drive-admin-section');
-  const driveEmployeeSection = document.getElementById('drive-employee-section');
-  if(driveAdminSection) driveAdminSection.style.display = isLevel1 ? 'none' : '';
-  if(driveEmployeeSection) driveEmployeeSection.style.display = isLevel1 ? '' : 'none';
+  // Drive: all users can connect and sync
   // Settings page: hide admin-only cards for level 1 (level 1 shouldn't reach settings, but just in case)
   ['settings-shop-info','settings-tax','settings-backup','settings-changepw'].forEach(id => {
     const el = document.getElementById(id);
@@ -1882,7 +1988,7 @@ function applyAccessControl() {
 let store = {
   docs: [], parts: [], services: [], mechanics: [], salesRecords: [], customers: [], activityLog: [],
   settings: {
-    name: "Pro Auto Repairs", phone: "(780) 000-0000", address: "Edmonton, AB",
+    name: "Makaniko Automotive", phone: "(780) 000-0000", address: "Edmonton, AB",
     email: "", gst: "", amvic: "", gstRate: 5
   },
   invCounter: 1, qteCounter: 1, saleCounter: 1, custCounter: 1,
@@ -1897,6 +2003,8 @@ if(!store.custCounter) store.custCounter = 1;
 if(!store.activityLog) store.activityLog = [];
 if(!store.purchaseOrders) store.purchaseOrders = [];
 if(!store.poCounter) store.poCounter = 1;
+if(!store.reminders) store.reminders = [];
+if(!store.remindCounter) store.remindCounter = 1;
 
 function save() {
   try {
@@ -1928,12 +2036,8 @@ window.addEventListener('storage', (e) => {
     else if(active === 'inventory') renderInventory();
     else if(active === 'customers') renderCustomers();
     else if(active === 'creditors') renderCreditors();
-    // Update employee sync label if data changed
-    const empLbl = document.getElementById('employee-sync-label');
-    if(empLbl && store.lastDriveSync) {
-      const d = new Date(store.lastDriveSync);
-      empLbl.textContent = 'Last synced: ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' ' + d.toLocaleDateString();
-    }
+    else if(active === 'reminders') renderReminders();
+    updateDriveUI(!!driveAccessToken);
   } catch(err) {}
 });
 
@@ -2067,7 +2171,7 @@ function populateModels() {
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────────────
-const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','creditors','reports','settings','activity'];
+const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','creditors','reminders','reports','settings','activity'];
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -2097,6 +2201,7 @@ function showPage(name) {
   if(name==='mechanics') renderMechanics();
   if(name==='customers') renderCustomers();
   if(name==='creditors') renderCreditors();
+  if(name==='reminders') renderReminders();
   if(name==='activity') renderActivityLog();
   if(name==='settings') loadSettings();
   if(name==='reports') renderReports();
@@ -2167,6 +2272,7 @@ function renderDashboard() {
     if(row2) row2.style.display = 'none';
     renderServiceFrequency();
     updateNavBadges();
+    renderDashReminders();
     return;
   }
 
@@ -2220,6 +2326,29 @@ function renderDashboard() {
     }).join('')}</tbody></table>
     <div style="margin-top:10px;"><button class="btn btn-sm" onclick="showPage('creditors')">View Creditors →</button></div>
   ` : '<p style="color:var(--text3);font-size:13px;">No outstanding balances ✓</p>';
+  renderDashReminders();
+}
+
+function renderDashReminders() {
+  const el = document.getElementById('dash-reminders');
+  if(!el || !store.reminders) return;
+  const today = new Date().toISOString().slice(0,10);
+  // Show up to 5 upcoming/overdue pending reminders
+  const upcoming = store.reminders
+    .filter(r => r.status !== 'done')
+    .sort((a,b) => (a.date||'9999').localeCompare(b.date||'9999'))
+    .slice(0, 5);
+  if(!upcoming.length) { el.innerHTML = '<p style="color:var(--text3);font-size:13px;">No pending reminders ✓</p>'; return; }
+  const typeColors = { Order:'#4a9eff', Pickup:'#e8a020', Balance:'#e05555', Followup:'#4caf7d', Other:'#888' };
+  el.innerHTML = upcoming.map(r => {
+    const overdue = r.date && r.date < today;
+    const col = typeColors[r.type] || '#888';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="background:${col}22;color:${col};border:1px solid ${col}44;font-size:10px;font-weight:600;border-radius:4px;padding:1px 6px;white-space:nowrap;">${r.type}</span>
+      <span style="flex:1;font-size:13px;${overdue?'color:var(--red);font-weight:600;':''}">${r.customer}${overdue?' ⚠':''}</span>
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap;">${r.date||'—'}</span>
+    </div>`;
+  }).join('');
 }
 
 // ─── REPORTS ────────────────────────────────────────────────────────────────
@@ -2865,6 +2994,7 @@ async function changePassword() {
     statusEl.innerHTML = '<span style="color:var(--red)">Cannot reuse the default password.</span>'; return;
   }
   localStorage.setItem('pw_' + userId, hash);
+  localStorage.setItem('pwCustom_' + userId, '1');
   clearLockout(userId);
   document.getElementById('cp-newpw').value = '';
   document.getElementById('cp-confirmpw').value = '';
@@ -2935,62 +3065,111 @@ function printDoc() {
 }
 function buildPrintArea(doc) {
   const s = store.settings;
-  const itemRows = (doc.items||[]).map(i=>`
-    <tr>
-      <td>${i.desc}</td><td>${i.cat}</td><td>${i.qty}</td>
-      <td>$${(i.price||0).toFixed(2)}</td>
-      <td>${i.vendor||''}</td>
-      <td>${i.warranty||''}</td>
-      <td>$${((i.qty||0)*(i.price||0)).toFixed(2)}</td>
-    </tr>`).join('');
+  const isQuote = doc.type === 'quote';
+  const shopName = s.name || 'Makaniko Automotive';
+
+  // Calculate per-line unit price and line total correctly regardless of source
+  const itemRows = (doc.items||[]).map(i => {
+    const qty = i.qty || 1;
+    // Unit price: prefer explicit price field, fall back to sell, then labour, then lineCharged/qty
+    const unitPrice = i.price != null ? i.price
+      : i.sell != null ? i.sell
+      : i.labour > 0 ? i.labour
+      : (i.lineCharged != null ? i.lineCharged / qty : 0);
+    // Line total: prefer pre-calculated lineCharged, fall back to qty * unitPrice
+    const lineTotal = i.lineCharged != null ? i.lineCharged : qty * unitPrice;
+    return `<tr>
+      <td style="max-width:220px">${i.desc}${i.oilType?' <span style="color:#666;font-size:10px">('+i.oilType+')</span>':''}</td>
+      <td>${i.cat||'—'}</td>
+      <td style="text-align:center">${qty}</td>
+      <td>$${unitPrice.toFixed(2)}</td>
+      <td style="font-size:10px;color:#555">${i.vendor||'—'}</td>
+      <td style="font-size:10px;color:#555">${i.warranty||'—'}</td>
+      <td>$${lineTotal.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+
+  // Payment status banner (invoices only)
+  let statusBanner = '';
+  if(!isQuote) {
+    const amtPaid = doc.amtPaid != null ? doc.amtPaid : getInvoiceAmountPaid(doc);
+    const balance = Math.max(0, (doc.total||0) - amtPaid);
+    if(balance <= 0.01) {
+      statusBanner = `<div class="print-status-banner paid">PAID</div>`;
+    } else if(amtPaid > 0) {
+      statusBanner = `<div class="print-status-banner partial">PARTIAL PAYMENT</div>`;
+    } else {
+      statusBanner = `<div class="print-status-banner unpaid">BALANCE OWING</div>`;
+    }
+  }
+
+  // Totals section
+  const amtPaid2 = doc.amtPaid != null ? doc.amtPaid : (!isQuote ? getInvoiceAmountPaid(doc) : 0);
+  const balance2 = Math.max(0, (doc.total||0) - amtPaid2);
+  const paidRow = (!isQuote && amtPaid2 > 0) ? `<div class="print-paid-row"><span>Amount Paid</span><span>$${amtPaid2.toFixed(2)}</span></div>` : '';
+  const balRow  = (!isQuote && balance2 > 0.01) ? `<div class="print-balance-row"><span>Balance Owing</span><span>$${balance2.toFixed(2)}</span></div>` : '';
+
   document.getElementById('print-area').innerHTML = `
     <div class="print-header">
       <div>
-        <div class="print-shop">${s.name||'Auto Shop'}</div>
-        <div>${s.address||''}</div>
-        <div>${s.phone||''} &bull; ${s.email||''}</div>
-        <div>${s.gst||''} &bull; AMVIC #${s.amvic||'N/A'}</div>
+        <div class="print-shop-name">${shopName}</div>
+        <div class="print-shop-info">
+          ${s.address||''}<br>
+          ${[s.phone, s.email].filter(Boolean).join(' &nbsp;|&nbsp; ')}<br>
+          ${s.gst ? 'GST #: ' + s.gst + '&nbsp;&nbsp;' : ''}${s.amvic ? 'AMVIC #: ' + s.amvic : ''}
+        </div>
       </div>
       <div style="text-align:right">
-        <div class="print-doc-type">${doc.type.toUpperCase()}</div>
-        <div style="font-family:monospace;font-size:15px">${doc.num}</div>
-        <div>Date: ${doc.date}</div>
-        ${doc.mechanicName?`<div>Mechanic: ${doc.mechanicName}</div>`:''}
+        <div class="print-doc-badge ${isQuote?'quote':'invoice'}">${doc.type.toUpperCase()}</div>
+        <div class="print-doc-num">${doc.num}</div>
+        <div class="print-doc-meta">Date: ${doc.date}</div>
+        ${doc.mechanicName ? `<div class="print-doc-meta">Mechanic: ${doc.mechanicName}</div>` : ''}
       </div>
     </div>
-    <div class="print-grid-2 print-section">
+
+    <div class="print-grid-2">
       <div>
         <div class="print-section-title">Customer</div>
-        <div class="print-field"><div class="print-field-label">Name</div><div class="print-field-value">${doc.customer}</div></div>
-        <div class="print-field"><div class="print-field-label">Phone</div><div class="print-field-value">${doc.phone||'—'}</div></div>
+        <div class="print-field"><span class="print-field-label">Name</span><span class="print-field-value">${doc.customer||'—'}</span></div>
+        <div class="print-field"><span class="print-field-label">Phone</span><span class="print-field-value">${doc.phone||'—'}</span></div>
+        ${doc.email ? `<div class="print-field"><span class="print-field-label">Email</span><span class="print-field-value">${doc.email}</span></div>` : ''}
       </div>
       <div>
         <div class="print-section-title">Vehicle</div>
-        <div class="print-field"><div class="print-field-label">Year / Make / Model</div><div class="print-field-value">${[doc.year,doc.make,doc.model].filter(Boolean).join(' ')||'—'}</div></div>
-        <div class="print-field"><div class="print-field-label">VIN</div><div class="print-field-value" style="font-family:monospace">${doc.vin||'—'}</div></div>
-        <div class="print-field"><div class="print-field-label">Mileage</div><div class="print-field-value">${doc.mileage?doc.mileage+' km':'—'}</div></div>
+        <div class="print-field"><span class="print-field-label">Vehicle</span><span class="print-field-value">${[doc.year,doc.make,doc.model].filter(Boolean).join(' ')||'—'}</span></div>
+        ${doc.vin ? `<div class="print-field"><span class="print-field-label">VIN</span><span class="print-field-value" style="font-family:monospace;font-size:10.5px">${doc.vin}</span></div>` : ''}
+        ${doc.mileage ? `<div class="print-field"><span class="print-field-label">Mileage</span><span class="print-field-value">${doc.mileage} km</span></div>` : ''}
       </div>
     </div>
+
     <div class="print-section">
       <div class="print-section-title">Parts &amp; Services</div>
       <table class="print-table">
-        <thead><tr><th>Description</th><th>Category</th><th>Qty</th><th>Unit Price</th><th>Vendor/Source</th><th>Warranty</th><th>Total</th></tr></thead>
+        <thead><tr><th>Description</th><th>Category</th><th style="text-align:center">Qty</th><th>Unit Price</th><th>Vendor</th><th>Warranty</th><th>Amount</th></tr></thead>
         <tbody>${itemRows}</tbody>
       </table>
-      <div class="print-totals">
-        <div class="print-total-row"><span>Subtotal</span><span>$${(doc.subtotal||0).toFixed(2)}</span></div>
-        <div class="print-total-row"><span>GST (${s.gstRate||5}%)</span><span>$${(doc.gst||0).toFixed(2)}</span></div>
-        <div class="print-total-row print-grand"><span>TOTAL</span><span>$${(doc.total||0).toFixed(2)}</span></div>
+      <div class="print-totals-wrap">
+        <div class="print-totals">
+          <div class="print-total-row"><span>Subtotal</span><span>$${(doc.subtotal||0).toFixed(2)}</span></div>
+          <div class="print-total-row"><span>GST (${s.gstRate||5}%)</span><span>$${(doc.gst||0).toFixed(2)}</span></div>
+          <div class="print-grand"><span>TOTAL</span><span>$${(doc.total||0).toFixed(2)}</span></div>
+          ${paidRow}${balRow}
+        </div>
       </div>
     </div>
-    ${doc.notes?`<div class="print-section"><div class="print-section-title">Notes</div><p>${doc.notes}</p></div>`:''}
+
+    ${statusBanner}
+
+    ${doc.notes ? `<div class="print-notes"><strong>Notes:</strong> ${doc.notes}</div>` : ''}
+
     <div class="print-disclaimer">
       <strong>AMVIC Disclaimer — Required by Alberta Automotive Business Regulation</strong><br>
-      All parts supplied by this shop carry a <strong>90-day parts warranty</strong> on defective parts only, unless otherwise stated in writing. Labour warranty is <strong>90 days or 5,000 km</strong>, whichever occurs first. <strong>Customer-supplied parts carry NO warranty</strong> — this facility is not liable for defects, failures, or consequential damages resulting from customer-supplied parts or materials. Used parts carry no warranty unless specifically agreed to in writing prior to installation. This estimate/invoice is issued by an AMVIC-licensed automotive business. Estimates are valid for 30 days from the date of issue. By authorizing repairs, the customer agrees to these terms.
+      All parts supplied by this shop carry a <strong>90-day parts warranty</strong> on defective parts only, unless otherwise stated in writing. Labour warranty is <strong>90 days or 5,000 km</strong>, whichever occurs first. <strong>Customer-supplied parts carry NO warranty.</strong> Used parts carry no warranty unless agreed to in writing. ${isQuote ? 'This <strong>estimate is valid for 30 days</strong> from the date of issue. Final amount may vary based on additional findings.' : 'By authorizing repairs, the customer agrees to these terms.'} This document is issued by an AMVIC-licensed automotive business.
     </div>
+
     <div class="print-sig">
       <div><div class="print-sig-line">Customer Signature &amp; Date</div></div>
-      <div><div class="print-sig-line">Authorized by / Mechanic</div></div>
+      <div><div class="print-sig-line">${isQuote ? 'Authorized Estimator' : 'Mechanic / Authorized By'}</div></div>
     </div>
   `;
 }
@@ -3014,16 +3193,19 @@ function printSaleAsInvoice(id) {
     mileage: s.mileage,
     mechanicName: s.mechanicName,
     items: s.items.map(i => ({
-      desc: i.desc + (i.oilType ? ` (${i.oilType})` : ''),
+      desc: i.desc,
+      oilType: i.oilType,
       cat: i.cat,
       qty: i.qty,
       price: i.labour > 0 ? i.labour : i.sell,
-      vendor: '',
-      warranty: 'Shop Warranty'
+      lineCharged: i.lineCharged,
+      vendor: i.vendor || '',
+      warranty: i.warranty || 'Shop Warranty'
     })),
     subtotal: sub,
     gst: sub * gstRate,
     total: sub + sub * gstRate,
+    amtPaid: getSaleTotalPaid(s),
     notes: s.notes
   };
   buildPrintArea(doc);
@@ -3117,16 +3299,16 @@ function updateDriveUI(connected) {
   const dot = document.getElementById('drive-dot');
   const lbl = document.getElementById('drive-label');
   const btn = document.getElementById('drive-connect-btn');
+  const timeEl = document.getElementById('drive-sync-time');
   if(dot) dot.className = 'drive-dot' + (connected ? ' connected' : '');
-  if(lbl) lbl.textContent = 'Google Drive: ' + (connected ? 'connected ✓' : 'not connected');
-  if(btn) { btn.textContent = connected ? 'Sync Now' : 'Connect Drive'; btn.onclick = connected ? driveSync : connectDrive; }
-  // Update employee sync label
-  const empLbl = document.getElementById('employee-sync-label');
-  if(empLbl) {
+  if(lbl) lbl.textContent = connected ? 'Drive: connected ✓' : 'Drive: not connected';
+  if(btn) { btn.textContent = connected ? '↻ Sync Now' : 'Connect Drive'; btn.onclick = connected ? driveSync : connectDrive; }
+  if(timeEl) {
     const ts = store.lastDriveSync;
     if(ts) {
       const d = new Date(ts);
-      empLbl.textContent = 'Last synced: ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' ' + d.toLocaleDateString();
+      timeEl.textContent = 'Last sync: ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      timeEl.style.display = 'block';
     }
   }
 }
@@ -3147,28 +3329,52 @@ async function driveGetFileId() {
   return null;
 }
 
+// Merge two arrays by id — union of both, local version wins on conflict
+function mergeById(local, remote) {
+  const map = {};
+  (remote||[]).forEach(r => { map[r.id] = r; });
+  (local||[]).forEach(r => { map[r.id] = r; }); // local overwrites remote on same id
+  return Object.values(map);
+}
+
 async function driveSync() {
   if(!driveAccessToken) { showToast('Connect Google Drive first'); return; }
   showToast('Syncing with Google Drive...');
   try {
     const fileId = await driveGetFileId();
     if(fileId) {
-      // File exists — merge: remote wins for newer records
+      // File exists — pull remote, merge all arrays by ID (additive — never loses records)
       const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
-      if(res) {
+      if(res && res.ok) {
         const remote = await res.json();
-        // Merge strategy: take whichever has more records
-        const merged = { ...store };
-        if((remote.salesRecords||[]).length > store.salesRecords.length) merged.salesRecords = remote.salesRecords;
-        if((remote.docs||[]).length > store.docs.length) merged.docs = remote.docs;
-        if((remote.customers||[]).length > store.customers.length) merged.customers = remote.customers;
-        if((remote.parts||[]).length > store.parts.length) merged.parts = remote.parts;
-        store = merged; save();
+        store.salesRecords = mergeById(store.salesRecords, remote.salesRecords);
+        store.docs         = mergeById(store.docs, remote.docs);
+        store.customers    = mergeById(store.customers, remote.customers);
+        store.parts        = mergeById(store.parts, remote.parts);
+        store.purchaseOrders = mergeById(store.purchaseOrders, remote.purchaseOrders);
+        store.reminders    = mergeById(store.reminders, remote.reminders);
+        store.mechanics    = mergeById(store.mechanics, remote.mechanics);
+        store.services     = mergeById(store.services, remote.services);
+        // Take the higher counter values to avoid ID collisions
+        store.invCounter  = Math.max(store.invCounter||1,  remote.invCounter||1);
+        store.qteCounter  = Math.max(store.qteCounter||1,  remote.qteCounter||1);
+        store.saleCounter = Math.max(store.saleCounter||1, remote.saleCounter||1);
+        store.custCounter = Math.max(store.custCounter||1, remote.custCounter||1);
+        store.poCounter   = Math.max(store.poCounter||1,   remote.poCounter||1);
+        store.remindCounter = Math.max(store.remindCounter||1, remote.remindCounter||1);
+        // Admin settings are authoritative if remote has them set
+        if(remote.settings?.name && remote.settings.name !== 'Makaniko Automotive') {
+          store.settings = { ...store.settings, ...remote.settings };
+        } else if(remote.settings) {
+          store.settings = { ...remote.settings, ...store.settings };
+        }
+        save();
       }
     }
     await driveSaveNow();
     store.lastDriveSync = new Date().toISOString(); save();
     updateDriveUI(true);
+    renderDashboard();
     showToast('Drive sync complete ✓');
   } catch(e) { showToast('Drive sync error: ' + e.message); }
 }
@@ -3198,6 +3404,22 @@ async function driveSaveNow() {
 function saveToDrive(doc) {
   // Auto-save full store to Drive after any invoice/sale save
   if(driveAccessToken) driveSaveNow().catch(()=>{});
+}
+
+// Employee refresh: re-reads localStorage (picks up any cross-tab admin sync)
+function employeeRefreshData() {
+  try {
+    const s = localStorage.getItem('autoshop');
+    if(s) { store = { ...store, ...JSON.parse(s) }; }
+  } catch(e) {}
+  const active = document.querySelector('.nav-item.active')?.id?.replace('nav-','') || 'dashboard';
+  // Re-render whatever page is visible
+  if(active === 'dashboard') renderDashboard();
+  else if(active === 'sales') renderSalesPage();
+  else if(active === 'inventory') renderInventory();
+  else if(active === 'customers') renderCustomers();
+  else if(active === 'reminders') renderReminders();
+  showToast('Data refreshed ✓');
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
@@ -3642,17 +3864,33 @@ function deleteSale(id){
 // ─── QUICK SALE ───────────────────────────────────────────────────────────────
 function openQuickSale() {
   document.getElementById('qs-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('qs-customer').value = '';
-  document.getElementById('qs-phone').value = '';
-  document.getElementById('qs-desc').value = '';
-  document.getElementById('qs-total').value = '';
-  document.getElementById('qs-paid').value = '';
-  document.getElementById('qs-notes').value = '';
+  ['qs-customer','qs-phone','qs-desc','qs-total','qs-paid','qs-notes','qs-vin','qs-year','qs-make','qs-model','qs-mileage'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
   document.getElementById('qs-balance').textContent = '$0.00';
+  document.getElementById('qs-balance').style.color = 'var(--red)';
   const ms = document.getElementById('qs-mechanic');
   ms.innerHTML = '<option value="">— Select —</option>';
   store.mechanics.forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name}</option>`);
   document.getElementById('quick-sale-modal').classList.remove('hidden');
+}
+
+async function qsDecodeVin() {
+  const vin = (document.getElementById('qs-vin').value||'').trim().toUpperCase();
+  if(vin.length !== 17) { showToast('VIN must be 17 characters'); return; }
+  document.getElementById('qs-vin').value = vin;
+  showToast('Decoding VIN...');
+  try {
+    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${vin}?format=json`);
+    const data = await res.json();
+    const r = data.Results?.[0];
+    if(r) {
+      if(r.ModelYear) document.getElementById('qs-year').value = r.ModelYear;
+      if(r.Make) document.getElementById('qs-make').value = r.Make.charAt(0).toUpperCase() + r.Make.slice(1).toLowerCase();
+      if(r.Model) document.getElementById('qs-model').value = r.Model;
+      showToast(`VIN decoded: ${r.ModelYear} ${r.Make} ${r.Model}`);
+    }
+  } catch(e) { showToast('VIN decode failed — fill in manually'); }
 }
 
 function qsUpdateBalance() {
@@ -3679,6 +3917,11 @@ function saveQuickSale() {
     date: document.getElementById('qs-date').value,
     custName: customer, custPhone: document.getElementById('qs-phone').value,
     mechanicId: mechId, mechanicName: mech?.name||'',
+    vin: document.getElementById('qs-vin').value.trim().toUpperCase(),
+    year: document.getElementById('qs-year').value.trim(),
+    make: document.getElementById('qs-make').value.trim(),
+    model: document.getElementById('qs-model').value.trim(),
+    mileage: document.getElementById('qs-mileage').value.trim(),
     items: [{ desc, cat:'Service', vehicleType:'', serviceType:'', qty:1, cost:0, sell:total, labour:0, lineCharged:total, lineProfit:total }],
     totalCost: 0, gst: 0, charged: total, profit: total,
     notes: document.getElementById('qs-notes').value,
@@ -3829,7 +4072,36 @@ function getCustomerStats(cust) {
 function renderCustomers() {
   const q = (document.getElementById('cust-search-bar')?.value||'').toLowerCase();
   let custs = [...store.customers];
-  if(q) custs = custs.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q)||(c.email||'').toLowerCase().includes(q));
+  if(q) {
+    // Build a map: customerId → vehicle strings from sales & invoices
+    const custVehicles = {};
+    store.salesRecords.forEach(s => {
+      if(!s.custName) return;
+      const cust = store.customers.find(c => c.name.toLowerCase() === (s.custName||'').toLowerCase());
+      if(cust) {
+        if(!custVehicles[cust.id]) custVehicles[cust.id] = [];
+        const v = [s.year, s.make, s.model, s.vin].filter(Boolean).join(' ').toLowerCase();
+        if(v) custVehicles[cust.id].push(v);
+      }
+    });
+    store.docs.forEach(d => {
+      if(!d.customer) return;
+      const cust = store.customers.find(c => c.name.toLowerCase() === (d.customer||'').toLowerCase());
+      if(cust) {
+        if(!custVehicles[cust.id]) custVehicles[cust.id] = [];
+        const v = [d.year, d.make, d.model, d.vin].filter(Boolean).join(' ').toLowerCase();
+        if(v) custVehicles[cust.id].push(v);
+      }
+    });
+    custs = custs.filter(c => {
+      if(c.name.toLowerCase().includes(q)) return true;
+      if((c.phone||'').includes(q)) return true;
+      if((c.email||'').toLowerCase().includes(q)) return true;
+      // Search by vehicle
+      const vehicles = custVehicles[c.id] || [];
+      return vehicles.some(v => v.includes(q));
+    });
+  }
   const returning = store.customers.filter(c=>getCustomerStats(c).visits>1).length;
   const totalRev = store.customers.reduce((a,c)=>a+getCustomerStats(c).totalRevenue,0);
   const totalBal = store.customers.reduce((a,c)=>a+getCustomerStats(c).balance,0);
@@ -4247,17 +4519,141 @@ function deductInventoryFromSale(rec) {
   save();
 }
 
+// ─── REMINDERS ───────────────────────────────────────────────────────────────
+let _remFilter = 'pending';
+function setReminderFilter(f) {
+  _remFilter = f;
+  ['pending','done','all'].forEach(x => {
+    const el = document.getElementById('rem-filter-' + x);
+    if(el) el.classList.toggle('active', x === f);
+  });
+  renderReminders();
+}
+
+function renderReminders() {
+  if(!store.reminders) store.reminders = [];
+  const today = new Date().toISOString().slice(0,10);
+  let rems = [...store.reminders].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  if(_remFilter === 'pending') rems = rems.filter(r => r.status !== 'done');
+  else if(_remFilter === 'done') rems = rems.filter(r => r.status === 'done');
+
+  const pending = store.reminders.filter(r => r.status !== 'done').length;
+  const overdue = store.reminders.filter(r => r.status !== 'done' && r.date && r.date < today).length;
+  const done = store.reminders.filter(r => r.status === 'done').length;
+
+  // Update nav badge
+  const badge = document.getElementById('reminder-badge');
+  if(badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
+
+  const metricsEl = document.getElementById('reminder-metrics');
+  if(metricsEl) metricsEl.innerHTML = `
+    <div class="metric"><div class="metric-label">PENDING</div><div class="metric-value accent">${pending}</div></div>
+    <div class="metric"><div class="metric-label">OVERDUE</div><div class="metric-value red">${overdue}</div></div>
+    <div class="metric"><div class="metric-label">COMPLETED</div><div class="metric-value green">${done}</div></div>
+    <div class="metric"><div class="metric-label">TOTAL</div><div class="metric-value">${store.reminders.length}</div></div>
+  `;
+
+  const typeColors = { Order:'#4a9eff', Pickup:'#e8a020', Balance:'#e05555', Followup:'#4caf7d', Other:'#888' };
+  const listEl = document.getElementById('reminders-list');
+  if(!listEl) return;
+  if(!rems.length) {
+    listEl.innerHTML = `<div style="text-align:center;color:var(--text3);padding:32px;">No reminders — you're all caught up!</div>`;
+    return;
+  }
+  listEl.innerHTML = rems.map(r => {
+    const overdue = r.date && r.date < today && r.status !== 'done';
+    const done = r.status === 'done';
+    const col = typeColors[r.type] || '#888';
+    return `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:var(--radius);background:var(--surface2);border:1px solid ${overdue?'var(--red)':done?'var(--border)':'var(--border)'};margin-bottom:8px;opacity:${done?'0.55':'1'};">
+      <div style="flex-shrink:0;padding-top:2px;">
+        <input type="checkbox" ${done?'checked':''} onchange="toggleReminderDone(${r.id})" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);" />
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <span style="background:${col}22;color:${col};border:1px solid ${col}44;font-size:11px;font-weight:600;border-radius:4px;padding:1px 7px;">${r.type}</span>
+          <span style="font-weight:600;font-size:14px;${done?'text-decoration:line-through;color:var(--text3);':''}">${r.customer||'—'}</span>
+          ${overdue ? `<span style="color:var(--red);font-size:11px;font-weight:700;">⚠ OVERDUE</span>` : ''}
+        </div>
+        ${r.note ? `<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">${r.note}</div>` : ''}
+        ${r.date ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">Due: ${r.date}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-sm btn-ghost" onclick="openEditReminder(${r.id})">Edit</button>
+        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deleteReminder(${r.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _remEditId = null;
+function openAddReminder() {
+  _remEditId = null;
+  document.getElementById('rem-modal-title').textContent = 'Add Reminder';
+  document.getElementById('rem-type').value = 'Order';
+  document.getElementById('rem-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('rem-customer').value = '';
+  document.getElementById('rem-note').value = '';
+  document.getElementById('reminder-modal').classList.remove('hidden');
+}
+
+function openEditReminder(id) {
+  const r = store.reminders.find(x => x.id === id);
+  if(!r) return;
+  _remEditId = id;
+  document.getElementById('rem-modal-title').textContent = 'Edit Reminder';
+  document.getElementById('rem-type').value = r.type || 'Other';
+  document.getElementById('rem-date').value = r.date || '';
+  document.getElementById('rem-customer').value = r.customer || '';
+  document.getElementById('rem-note').value = r.note || '';
+  document.getElementById('reminder-modal').classList.remove('hidden');
+}
+
+function saveReminder() {
+  const customer = document.getElementById('rem-customer').value.trim();
+  if(!customer) { showToast('Enter a customer or description'); return; }
+  if(_remEditId) {
+    const r = store.reminders.find(x => x.id === _remEditId);
+    if(r) { r.type=document.getElementById('rem-type').value; r.date=document.getElementById('rem-date').value; r.customer=customer; r.note=document.getElementById('rem-note').value.trim(); }
+  } else {
+    store.reminders.push({ id: Date.now(), num: store.remindCounter++, type: document.getElementById('rem-type').value, date: document.getElementById('rem-date').value, customer, note: document.getElementById('rem-note').value.trim(), status: 'pending', created: new Date().toISOString().slice(0,10) });
+  }
+  save();
+  document.getElementById('reminder-modal').classList.add('hidden');
+  renderReminders();
+  showToast('Reminder saved');
+}
+
+function toggleReminderDone(id) {
+  const r = store.reminders.find(x => x.id === id);
+  if(!r) return;
+  r.status = r.status === 'done' ? 'pending' : 'done';
+  save(); renderReminders();
+}
+
+function deleteReminder(id) {
+  if(!confirm('Delete this reminder?')) return;
+  store.reminders = store.reminders.filter(x => x.id !== id);
+  save(); renderReminders();
+}
+
 // ─── WHATSAPP CUSTOMER NOTIFY ────────────────────────────────────────────────
-function notifyWhatsApp(phone, custName, vehicle, invoiceNum, total, status) {
+// docType: 'quote' | 'invoice' | 'sale'
+function notifyWhatsApp(phone, custName, vehicle, docNum, total, docType) {
   if(!phone) { showToast('No phone number on record for this customer'); return; }
   const shop = store.settings?.name || 'Makaniko Automotive';
   const shopPhone = store.settings?.phone || '';
-  const statusMsg = status === 'ready'
-    ? `Your ${vehicle||'vehicle'} is ready for pickup at ${shop}!`
-    : status === 'in-progress'
-    ? `Your ${vehicle||'vehicle'} is currently being serviced at ${shop}.`
-    : `Update from ${shop} regarding your ${vehicle||'vehicle'}.`;
-  const msg = `Hi ${custName||'valued customer'},\n\n${statusMsg}\n${invoiceNum ? `Invoice: ${invoiceNum}\n` : ''}${total ? `Total: $${parseFloat(total).toFixed(2)}\n` : ''}\nPlease call us at ${shopPhone} to confirm pickup.\n\nThank you for choosing ${shop}!`;
+  const veh = vehicle || 'your vehicle';
+  const amt = total ? `$${parseFloat(total).toFixed(2)}` : '';
+  let msg;
+  if(docType === 'quote') {
+    msg = `Hi ${custName||'there'},\n\nYour quote from ${shop} is ready!\n\nVehicle: ${veh}\nQuote #: ${docNum||''}\n${amt ? `Estimate: ${amt}\n` : ''}\nThis is an estimate only — final amount may vary. Please call us at ${shopPhone} with any questions.\n\nThank you for choosing ${shop}!`;
+  } else if(docType === 'invoice') {
+    msg = `Hi ${custName||'there'},\n\nYour invoice from ${shop} is ready for pickup!\n\nVehicle: ${veh}\nInvoice #: ${docNum||''}\n${amt ? `Total: ${amt}\n` : ''}\nPlease call us at ${shopPhone} to confirm pickup or arrange payment.\n\nThank you for choosing ${shop}!`;
+  } else {
+    // sale / car ready
+    msg = `Hi ${custName||'there'},\n\nGreat news — your ${veh} is ready for pickup at ${shop}!\n\n${docNum ? `Sale #: ${docNum}\n` : ''}${amt ? `Amount: ${amt}\n` : ''}\nPlease call us at ${shopPhone} to confirm pickup.\n\nThank you for choosing ${shop}!`;
+  }
   const cleaned = phone.replace(/\D/g,'');
   const waPhone = cleaned.startsWith('1') ? cleaned : '1'+cleaned;
   window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -4267,14 +4663,15 @@ function notifySaleWhatsApp(saleId) {
   const s = store.salesRecords.find(r => r.id === saleId);
   if(!s) return;
   const vehicle = [s.year, s.make, s.model].filter(Boolean).join(' ');
-  notifyWhatsApp(s.custPhone, s.custName, vehicle, s.num, s.saleTotal||s.charged, 'ready');
+  notifyWhatsApp(s.custPhone, s.custName, vehicle, s.num, s.saleTotal||s.charged, 'sale');
 }
 
 function notifyInvoiceWhatsApp(docId) {
   const d = store.docs.find(x => x.id === docId);
   if(!d) return;
   const vehicle = [d.year, d.make, d.model].filter(Boolean).join(' ');
-  notifyWhatsApp(d.phone, d.customer, vehicle, d.num, d.total, 'ready');
+  const docType = d.type === 'quote' ? 'quote' : 'invoice';
+  notifyWhatsApp(d.phone, d.customer, vehicle, d.num, d.total, docType);
 }
 
 // ─── INVOICE BALANCE HELPERS ─────────────────────────────────────────────────
@@ -4379,8 +4776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('sidebar-user-name').textContent = currentUser.displayName;
       applyAccessControl();
       showPage(savedPage);
-      document.getElementById('drive-dot').className = 'drive-dot' + (store.driveConnected ? ' connected' : '');
-      document.getElementById('drive-label').textContent = 'Google Drive: ' + (store.driveConnected ? 'connected' : 'not connected');
+      updateDriveUI(false); // token not restored — user must reconnect each session
     } else {
       document.getElementById('login-user').focus();
     }
