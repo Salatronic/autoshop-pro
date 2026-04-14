@@ -1565,9 +1565,15 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <button class="btn btn-sm" onclick="qsDecodeVin()" style="margin-bottom:1px;">🔍 Decode</button>
       </div>
       <div class="form-grid form-grid-4">
-        <div class="form-group"><label class="form-label">Year</label><input class="form-input" id="qs-year" placeholder="2020" maxlength="4" /></div>
-        <div class="form-group" style="grid-column:span 2"><label class="form-label">Make / Brand</label><input class="form-input" id="qs-make" placeholder="Toyota" /></div>
-        <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="qs-model" placeholder="Camry" /></div>
+        <div class="form-group"><label class="form-label">Year</label>
+          <select class="form-input" id="qs-year"><option value="">Year</option></select>
+        </div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Make / Brand</label>
+          <select class="form-input" id="qs-make" onchange="populateQsModels(this.value)"><option value="">— Select Make —</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Model</label>
+          <select class="form-input" id="qs-model"><option value="">— Select Model —</option></select>
+        </div>
       </div>
       <div class="form-group" style="margin-top:10px;"><label class="form-label">Mileage (km)</label><input class="form-input" id="qs-mileage" type="number" placeholder="e.g. 120000" /></div>
     </div>
@@ -3861,12 +3867,84 @@ function deleteSale(id){
   save(); renderSalesPage(); showToast('Sale deleted');
 }
 
+// ─── QUICK SALE VEHICLE DROPDOWNS ─────────────────────────────────────────────
+const QS_MAKES_MODELS = {
+  'Acura':['ILX','MDX','NSX','RDX','RLX','TL','TLX','TSX'],
+  'Audi':['A3','A4','A5','A6','A7','A8','Q3','Q5','Q7','Q8','TT'],
+  'BMW':['1 Series','2 Series','3 Series','4 Series','5 Series','7 Series','M3','M5','X1','X3','X5','X7'],
+  'Buick':['Enclave','Encore','Envision','LaCrosse','Regal','Verano'],
+  'Cadillac':['ATS','CT4','CT5','CT6','Escalade','SRX','XT4','XT5','XT6'],
+  'Chevrolet':['Blazer','Camaro','Colorado','Corvette','Cruze','Equinox','Express','Impala','Malibu','Silverado 1500','Silverado 2500','Silverado 3500','Sonic','Spark','Suburban','Tahoe','Traverse','Trax'],
+  'Chrysler':['200','300','Pacifica','Town & Country'],
+  'Dodge':['Caravan','Challenger','Charger','Dart','Durango','Journey'],
+  'Ford':['Bronco','Edge','Escape','Expedition','Explorer','F-150','F-250','F-350','Fiesta','Focus','Fusion','Maverick','Mustang','Ranger','Transit'],
+  'GMC':['Acadia','Canyon','Envoy','Sierra 1500','Sierra 2500','Sierra 3500','Terrain','Yukon'],
+  'Honda':['Accord','Civic','CR-V','CR-Z','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Ridgeline'],
+  'Hyundai':['Accent','Elantra','Ioniq','Kona','Palisade','Santa Fe','Sonata','Tucson','Veloster'],
+  'Infiniti':['G35','G37','Q50','Q60','QX50','QX60','QX80'],
+  'Jeep':['Cherokee','Compass','Gladiator','Grand Cherokee','Patriot','Renegade','Wrangler'],
+  'Kia':['Carnival','Forte','K5','Niro','Optima','Rio','Seltos','Sorento','Soul','Sportage','Stinger','Telluride'],
+  'Land Rover':['Defender','Discovery','Discovery Sport','Freelander','Range Rover','Range Rover Evoque','Range Rover Sport'],
+  'Lexus':['ES','GS','GX','IS','LX','NX','RX','UX'],
+  'Lincoln':['Aviator','Continental','Corsair','MKZ','Nautilus','Navigator'],
+  'Mazda':['CX-3','CX-5','CX-9','Mazda3','Mazda6','MX-5 Miata','RX-8'],
+  'Mercedes-Benz':['A-Class','C-Class','CLA','E-Class','GLA','GLC','GLE','GLS','S-Class','SL','Sprinter'],
+  'Mitsubishi':['Eclipse Cross','Galant','Lancer','Outlander','Outlander Sport','RVR'],
+  'Nissan':['370Z','Altima','Armada','Frontier','GT-R','Kicks','Leaf','Maxima','Murano','Pathfinder','Qashqai','Rogue','Sentra','Titan','Versa'],
+  'Pontiac':['Aztek','G5','G6','Grand Am','Grand Prix','Montana','Solstice','Sunfire','Vibe'],
+  'Ram':['1500','2500','3500','ProMaster'],
+  'Subaru':['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','WRX'],
+  'Tesla':['Cybertruck','Model 3','Model S','Model X','Model Y'],
+  'Toyota':['4Runner','Avalon','Camry','Corolla','FJ Cruiser','Highlander','Land Cruiser','Matrix','Prius','RAV4','Sequoia','Sienna','Tacoma','Tundra','Venza','Yaris'],
+  'Volkswagen':['Atlas','Golf','GTI','Jetta','Passat','Tiguan','Touareg'],
+  'Volvo':['S60','S90','V60','V90','XC40','XC60','XC90'],
+  'Other':['Other / Not Listed']
+};
+
+function populateQsYears() {
+  const sel = document.getElementById('qs-year');
+  if (!sel) return;
+  const cur = new Date().getFullYear();
+  sel.innerHTML = '<option value="">Year</option>';
+  for (let y = cur + 1; y >= 1985; y--) {
+    sel.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+  // Populate make dropdown
+  const mk = document.getElementById('qs-make');
+  if (!mk) return;
+  mk.innerHTML = '<option value="">— Select Make —</option>';
+  Object.keys(QS_MAKES_MODELS).sort().forEach(make => {
+    mk.innerHTML += `<option value="${make}">${make}</option>`;
+  });
+}
+
+function populateQsModels(make) {
+  const sel = document.getElementById('qs-model');
+  sel.innerHTML = '<option value="">— Select Model —</option>';
+  const models = QS_MAKES_MODELS[make] || [];
+  models.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
+  if (make && models.length && models[models.length - 1] !== 'Other / Not Listed') {
+    sel.innerHTML += '<option value="Other">Other / Not Listed</option>';
+  }
+}
+
+function qsSetSelectVal(id, val) {
+  if (!val) return;
+  const sel = document.getElementById(id);
+  const opt = Array.from(sel.options).find(o => o.value.toLowerCase() === val.toLowerCase());
+  if (opt) { sel.value = opt.value; }
+  else { sel.innerHTML += `<option value="${val}">${val}</option>`; sel.value = val; }
+}
+
 // ─── QUICK SALE ───────────────────────────────────────────────────────────────
 function openQuickSale() {
   document.getElementById('qs-date').value = new Date().toISOString().slice(0,10);
-  ['qs-customer','qs-phone','qs-desc','qs-total','qs-paid','qs-notes','qs-vin','qs-year','qs-make','qs-model','qs-mileage'].forEach(id => {
+  ['qs-customer','qs-phone','qs-desc','qs-total','qs-paid','qs-notes','qs-vin','qs-mileage'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
+  document.getElementById('qs-year').value = '';
+  document.getElementById('qs-make').value = '';
+  populateQsModels('');
   document.getElementById('qs-balance').textContent = '$0.00';
   document.getElementById('qs-balance').style.color = 'var(--red)';
   const ms = document.getElementById('qs-mechanic');
@@ -3885,9 +3963,13 @@ async function qsDecodeVin() {
     const data = await res.json();
     const r = data.Results?.[0];
     if(r) {
-      if(r.ModelYear) document.getElementById('qs-year').value = r.ModelYear;
-      if(r.Make) document.getElementById('qs-make').value = r.Make.charAt(0).toUpperCase() + r.Make.slice(1).toLowerCase();
-      if(r.Model) document.getElementById('qs-model').value = r.Model;
+      if(r.ModelYear) qsSetSelectVal('qs-year', r.ModelYear);
+      if(r.Make) {
+        const makeVal = r.Make.charAt(0).toUpperCase() + r.Make.slice(1).toLowerCase();
+        qsSetSelectVal('qs-make', makeVal);
+        populateQsModels(document.getElementById('qs-make').value);
+      }
+      if(r.Model) qsSetSelectVal('qs-model', r.Model);
       showToast(`VIN decoded: ${r.ModelYear} ${r.Make} ${r.Model}`);
     }
   } catch(e) { showToast('VIN decode failed — fill in manually'); }
@@ -4763,6 +4845,7 @@ function clearSession() {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  populateQsYears();
   // Bootstrap password hashes using JS crypto (ensures correct hashes on all platforms)
   await initPasswordHashes();
   try {
