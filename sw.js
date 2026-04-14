@@ -1,7 +1,7 @@
 // AutoShop Pro — Service Worker
 // Caches the app shell for offline access
 
-const CACHE = 'autoshop-v1';
+const CACHE = 'autoshop-v2';
 const ASSETS = [
   '/autoshop-pro/',
   '/autoshop-pro/index.html'
@@ -32,18 +32,32 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for app shell
+  // Network-first for HTML (always get latest), cache-first for other assets
+  const isHTML = url.pathname.endsWith('.html') || url.pathname.endsWith('/') || !url.pathname.includes('.');
+  if (isHTML) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request).then(cached => cached || new Response('Offline — data is saved locally', { status: 503 })))
+    );
+    return;
+  }
+
+  // Cache-first for static assets (CSS, JS, fonts, images)
   e.respondWith(
     caches.match(e.request).then(cached => {
       if(cached) return cached;
       return fetch(e.request).then(res => {
-        // Cache successful responses for the app shell
         if(res.ok && (url.pathname.startsWith('/autoshop-pro') || url.hostname.includes('fonts.g'))) {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => cached || new Response('Offline — data is saved locally', { status: 503 }));
+      }).catch(() => new Response('Offline — data is saved locally', { status: 503 }));
     })
   );
 });
