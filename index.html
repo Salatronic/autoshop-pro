@@ -1348,6 +1348,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <button class="btn" onclick="closeModal()">Cancel</button>
     <button class="btn btn-green" id="modal-save-btn" onclick="saveDoc()">Save Quote</button>
     <button class="btn btn-accent" id="modal-convert-btn" onclick="convertToInvoice()" style="display:none">Convert to Invoice</button>
+    <button class="btn" id="modal-revert-btn" onclick="revertToQuote()" style="display:none">↩ Revert to Quote</button>
     <button class="btn" onclick="printDoc()">🖨 Print / PDF</button>
   </div>
 </div>
@@ -2549,6 +2550,7 @@ function openNewDoc(type) {
   document.getElementById('line-items-body').innerHTML = '';
   document.getElementById('modal-save-btn').textContent = type==='quote' ? 'Save Quote' : 'Save Invoice';
   document.getElementById('modal-convert-btn').style.display = 'none';
+  document.getElementById('modal-revert-btn').style.display = 'none';
   calcTotals();
   document.getElementById('doc-modal').classList.remove('hidden');
 }
@@ -2578,6 +2580,7 @@ function openEditDoc(id) {
   (doc.items||[]).forEach(item => addLineItemWithData(item));
   document.getElementById('modal-save-btn').textContent = doc.type==='quote' ? 'Save Quote' : 'Save Invoice';
   document.getElementById('modal-convert-btn').style.display = doc.type==='quote' ? '' : 'none';
+  document.getElementById('modal-revert-btn').style.display = doc.type==='invoice' ? '' : 'none';
   calcTotals();
   document.getElementById('doc-modal').classList.remove('hidden');
 }
@@ -2660,7 +2663,6 @@ function getLineItems() {
 }
 
 function saveDoc() {
-  const num = document.getElementById('doc-num').value;
   const customer = document.getElementById('cust-name').value.trim();
   if(!customer) { showToast('Customer name is required'); return; }
   const items = getLineItems();
@@ -2668,6 +2670,11 @@ function saveDoc() {
   const gstRate = (parseFloat(store.settings.gstRate)||5)/100;
   const mechId = document.getElementById('doc-mechanic').value;
   const mech = store.mechanics.find(m=>m.id==mechId);
+  // Always use current counter for new docs — prevents duplicate numbers if modal was left open
+  const num = currentDoc
+    ? document.getElementById('doc-num').value
+    : (currentDocType==='quote' ? `QTE-${String(store.qteCounter).padStart(4,'0')}` : `INV-${String(store.invCounter).padStart(4,'0')}`);
+  document.getElementById('doc-num').value = num;
   const doc = {
     id: currentDoc?.id || Date.now(),
     type: currentDocType,
@@ -2681,7 +2688,8 @@ function saveDoc() {
     mechanicId: mechId, mechanicName: mech?.name||'',
     items, subtotal: sub, gst: sub*gstRate, total: sub+sub*gstRate,
     notes: document.getElementById('doc-notes').value,
-    status: currentDocType==='invoice'?'pending':'open'
+    status: currentDoc ? (store.docs.find(d=>d.id===currentDoc.id)?.status || (currentDocType==='invoice'?'pending':'open')) : (currentDocType==='invoice'?'pending':'open'),
+    payments: currentDoc ? (store.docs.find(d=>d.id===currentDoc.id)?.payments || []) : [],
   };
   if(currentDoc) {
     const idx = store.docs.findIndex(d=>d.id===currentDoc.id);
@@ -2711,6 +2719,23 @@ function convertToInvoice() {
   closeModal();
   showToast('Converted to Invoice: '+doc.num);
   showPage('invoices');
+}
+
+function revertToQuote() {
+  if(!currentDoc) return;
+  const doc = store.docs.find(d=>d.id===currentDoc.id);
+  if(!doc) return;
+  const hasPaid = (doc.payments||[]).length > 0 || doc.status === 'paid' || doc.status === 'partial';
+  if(hasPaid && !confirm('This invoice has payment records. Reverting to a quote will clear payment status. Continue?')) return;
+  doc.type = 'quote';
+  doc.num = `QTE-${String(store.qteCounter).padStart(4,'0')}`;
+  doc.status = 'open';
+  doc.payments = [];
+  store.qteCounter++;
+  save();
+  closeModal();
+  showToast('Reverted to Quote: '+doc.num);
+  showPage('quotes');
 }
 
 function renderDocs(type) {
@@ -3228,6 +3253,7 @@ function printDoc() {
   const items = getLineItems();
   const sub = items.reduce((a,i)=>a+i.qty*i.price,0);
   const gstRate=(parseFloat(store.settings.gstRate)||5)/100;
+  const saved = currentDoc ? store.docs.find(d=>d.id===currentDoc.id) : null;
   const doc = {
     type: currentDocType,
     num: document.getElementById('doc-num').value,
@@ -3242,6 +3268,9 @@ function printDoc() {
     mechanicName: store.mechanics.find(m=>m.id==document.getElementById('doc-mechanic').value)?.name||'',
     items, subtotal:sub, gst:sub*gstRate, total:sub+sub*gstRate,
     notes: document.getElementById('doc-notes').value,
+    status: saved?.status || (currentDocType==='invoice'?'pending':'open'),
+    payments: saved?.payments || [],
+    amtPaid: saved ? getInvoiceAmountPaid(saved) : undefined,
   };
   buildPrintArea(doc);
   window.print();
