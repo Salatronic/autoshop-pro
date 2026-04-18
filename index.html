@@ -69,7 +69,13 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .btn-ghost { background: transparent; border-color: transparent; color: var(--text2); }
 .btn-ghost:hover { background: var(--surface2); color: var(--text); }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
+.date-filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 11px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text2); font-family: 'Sora', sans-serif; transition: all 0.15s; }
+.date-filter-btn:hover { background: var(--surface3); color: var(--text); }
+.date-filter-btn.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
 .btn svg { width: 14px; height: 14px; }
+.date-filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 11px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text2); font-family: 'Sora', sans-serif; transition: all 0.15s; }
+.date-filter-btn:hover { background: var(--surface3); color: var(--text); }
+.date-filter-btn.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
 
 /* CARDS */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
@@ -565,9 +571,9 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Customers
     </button>
-    <button class="nav-item" onclick="showPage('creditors')" id="nav-creditors">
+    <button class="nav-item" onclick="showPage('debtors')" id="nav-debtors">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      Creditors
+      Debtors
     </button>
     <button class="nav-item" onclick="showPage('reminders')" id="nav-reminders">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -709,6 +715,15 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 
   <!-- Filter bar -->
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="date-filter-btn active" id="sfbtn-all" onclick="setSalesDateFilter('all')">All</button>
+      <button class="date-filter-btn" id="sfbtn-today" onclick="setSalesDateFilter('today')">Today</button>
+      <button class="date-filter-btn" id="sfbtn-yesterday" onclick="setSalesDateFilter('yesterday')">Yesterday</button>
+      <button class="date-filter-btn" id="sfbtn-week" onclick="setSalesDateFilter('week')">This Week</button>
+      <button class="date-filter-btn" id="sfbtn-month" onclick="setSalesDateFilter('month')">This Month</button>
+      <button class="date-filter-btn" id="sfbtn-lastmonth" onclick="setSalesDateFilter('lastmonth')">Last Month</button>
+      <input type="date" class="form-input" id="sales-filter-date" onchange="setSalesDateFilter('specific')" style="width:150px;font-size:12px;" />
+    </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input class="form-input" id="sales-search" placeholder="Search customer, vehicle, service..." oninput="renderSalesPage()" style="flex:1;min-width:180px;" />
       <select class="form-input" id="sales-filter-cat" onchange="renderSalesPage()" style="width:160px;">
@@ -883,21 +898,20 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   </div>
 </div>
 
-<!-- CREDITORS -->
-<div id="page-creditors" class="hidden">
+<!-- DEBTORS -->
+<div id="page-debtors" class="hidden">
   <div class="page-header">
     <div>
-      <div class="page-title">Creditors</div>
-      <div class="page-sub">Customers with outstanding invoice balances</div>
+      <div class="page-title">Debtors</div>
+      <div class="page-sub">Customers with outstanding balances from sales</div>
     </div>
-    <button class="btn" onclick="showPage('invoices')">View All Invoices</button>
   </div>
-  <div class="metrics" id="creditors-metrics"></div>
+  <div class="metrics" id="debtors-metrics"></div>
   <div class="card">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Customer</th><th>Invoice(s)</th><th>Count</th><th>Total Owing</th><th>Oldest Invoice</th><th>Overdue</th><th>Action</th></tr></thead>
-        <tbody id="creditors-table"></tbody>
+        <thead><tr><th>Customer</th><th>Phone</th><th>Last Sale</th><th>Total Charged</th><th>Total Paid</th><th>Balance Owed</th><th></th></tr></thead>
+        <tbody id="debtors-table"></tbody>
       </table>
     </div>
   </div>
@@ -1722,6 +1736,23 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 </div>
 </div>
 
+<!-- MODAL: Inventory Suggestion -->
+<div class="modal-overlay hidden" id="inv-suggest-modal">
+<div class="modal" style="max-width:420px;">
+  <div class="modal-header">
+    <div class="modal-title">New item detected</div>
+  </div>
+  <div class="modal-body">
+    <p id="inv-suggest-text" style="margin-bottom:18px;font-size:14px;color:var(--text2);"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent" onclick="invSuggestAction('part')">+ Add as Part</button>
+      <button class="btn" onclick="invSuggestAction('service')">+ Add as Service</button>
+      <button class="btn btn-ghost" onclick="invSuggestAction('skip')">Skip</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <script>
 // ─── AUTH ────────────────────────────────────────────────────────────────────
 // NO plaintext usernames or passwords in source — both stored as SHA-256 hashes only.
@@ -2041,7 +2072,7 @@ window.addEventListener('storage', (e) => {
     else if(active === 'quotes') renderDocs('quote');
     else if(active === 'inventory') renderInventory();
     else if(active === 'customers') renderCustomers();
-    else if(active === 'creditors') renderCreditors();
+    else if(active === 'debtors') renderDebtors();
     else if(active === 'reminders') renderReminders();
     updateDriveUI(!!driveAccessToken);
   } catch(err) {}
@@ -2177,7 +2208,7 @@ function populateModels() {
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────────────
-const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','creditors','reminders','reports','settings','activity'];
+const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','debtors','reminders','reports','settings','activity'];
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -2206,7 +2237,7 @@ function showPage(name) {
   if(name==='inventory') renderInventory();
   if(name==='mechanics') renderMechanics();
   if(name==='customers') renderCustomers();
-  if(name==='creditors') renderCreditors();
+  if(name==='debtors') renderDebtors();
   if(name==='reminders') renderReminders();
   if(name==='activity') renderActivityLog();
   if(name==='settings') loadSettings();
@@ -2330,7 +2361,7 @@ function renderDashboard() {
         <td class="mono text-red" style="font-weight:600">$${bal.toFixed(2)}</td>
       </tr>`;
     }).join('')}</tbody></table>
-    <div style="margin-top:10px;"><button class="btn btn-sm" onclick="showPage('creditors')">View Creditors →</button></div>
+    <div style="margin-top:10px;"><button class="btn btn-sm" onclick="showPage('debtors')">View Debtors →</button></div>
   ` : '<p style="color:var(--text3);font-size:13px;">No outstanding balances ✓</p>';
   renderDashReminders();
 }
@@ -2458,7 +2489,7 @@ function openNewDoc(type) {
   document.getElementById('veh-year').value=''; document.getElementById('veh-make').value=''; document.getElementById('veh-model').value='';
   const ms = document.getElementById('doc-mechanic');
   ms.innerHTML = '<option value="">— Select mechanic —</option>';
-  store.mechanics.forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name} — ${m.role}</option>`);
+  store.mechanics.filter(m=>!m._deleted).forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name} — ${m.role}</option>`);
   document.getElementById('line-items-body').innerHTML = '';
   document.getElementById('modal-save-btn').textContent = type==='quote' ? 'Save Quote' : 'Save Invoice';
   document.getElementById('modal-convert-btn').style.display = 'none';
@@ -2485,7 +2516,7 @@ function openEditDoc(id) {
   document.getElementById('veh-model').value = doc.model||'';
   const ms = document.getElementById('doc-mechanic');
   ms.innerHTML = '<option value="">— Select mechanic —</option>';
-  store.mechanics.forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name} — ${m.role}</option>`);
+  store.mechanics.filter(m=>!m._deleted).forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name} — ${m.role}</option>`);
   ms.value = doc.mechanicId||'';
   document.getElementById('line-items-body').innerHTML = '';
   (doc.items||[]).forEach(item => addLineItemWithData(item));
@@ -2669,7 +2700,7 @@ function deleteDoc(id) {
 // ─── INVENTORY ───────────────────────────────────────────────────────────────
 function renderInventory() {
   const canDelete = currentUser?.level !== 1;
-  document.getElementById('parts-table').innerHTML = store.parts.map(p=>{
+  document.getElementById('parts-table').innerHTML = store.parts.filter(p=>!p._deleted).map(p=>{
     const status = p.qty===0?'out':p.qty<=p.reorder?'low':'ok';
     return `<tr>
       <td>${p.name}</td><td class="mono text-muted">${p.sku}</td><td>${p.cat}</td>
@@ -2682,7 +2713,7 @@ function renderInventory() {
       </td>
     </tr>`;
   }).join('');
-  document.getElementById('services-table').innerHTML = store.services.map(s=>`
+  document.getElementById('services-table').innerHTML = store.services.filter(s=>!s._deleted).map(s=>`
     <tr><td>${s.name}</td><td>${s.cat}</td><td class="mono">$${s.rate.toFixed(2)}</td><td class="text-muted">${s.time}</td>
     <td style="display:flex;gap:4px;">
       <button class="btn btn-sm" onclick="openEditService(${s.id})">Edit</button>
@@ -2733,14 +2764,23 @@ function savePart() {
     cost: parseFloat(document.getElementById('part-cost').value)||0,
     price: parseFloat(document.getElementById('part-price').value)||0,
     reorder: parseInt(document.getElementById('part-reorder').value)||5,
+    _updatedAt: Date.now(),
   };
   if(partEditId) store.parts = store.parts.map(p=>p.id===partEditId?part:p);
   else store.parts.push(part);
   logActivity('PART', (partEditId?'Edited':'Added')+' part: '+name);
   save(); closePartModal(); renderInventory(); showToast('Part saved');
 }
-function deletePart(id) { store.parts = store.parts.filter(p=>p.id!==id); save(); renderInventory(); }
-function deleteService(id) { store.services = store.services.filter(s=>s.id!==id); save(); renderInventory(); }
+function deletePart(id) {
+  const p = store.parts.find(x=>x.id===id);
+  if(p) { p._deleted = true; p._deletedAt = Date.now(); }
+  save(); renderInventory();
+}
+function deleteService(id) {
+  const s = store.services.find(x=>x.id===id);
+  if(s) { s._deleted = true; s._deletedAt = Date.now(); }
+  save(); renderInventory();
+}
 
 // ─── SERVICE EDIT ────────────────────────────────────────────────────────────
 let svcEditId = null;
@@ -2769,7 +2809,8 @@ function saveService() {
     id: svcEditId||Date.now(),
     name, cat: document.getElementById('svc-cat').value,
     rate: parseFloat(document.getElementById('svc-rate').value)||0,
-    time: document.getElementById('svc-time').value.trim()
+    time: document.getElementById('svc-time').value.trim(),
+    _updatedAt: Date.now(),
   };
   if(svcEditId) store.services = store.services.map(s=>s.id===svcEditId?svc:s);
   else store.services.push(svc);
@@ -2875,7 +2916,7 @@ let _poItemCounter = 0;
 function addPOItem() { addPOItemWithData({ name:'', qty:1, cost:0, partId:'' }); }
 function addPOItemWithData(item) {
   const id = _poItemCounter++;
-  const partOpts = store.parts.map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
+  const partOpts = store.parts.filter(p=>!p._deleted).map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
   const row = document.createElement('div');
   row.id = 'po-item-'+id;
   row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 90px auto;gap:8px;margin-bottom:8px;align-items:center;';
@@ -2948,7 +2989,7 @@ function deletePO(id) {
 
 // ─── MECHANICS ───────────────────────────────────────────────────────────────
 function renderMechanics() {
-  document.getElementById('mechanics-table').innerHTML = store.mechanics.map(m=>{
+  document.getElementById('mechanics-table').innerHTML = store.mechanics.filter(m=>!m._deleted).map(m=>{
     const jobs = store.docs.filter(d=>d.mechanicId==m.id).length;
     return `<tr><td>${m.name}</td><td>${m.role}</td><td>${m.phone}</td><td>${jobs}</td>
     <td><button class="btn btn-sm btn-ghost" onclick="deleteMechanic(${m.id})">✕</button></td></tr>`;
@@ -2961,10 +3002,14 @@ function openAddMechanic() {
 function saveMechanic() {
   const name = document.getElementById('mech-name').value.trim();
   if(!name) { showToast('Name required'); return; }
-  store.mechanics.push({ id:Date.now(), name, role:document.getElementById('mech-role').value, phone:document.getElementById('mech-phone').value });
+  store.mechanics.push({ id:Date.now(), name, role:document.getElementById('mech-role').value, phone:document.getElementById('mech-phone').value, _updatedAt: Date.now() });
   save(); document.getElementById('mech-modal').classList.add('hidden'); renderMechanics(); showToast('Mechanic added');
 }
-function deleteMechanic(id) { store.mechanics=store.mechanics.filter(m=>m.id!==id); save(); renderMechanics(); }
+function deleteMechanic(id) {
+  const m = store.mechanics.find(x=>x.id===id);
+  if(m) { m._deleted = true; m._deletedAt = Date.now(); }
+  save(); renderMechanics();
+}
 
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function loadSettings() {
@@ -3339,7 +3384,13 @@ async function driveGetFileId() {
 function mergeById(local, remote) {
   const map = {};
   (remote||[]).forEach(r => { map[r.id] = r; });
-  (local||[]).forEach(r => { map[r.id] = r; }); // local overwrites remote on same id
+  (local||[]).forEach(r => {
+    const existing = map[r.id];
+    if(!existing) { map[r.id] = r; return; }
+    const localTs  = r._deletedAt || r._updatedAt || 0;
+    const remoteTs = existing._deletedAt || existing._updatedAt || 0;
+    if(localTs >= remoteTs) map[r.id] = r;
+  });
   return Object.values(map);
 }
 
@@ -3468,7 +3519,7 @@ function openNewSale() {
   // populate mechanic
   const ms = document.getElementById('s-mechanic');
   ms.innerHTML='<option value="">— Select —</option>';
-  store.mechanics.forEach(m=>ms.innerHTML+=`<option value="${m.id}">${m.name}</option>`);
+  store.mechanics.filter(m=>!m._deleted).forEach(m=>ms.innerHTML+=`<option value="${m.id}">${m.name}</option>`);
   calcSaleTotals();
   document.getElementById('sale-modal').classList.remove('hidden');
 }
@@ -3591,7 +3642,7 @@ function addSaleLineWithData(data) {
   const svcOpts = SERVICE_TYPES.map(s=>`<option${s===svcVal?' selected':''}>${s}</option>`).join('');
   const inStyle = (col) => `width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 7px;color:var(--text);font-size:12px;`;
   const autoL = isAdmin ? `oninput="autoCalcLabour(this.closest('tr'));calcSaleTotals()"` : `oninput="calcSaleTotals()"`;
-  const partOpts = store.parts.map(p=>`<option value="${p.name}" data-cost="${p.cost||0}" data-sell="${p.price||0}" data-vendor="${p.vendor||''}" data-sku="${p.sku||''}" data-qty="${p.qty||0}">${p.name} [${p.qty||0} in stock]</option>`).join('');
+  const partOpts = store.parts.filter(p=>!p._deleted).map(p=>`<option value="${p.name}" data-cost="${p.cost||0}" data-sell="${p.price||0}" data-vendor="${p.vendor||''}" data-sku="${p.sku||''}" data-qty="${p.qty||0}">${p.name} [${p.qty||0} in stock]</option>`).join('');
   const warrantyOpts = ['No Warranty','30 Days','90 Days','6 Months','1 Year','2 Years'].map(w=>`<option${w===(data.warranty||'No Warranty')?' selected':''}>${w}</option>`).join('');
   tr.innerHTML = `
     <td style="min-width:160px;">
@@ -3733,6 +3784,7 @@ function saveSale() {
     deductInventoryFromSale(rec);
     logActivity('SALE', (saleEditId?'Edited':'Recorded')+' sale '+rec.num+' — '+rec.custName+' $'+rec.charged.toFixed(2));
     save(); closeSaleModal(); renderSalesPage(); showToast('Sale recorded: '+rec.num);
+    checkInventorySuggestions(rec.items);
   }
 }
 
@@ -3776,15 +3828,63 @@ function saveSaleAndInvoice() {
   showPage('invoices');
 }
 
+let _salesDateFilter = 'all';
+
+function getSalesDateRange(filter) {
+  const today = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const todayStr = fmt(today);
+  if(filter === 'today') return { from: todayStr, to: todayStr };
+  if(filter === 'yesterday') {
+    const y = new Date(today); y.setDate(y.getDate()-1);
+    const ys = fmt(y); return { from: ys, to: ys };
+  }
+  if(filter === 'week') {
+    const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay()+6)%7));
+    return { from: fmt(mon), to: todayStr };
+  }
+  if(filter === 'month') {
+    return { from: `${today.getFullYear()}-${pad(today.getMonth()+1)}-01`, to: todayStr };
+  }
+  if(filter === 'lastmonth') {
+    const first = new Date(today.getFullYear(), today.getMonth()-1, 1);
+    const last  = new Date(today.getFullYear(), today.getMonth(), 0);
+    return { from: fmt(first), to: fmt(last) };
+  }
+  if(filter === 'specific') {
+    const v = document.getElementById('sales-filter-date')?.value;
+    if(v) return { from: v, to: v };
+  }
+  return null; // 'all'
+}
+
+function setSalesDateFilter(preset) {
+  _salesDateFilter = preset;
+  ['all','today','yesterday','week','month','lastmonth'].forEach(k => {
+    const btn = document.getElementById('sfbtn-'+k);
+    if(btn) btn.classList.toggle('active', k === preset);
+  });
+  if(preset !== 'specific') {
+    const di = document.getElementById('sales-filter-date');
+    if(di) di.value = '';
+  }
+  renderSalesPage();
+}
+
 function renderSalesPage() {
   // Populate mechanic filter
   const mf=document.getElementById('sales-filter-mech');
   if(mf.options.length<=1){
-    store.mechanics.forEach(m=>mf.innerHTML+=`<option value="${m.id}">${m.name}</option>`);
+    store.mechanics.filter(m=>!m._deleted).forEach(m=>mf.innerHTML+=`<option value="${m.id}">${m.name}</option>`);
   }
   // Metrics
-  const rev=store.salesRecords.reduce((a,s)=>a+s.charged,0);
-  const profit=store.salesRecords.reduce((a,s)=>a+s.profit,0);
+  const dateRange2 = getSalesDateRange(_salesDateFilter);
+  const metricRecords = dateRange2
+    ? store.salesRecords.filter(s=>s.date>=dateRange2.from&&s.date<=dateRange2.to)
+    : store.salesRecords;
+  const rev=metricRecords.reduce((a,s)=>a+(s.saleTotal||s.charged||0),0);
+  const profit=metricRecords.reduce((a,s)=>a+(s.profit||0),0);
   const margin=rev>0?((profit/rev)*100):0;
   const isL1 = currentUser?.level === 1;
   // Apply level-1 class to sales table for column hiding
@@ -3794,9 +3894,10 @@ function renderSalesPage() {
     ${isL1 ? '' : `<div class="metric"><div class="metric-label">TOTAL REVENUE</div><div class="metric-value green">$${rev.toFixed(2)}</div></div>`}
     ${isL1 ? '' : `<div class="metric"><div class="metric-label">NET PROFIT (🔒)</div><div class="metric-value accent">$${profit.toFixed(2)}</div></div>`}
     ${isL1 ? '' : `<div class="metric"><div class="metric-label">MARGIN (🔒)</div><div class="metric-value">${margin.toFixed(1)}%</div></div>`}
-    <div class="metric"><div class="metric-label">TOTAL SALES</div><div class="metric-value">${store.salesRecords.length}</div></div>
+    <div class="metric"><div class="metric-label">TOTAL SALES</div><div class="metric-value">${metricRecords.length}</div></div>
   `;
   // Filter
+  const dateRange = getSalesDateRange(_salesDateFilter);
   const q=(document.getElementById('sales-search').value||'').toLowerCase();
   const cat=document.getElementById('sales-filter-cat').value;
   const mech=document.getElementById('sales-filter-mech').value;
@@ -3804,7 +3905,8 @@ function renderSalesPage() {
     const matchQ=!q||s.custName.toLowerCase().includes(q)||[s.year,s.make,s.model].join(' ').toLowerCase().includes(q)||s.mainService.toLowerCase().includes(q);
     const matchC=!cat||s.cat===cat;
     const matchM=!mech||s.mechanicId==mech;
-    return matchQ&&matchC&&matchM;
+    const matchD=!dateRange||(s.date>=dateRange.from&&s.date<=dateRange.to);
+    return matchQ&&matchC&&matchM&&matchD;
   });
   const canDelete = currentUser?.level !== 1;
   const tbody=document.getElementById('sales-table');
@@ -3949,7 +4051,7 @@ function openQuickSale() {
   document.getElementById('qs-balance').style.color = 'var(--red)';
   const ms = document.getElementById('qs-mechanic');
   ms.innerHTML = '<option value="">— Select —</option>';
-  store.mechanics.forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name}</option>`);
+  store.mechanics.filter(m=>!m._deleted).forEach(m => ms.innerHTML += `<option value="${m.id}">${m.name}</option>`);
   document.getElementById('quick-sale-modal').classList.remove('hidden');
 }
 
@@ -4366,59 +4468,47 @@ function openCustomerProfile(id) {
   document.getElementById('cust-profile-modal').classList.remove('hidden');
 }
 
-// ─── CREDITORS ────────────────────────────────────────────────────────────────
-function renderCreditors() {
-  const unpaidInvoices = store.docs.filter(d => d.type==='invoice' && (d.status==='pending' || d.status==='partial'));
-  const byCustomer = {};
-  unpaidInvoices.forEach(inv => {
-    const key = inv.phone || inv.customer;
-    if(!byCustomer[key]) byCustomer[key] = { name: inv.customer, phone: inv.phone||'', invoices: [] };
-    byCustomer[key].invoices.push(inv);
+// ─── DEBTORS ────────────────────────────────────────────────────────────────
+function renderDebtors() {
+  const debtorMap = {};
+  store.salesRecords.forEach(s => {
+    const bal = getSaleBalance(s);
+    if(bal <= 0.01) return;
+    const key = s.custName || 'Unknown';
+    if(!debtorMap[key]) {
+      debtorMap[key] = { name: key, phone: s.custPhone||'', charged: 0, paid: 0, balance: 0, lastSale: '', lastSaleId: null };
+    }
+    const d = debtorMap[key];
+    d.charged += (s.saleTotal||s.charged||0);
+    d.paid    += getSaleTotalPaid(s);
+    d.balance += bal;
+    if(!d.lastSale || s.date > d.lastSale) { d.lastSale = s.date; d.lastSaleId = s.id; }
   });
-  const rows = Object.values(byCustomer);
-  const totalOwing = unpaidInvoices.reduce((a, d) => a + getInvoiceBalance(d), 0);
-  const today = new Date().toISOString().slice(0,10);
-  const collectedToday = store.docs
-    .filter(d => d.type==='invoice' && (d.status==='paid' || d.status==='partial'))
-    .reduce((a, d) => a + (d.payments||[]).filter(p=>p.date===today).reduce((s,p)=>s+p.amount,0), 0);
-  document.getElementById('creditors-metrics').innerHTML = `
-    <div class="metric"><div class="metric-label">CUSTOMERS WITH DEBT</div><div class="metric-value red">${rows.length}</div></div>
-    <div class="metric"><div class="metric-label">OPEN INVOICES</div><div class="metric-value">${unpaidInvoices.length}</div></div>
+
+  const debtors = Object.values(debtorMap).sort((a,b) => b.balance - a.balance);
+  const totalOwing = debtors.reduce((a,d) => a + d.balance, 0);
+  const largest = debtors.length ? debtors[0].balance : 0;
+
+  document.getElementById('debtors-metrics').innerHTML = `
     <div class="metric"><div class="metric-label">TOTAL OUTSTANDING</div><div class="metric-value red">$${totalOwing.toFixed(2)}</div></div>
-    <div class="metric"><div class="metric-label">COLLECTED TODAY</div><div class="metric-value green">$${collectedToday.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">CUSTOMERS OWING</div><div class="metric-value red">${debtors.length}</div></div>
+    <div class="metric"><div class="metric-label">LARGEST BALANCE</div><div class="metric-value accent">$${largest.toFixed(2)}</div></div>
   `;
-  document.getElementById('creditors-table').innerHTML = rows.length ? rows.map(r => {
-    const totalBalance = r.invoices.reduce((a, i) => a + getInvoiceBalance(i), 0);
-    const oldest = r.invoices.reduce((a, i) => i.date < a ? i.date : a, r.invoices[0].date);
-    const daysSince = Math.floor((new Date() - new Date(oldest)) / (1000*60*60*24));
-    const invoiceDetails = r.invoices.map(i => {
-      const bal = getInvoiceBalance(i);
-      const paid = getInvoiceAmountPaid(i);
-      const isPartial = paid > 0;
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-        <span class="mono text-accent" style="font-size:12px">${i.num}</span>
-        <span style="font-size:11px;color:var(--text3)">Total: $${i.total.toFixed(2)}</span>
-        ${isPartial ? `<span style="font-size:11px;color:var(--green)">Paid: $${paid.toFixed(2)}</span>` : ''}
-        <span style="font-size:12px;font-weight:600;color:var(--red)">Bal: $${bal.toFixed(2)}</span>
-        <button class="btn btn-sm" onclick="openPartialPay(${i.id})">💳 Pay</button>
-        <button class="btn btn-sm btn-green" onclick="markPaid(${i.id});renderCreditors()">Full Pay</button>
-      </div>`;
-    }).join('');
-    return `<tr>
-      <td><div style="font-weight:500">${r.name}</div><div style="font-size:11px;color:var(--text3)">${r.phone||'—'}</div></td>
-      <td>${invoiceDetails}</td>
-      <td>${r.invoices.length}</td>
-      <td class="mono text-red" style="font-weight:600">$${totalBalance.toFixed(2)}</td>
-      <td style="font-size:12px">${oldest}</td>
-      <td><span class="badge ${daysSince>30?'badge-out':daysSince>7?'badge-pending':'badge-invoice'}">${daysSince}d</span></td>
-      <td></td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px;">No outstanding balances — all invoices paid ✓</td></tr>`;
+
+  document.getElementById('debtors-table').innerHTML = debtors.length ? debtors.map(d => `<tr>
+    <td style="font-weight:500">${d.name}</td>
+    <td style="font-size:12px">${d.phone||'—'}</td>
+    <td class="mono" style="font-size:12px">${d.lastSale||'—'}</td>
+    <td class="mono" style="color:var(--text2)">$${d.charged.toFixed(2)}</td>
+    <td class="mono" style="color:var(--green)">$${d.paid.toFixed(2)}</td>
+    <td class="mono" style="color:var(--red);font-weight:600">$${d.balance.toFixed(2)}</td>
+    <td>${d.lastSaleId ? `<button class="btn btn-sm btn-green" onclick="openSalePayment(${d.lastSaleId})">💳 Pay</button>` : ''}</td>
+  </tr>`).join('') : `<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px;">No outstanding balances — all customers are paid up ✓</td></tr>`;
 }
 
 // ─── NAV BADGES ────────────────────────────────────────────────────────────────
 function updateNavBadges() {
-  const lowStockCount = store.parts.filter(p => p.qty <= p.reorder).length;
+  const lowStockCount = store.parts.filter(p => !p._deleted && p.qty <= p.reorder).length;
   const badge = document.getElementById('inv-badge');
   if(badge) {
     if(lowStockCount > 0) { badge.textContent = lowStockCount; badge.style.display = ''; }
@@ -4826,7 +4916,7 @@ function savePartialPay() {
   save();
   document.getElementById('partial-pay-modal').classList.add('hidden');
   // Refresh whichever page is visible
-  if(!document.getElementById('page-creditors').classList.contains('hidden')) renderCreditors();
+  if(!document.getElementById('page-debtors').classList.contains('hidden')) renderDebtors();
   if(!document.getElementById('page-invoices').classList.contains('hidden')) renderDocs('invoice');
   if(!document.getElementById('page-dashboard').classList.contains('hidden')) renderDashboard();
   if(!document.getElementById('page-customers').classList.contains('hidden')) renderCustomers();
@@ -4867,6 +4957,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('login-user').focus();
   }
 });
+
+// ─── INVENTORY SUGGESTIONS ────────────────────────────────────────────────────
+let _suggestQueue = [];
+let _skippedSuggestions = new Set();
+
+function checkInventorySuggestions(items) {
+  const newItems = items.filter(item => {
+    const name = (item.desc||'').trim().toLowerCase();
+    if(!name || _skippedSuggestions.has(name)) return false;
+    const inParts    = store.parts.some(p=>!p._deleted && p.name.toLowerCase()===name);
+    const inServices = store.services.some(s=>!s._deleted && s.name.toLowerCase()===name);
+    return !inParts && !inServices;
+  });
+  if(!newItems.length) return;
+  _suggestQueue = newItems.map(i => i.desc.trim());
+  showNextSuggestion();
+}
+
+function showNextSuggestion() {
+  if(!_suggestQueue.length) return;
+  const name = _suggestQueue[0];
+  document.getElementById('inv-suggest-text').textContent = `"${name}" wasn't found in your inventory. Would you like to add it?`;
+  document.getElementById('inv-suggest-modal').classList.remove('hidden');
+}
+
+function invSuggestAction(action) {
+  const name = _suggestQueue.shift();
+  document.getElementById('inv-suggest-modal').classList.add('hidden');
+  if(action === 'skip') {
+    _skippedSuggestions.add((name||'').toLowerCase());
+  } else if(action === 'part') {
+    openAddPart();
+    setTimeout(()=>{ const el=document.getElementById('part-name'); if(el){el.value=name;} }, 100);
+  } else if(action === 'service') {
+    openAddService();
+    setTimeout(()=>{ const el=document.getElementById('svc-name'); if(el){el.value=name;} }, 100);
+  }
+  if(_suggestQueue.length) setTimeout(showNextSuggestion, 300);
+}
 
 // ─── PWA SERVICE WORKER REGISTRATION ────────────────────────────────────────
 if('serviceWorker' in navigator) {
