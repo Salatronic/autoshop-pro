@@ -778,12 +778,13 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     </table></div>
   </div>
   <div class="card hidden" id="inv-orders-tab">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
       <div style="font-size:13px;color:var(--text2);">Track parts ordered from suppliers. Mark as received to auto-update inventory.</div>
       <button class="btn btn-accent btn-sm" onclick="openAddPO()">+ New Order</button>
     </div>
+    <input class="form-input" id="po-search" placeholder="Search by supplier, customer, part name..." style="max-width:360px;margin-bottom:12px;font-size:13px;" oninput="renderPOs()" />
     <div class="table-wrap"><table>
-      <thead><tr><th>Order #</th><th>Supplier</th><th>Date</th><th>Items</th><th>Total Cost</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Order #</th><th>Supplier</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Items</th><th>Cost</th><th>Sell</th><th>Status</th><th></th></tr></thead>
       <tbody id="po-table"></tbody>
     </table></div>
   </div>
@@ -851,6 +852,15 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     </div>
     <button class="btn btn-accent mt-16" onclick="changePassword()">Update Password</button>
     <div id="cp-status" style="margin-top:10px;font-size:13px;"></div>
+  </div>
+  <div class="card" style="margin-top:18px;">
+    <div class="card-title">Vendor / Supplier List</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Vendors are auto-learned when you save a purchase order. Add or remove them here.</p>
+    <div id="vendor-list-ui" style="margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input class="form-input" id="new-vendor-input" placeholder="Add vendor name" style="flex:1;max-width:280px;" />
+      <button class="btn btn-accent" onclick="addVendorManual()">+ Add</button>
+    </div>
   </div>
   <div class="card" id="settings-backup">
     <div class="card-title">Data Backup &amp; Restore</div>
@@ -1201,6 +1211,23 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <div class="form-group mt-16">
       <label class="form-label">Internal Notes</label>
       <textarea class="form-input" id="s-notes" rows="2" placeholder="Parts sourced from, issues noted, follow-up needed..."></textarea>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="card-title" style="margin-top:16px;">Payment</div>
+    <div class="form-grid form-grid-3" style="margin-bottom:18px;">
+      <div class="form-group">
+        <label class="form-label">Total Charged ($)</label>
+        <input class="form-input mono" id="s-sale-total" type="number" step="0.01" min="0" placeholder="Auto from items" readonly style="color:var(--text2);background:var(--surface2);" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount Paid ($)</label>
+        <input class="form-input mono" id="s-sale-paid" type="number" step="0.01" min="0" placeholder="0.00" oninput="sUpdateBalance()" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Balance</label>
+        <div class="form-input mono" id="s-sale-balance" style="color:var(--red);font-weight:600;">$0.00</div>
+      </div>
     </div>
 
   </div>
@@ -1657,9 +1684,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <div class="form-grid form-grid-2">
       <div class="form-group"><label class="form-label">Supplier / Vendor</label>
         <input class="form-input" id="po-supplier" placeholder="e.g. NAPA, Partsource, Worldpac" list="po-supplier-list" />
-        <datalist id="po-supplier-list">
-          <option>NAPA</option><option>Partsource</option><option>Worldpac</option><option>Best Value</option><option>Bumper 2 Bumper</option><option>Rock Auto</option><option>Other</option>
-        </datalist>
+        <datalist id="po-supplier-list"></datalist>
       </div>
       <div class="form-group"><label class="form-label">Order Date</label>
         <input class="form-input" id="po-date" type="date" />
@@ -1676,7 +1701,38 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         </select>
       </div>
     </div>
+    <!-- Customer / Vehicle -->
+    <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace;">CUSTOMER / VEHICLE (optional)</div>
+    <div class="form-grid form-grid-2" style="margin-bottom:4px;">
+      <div class="form-group"><label class="form-label">Customer Name</label>
+        <input class="form-input" id="po-customer" placeholder="Walk-in / Company" list="po-customer-list" />
+        <datalist id="po-customer-list"></datalist>
+      </div>
+      <div class="form-group"><label class="form-label">Customer Phone</label>
+        <input class="form-input" id="po-cust-phone" placeholder="(780) 000-0000" />
+      </div>
+    </div>
+    <div class="form-grid form-grid-4" style="margin-bottom:4px;">
+      <div class="form-group"><label class="form-label">Year</label>
+        <input class="form-input" id="po-year" placeholder="2019" maxlength="4" />
+      </div>
+      <div class="form-group"><label class="form-label">Make</label>
+        <input class="form-input" id="po-make" placeholder="Toyota" />
+      </div>
+      <div class="form-group"><label class="form-label">Model</label>
+        <input class="form-input" id="po-model" placeholder="Camry" />
+      </div>
+      <div class="form-group"><label class="form-label">Mileage (km)</label>
+        <input class="form-input" id="po-mileage" placeholder="85000" type="number" />
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;"><label class="form-label">VIN</label>
+      <input class="form-input mono" id="po-vin" placeholder="17-digit VIN (optional)" maxlength="17" />
+    </div>
     <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace;">ITEMS ORDERED</div>
+    <div style="display:grid;grid-template-columns:1fr 70px 100px 100px auto;gap:8px;margin-bottom:4px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:0 2px;">
+      <span>ITEM NAME</span><span>QTY</span><span>COST $</span><span>SELL $</span><span></span>
+    </div>
     <div id="po-items-body"></div>
     <button class="btn btn-sm mt-8" onclick="addPOItem()">+ Add Item</button>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
@@ -2240,7 +2296,7 @@ function showPage(name) {
   if(name==='debtors') renderDebtors();
   if(name==='reminders') renderReminders();
   if(name==='activity') renderActivityLog();
-  if(name==='settings') loadSettings();
+  if(name==='settings') { loadSettings(); renderVendorListUI(); }
   if(name==='reports') renderReports();
 }
 
@@ -2863,16 +2919,29 @@ if(!store.poCounter) store.poCounter = 1;
 
 function renderPOs() {
   if(!store.purchaseOrders) store.purchaseOrders = [];
-  const pos = [...store.purchaseOrders].sort((a,b) => b.date.localeCompare(a.date));
+  const q = (document.getElementById('po-search')?.value||'').toLowerCase();
+  const pos = [...store.purchaseOrders]
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''))
+    .filter(po => !q ||
+      (po.supplier||'').toLowerCase().includes(q) ||
+      (po.customer||'').toLowerCase().includes(q) ||
+      (po.num||'').toLowerCase().includes(q) ||
+      (po.items||[]).some(i => (i.name||'').toLowerCase().includes(q))
+    );
   document.getElementById('po-table').innerHTML = pos.length ? pos.map(po => {
     const totalCost = (po.items||[]).reduce((a,i) => a + (i.qty||0)*(i.cost||0), 0);
+    const totalSell = (po.items||[]).reduce((a,i) => a + (i.qty||0)*(i.sell||0), 0);
     const statusColor = po.status==='received'?'var(--green)':po.status==='cancelled'?'var(--red)':po.status==='partial'?'var(--accent)':'var(--blue)';
+    const vehicle = [po.year,po.make,po.model].filter(Boolean).join(' ');
     return `<tr>
       <td class="mono" style="font-size:12px">${po.num}</td>
       <td style="font-weight:500">${po.supplier||'—'}</td>
       <td class="mono text-muted" style="font-size:12px">${po.date}</td>
+      <td style="font-size:12px">${po.customer||'—'}${po.custPhone?`<br><span style="color:var(--text3);font-size:11px">${po.custPhone}</span>`:''}</td>
+      <td style="font-size:12px;color:var(--text2)">${vehicle||'—'}</td>
       <td style="font-size:12px;color:var(--text2)">${(po.items||[]).map(i=>`${i.name} ×${i.qty}`).join(', ')||'—'}</td>
-      <td class="mono text-green">$${totalCost.toFixed(2)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px">$${totalCost.toFixed(2)}</td>
+      <td class="mono" style="color:var(--green);font-size:12px">${totalSell > 0 ? '$'+totalSell.toFixed(2) : '—'}</td>
       <td><span style="font-size:11px;font-weight:600;color:${statusColor};text-transform:uppercase">${po.status||'ordered'}</span></td>
       <td style="display:flex;gap:6px;">
         ${po.status!=='received'&&po.status!=='cancelled' ? `<button class="btn btn-sm btn-green" onclick="receivePO('${po.id}')">✓ Received</button>` : ''}
@@ -2880,7 +2949,38 @@ function renderPOs() {
         <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deletePO('${po.id}')">✕</button>
       </td>
     </tr>`;
-  }).join('') : `<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px;">No purchase orders yet. Click "+ New Order" to track a parts order.</td></tr>`;
+  }).join('') : `<tr><td colspan="10" style="color:var(--text3);text-align:center;padding:24px;">No purchase orders yet. Click "+ New Order" to track a parts order.</td></tr>`;
+}
+
+function renderVendorDatalist() {
+  if(!store.vendors) store.vendors = ['NAPA','Partsource','Worldpac','Best Value','Bumper 2 Bumper','Rock Auto','Junk Yard'];
+  const dl = document.getElementById('po-supplier-list');
+  if(dl) dl.innerHTML = store.vendors.map(v => `<option>${v}</option>`).join('');
+}
+function renderVendorListUI() {
+  if(!store.vendors) store.vendors = [];
+  const el = document.getElementById('vendor-list-ui');
+  if(!el) return;
+  el.innerHTML = store.vendors.length
+    ? store.vendors.map((v,i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;">${v}</span>
+        <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="deleteVendor(${i})">✕</button>
+      </div>`).join('')
+    : '<div style="color:var(--text3);font-size:13px;">No vendors yet — they\'ll appear here as you save purchase orders.</div>';
+}
+function addVendorManual() {
+  const v = document.getElementById('new-vendor-input').value.trim();
+  if(!v) return;
+  if(!store.vendors) store.vendors = [];
+  if(!store.vendors.includes(v)) { store.vendors.push(v); save(); }
+  document.getElementById('new-vendor-input').value = '';
+  renderVendorListUI();
+  showToast('Vendor added: ' + v);
+}
+function deleteVendor(idx) {
+  store.vendors.splice(idx, 1);
+  save();
+  renderVendorListUI();
 }
 
 let _poEditId = null;
@@ -2893,6 +2993,10 @@ function openAddPO() {
   document.getElementById('po-status').value = 'ordered';
   document.getElementById('po-notes').value = '';
   document.getElementById('po-items-body').innerHTML = '';
+  ['po-customer','po-cust-phone','po-year','po-make','po-model','po-mileage','po-vin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const custDl = document.getElementById('po-customer-list');
+  if(custDl) custDl.innerHTML = (store.customers||[]).map(c=>`<option value="${c.name}">${c.name}${c.phone?' — '+c.phone:''}</option>`).join('');
+  renderVendorDatalist();
   addPOItem();
   document.getElementById('po-modal').classList.remove('hidden');
 }
@@ -2909,22 +3013,33 @@ function openEditPO(id) {
   document.getElementById('po-notes').value = po.notes||'';
   document.getElementById('po-items-body').innerHTML = '';
   (po.items||[]).forEach(item => addPOItemWithData(item));
+  document.getElementById('po-customer').value = po.customer||'';
+  document.getElementById('po-cust-phone').value = po.custPhone||'';
+  document.getElementById('po-year').value = po.year||'';
+  document.getElementById('po-make').value = po.make||'';
+  document.getElementById('po-model').value = po.model||'';
+  document.getElementById('po-mileage').value = po.mileage||'';
+  document.getElementById('po-vin').value = po.vin||'';
+  const custDl = document.getElementById('po-customer-list');
+  if(custDl) custDl.innerHTML = (store.customers||[]).map(c=>`<option value="${c.name}">${c.name}${c.phone?' — '+c.phone:''}</option>`).join('');
+  renderVendorDatalist();
   document.getElementById('po-modal').classList.remove('hidden');
 }
 
 let _poItemCounter = 0;
-function addPOItem() { addPOItemWithData({ name:'', qty:1, cost:0, partId:'' }); }
+function addPOItem() { addPOItemWithData({ name:'', qty:1, cost:0, sell:0 }); }
 function addPOItemWithData(item) {
   const id = _poItemCounter++;
   const partOpts = store.parts.filter(p=>!p._deleted).map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
   const row = document.createElement('div');
   row.id = 'po-item-'+id;
-  row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 90px auto;gap:8px;margin-bottom:8px;align-items:center;';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 70px 100px 100px auto;gap:8px;margin-bottom:8px;align-items:center;';
   row.innerHTML = `
     <input class="form-input" placeholder="Part / item name" value="${item.name||''}" style="font-size:13px;" list="po-parts-list-${id}" oninput="this.dataset.name=this.value" data-name="${item.name||''}" />
     <datalist id="po-parts-list-${id}">${partOpts}</datalist>
     <input class="form-input" type="number" placeholder="Qty" min="1" value="${item.qty||1}" style="font-size:13px;" />
-    <input class="form-input" type="number" placeholder="Unit cost" min="0" step="0.01" value="${item.cost||''}" style="font-size:13px;" />
+    <input class="form-input" type="number" placeholder="Cost $" min="0" step="0.01" value="${item.cost||''}" style="font-size:13px;" title="What you paid the vendor" />
+    <input class="form-input" type="number" placeholder="Sell $" min="0" step="0.01" value="${item.sell||''}" style="font-size:13px;" title="What you charge the customer" />
     <button class="btn btn-sm btn-ghost" style="color:var(--red);padding:6px 8px;" onclick="document.getElementById('po-item-${id}').remove()">✕</button>
   `;
   document.getElementById('po-items-body').appendChild(row);
@@ -2933,7 +3048,12 @@ function addPOItemWithData(item) {
 function getPOItems() {
   return [...document.getElementById('po-items-body').children].map(row => {
     const inputs = row.querySelectorAll('input');
-    return { name: inputs[0]?.value||'', qty: parseFloat(inputs[1]?.value)||1, cost: parseFloat(inputs[2]?.value)||0 };
+    return {
+      name: inputs[0]?.value||'',
+      qty: parseFloat(inputs[1]?.value)||1,
+      cost: parseFloat(inputs[2]?.value)||0,
+      sell: parseFloat(inputs[3]?.value)||0
+    };
   }).filter(i => i.name);
 }
 
@@ -2943,16 +3063,28 @@ function savePO() {
   const items = getPOItems();
   if(!items.length) { showToast('Add at least one item'); return; }
   const status = document.getElementById('po-status').value;
+  // Smart vendor learning
+  if(!store.vendors) store.vendors = [];
+  if(supplier && !store.vendors.includes(supplier)) store.vendors.push(supplier);
+  const poCustomer = document.getElementById('po-customer').value.trim();
+  const poCustPhone = document.getElementById('po-cust-phone').value.trim();
+  const poYear = document.getElementById('po-year').value.trim();
+  const poMake = document.getElementById('po-make').value.trim();
+  const poModel = document.getElementById('po-model').value.trim();
+  const poMileage = document.getElementById('po-mileage').value.trim();
+  const poVin = document.getElementById('po-vin').value.trim().toUpperCase();
+  const poExtra = { customer:poCustomer, custPhone:poCustPhone, year:poYear, make:poMake, model:poModel, mileage:poMileage, vin:poVin };
   if(_poEditId) {
     const po = store.purchaseOrders.find(p => p.id === _poEditId);
-    if(po) { Object.assign(po, { supplier, date: document.getElementById('po-date').value, eta: document.getElementById('po-eta').value, status, items, notes: document.getElementById('po-notes').value }); }
+    if(po) { Object.assign(po, { supplier, date: document.getElementById('po-date').value, eta: document.getElementById('po-eta').value, status, items, notes: document.getElementById('po-notes').value, ...poExtra }); }
   } else {
     store.purchaseOrders.push({
       id: 'PO'+Date.now(), num: 'PO-'+String(store.poCounter).padStart(4,'0'),
       supplier, date: document.getElementById('po-date').value,
       eta: document.getElementById('po-eta').value,
       status, items, notes: document.getElementById('po-notes').value,
-      createdBy: currentUser?.displayName||''
+      createdBy: currentUser?.displayName||'',
+      ...poExtra
     });
     store.poCounter++;
   }
@@ -3145,9 +3277,10 @@ function buildPrintArea(doc) {
   if(!isQuote) {
     const amtPaid = doc.amtPaid != null ? doc.amtPaid : getInvoiceAmountPaid(doc);
     const balance = Math.max(0, (doc.total||0) - amtPaid);
-    if(balance <= 0.01) {
+    const fullyPaid = balance <= 0.01 || doc.status === 'paid';
+    if(fullyPaid) {
       statusBanner = `<div class="print-status-banner paid">PAID</div>`;
-    } else if(amtPaid > 0) {
+    } else if(amtPaid > 0 || doc.status === 'partial') {
       statusBanner = `<div class="print-status-banner partial">PARTIAL PAYMENT</div>`;
     } else {
       statusBanner = `<div class="print-status-banner unpaid">BALANCE OWING</div>`;
@@ -3158,7 +3291,7 @@ function buildPrintArea(doc) {
   const amtPaid2 = doc.amtPaid != null ? doc.amtPaid : (!isQuote ? getInvoiceAmountPaid(doc) : 0);
   const balance2 = Math.max(0, (doc.total||0) - amtPaid2);
   const paidRow = (!isQuote && amtPaid2 > 0) ? `<div class="print-paid-row"><span>Amount Paid</span><span>$${amtPaid2.toFixed(2)}</span></div>` : '';
-  const balRow  = (!isQuote && balance2 > 0.01) ? `<div class="print-balance-row"><span>Balance Owing</span><span>$${balance2.toFixed(2)}</span></div>` : '';
+  const balRow  = (!isQuote && balance2 > 0.01 && doc.status !== 'paid') ? `<div class="print-balance-row"><span>Balance Owing</span><span>$${balance2.toFixed(2)}</span></div>` : '';
 
   document.getElementById('print-area').innerHTML = `
     <div class="print-header">
@@ -3316,8 +3449,8 @@ ${store.settings.address || ''}
 const DRIVE_CLIENT_ID = '956298556483-9pavngaa4b3jakv8ti34r9tc66gfqsc1.apps.googleusercontent.com';
 const DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILE_NAME = 'autoshop-data.json';
-let driveAccessToken = null;
-let driveFileId = null;
+let driveAccessToken = sessionStorage.getItem('drive_token') || null;
+let driveFileId = sessionStorage.getItem('drive_file_id') || null;
 
 function connectDrive() {
   if(typeof google === 'undefined' || !google.accounts) {
@@ -3329,6 +3462,7 @@ function connectDrive() {
     callback: async (resp) => {
       if(resp.error) { showToast('Drive auth failed: ' + resp.error); return; }
       driveAccessToken = resp.access_token;
+      sessionStorage.setItem('drive_token', driveAccessToken);
       store.driveConnected = true;
       save();
       updateDriveUI(true);
@@ -3341,6 +3475,7 @@ function connectDrive() {
 
 function disconnectDrive() {
   driveAccessToken = null; driveFileId = null;
+  sessionStorage.removeItem('drive_token'); sessionStorage.removeItem('drive_file_id');
   store.driveConnected = false; save();
   updateDriveUI(false);
   showToast('Google Drive disconnected');
@@ -3367,7 +3502,7 @@ function updateDriveUI(connected) {
 async function driveFetch(url, opts={}) {
   if(!driveAccessToken) return null;
   const res = await fetch(url, { ...opts, headers: { ...(opts.headers||{}), 'Authorization': 'Bearer ' + driveAccessToken } });
-  if(res.status === 401) { driveAccessToken = null; updateDriveUI(false); showToast('Drive session expired — reconnect'); return null; }
+  if(res.status === 401) { driveAccessToken = null; sessionStorage.removeItem('drive_token'); sessionStorage.removeItem('drive_file_id'); updateDriveUI(false); showToast('Drive session expired — reconnect'); return null; }
   return res;
 }
 
@@ -3376,7 +3511,7 @@ async function driveGetFileId() {
   const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%27${DRIVE_FILE_NAME}%27&fields=files(id,name)`);
   if(!res) return null;
   const data = await res.json();
-  if(data.files && data.files.length > 0) { driveFileId = data.files[0].id; return driveFileId; }
+  if(data.files && data.files.length > 0) { driveFileId = data.files[0].id; sessionStorage.setItem('drive_file_id', driveFileId); return driveFileId; }
   return null;
 }
 
@@ -3452,7 +3587,7 @@ async function driveSaveNow() {
     form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
     form.append('file', blob);
     const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', { method: 'POST', body: form });
-    if(res) { const d = await res.json(); driveFileId = d.id; }
+    if(res) { const d = await res.json(); driveFileId = d.id; sessionStorage.setItem('drive_file_id', driveFileId); }
     return;
   }
   await driveFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: content });
@@ -3501,6 +3636,8 @@ function openNewSale() {
   document.getElementById('s-cust-name').value=''; document.getElementById('s-cust-phone').value='';
   document.getElementById('s-vin').value=''; document.getElementById('s-mileage').value='';
   document.getElementById('s-notes').value=''; document.getElementById('s-line-body').innerHTML='';
+  const spEl = document.getElementById('s-sale-paid'); if(spEl) spEl.value='';
+  const sbEl = document.getElementById('s-sale-balance'); if(sbEl){sbEl.textContent='$0.00';sbEl.style.color='var(--red)';}
   document.getElementById('qk-svctype').value=''; document.getElementById('qk-vtype').value='';
   document.getElementById('qk-oil').value='5W20'; document.getElementById('qk-oilqty').value=5;
   quickServiceChange(); // reset oil fields visibility
@@ -3550,6 +3687,11 @@ function openEditSale(id) {
   sLineCounter = 0;
   (s.items||[]).forEach(item => addSaleLineWithData(item));
   calcSaleTotals();
+  // Populate payment fields
+  const saleTotalPaid = getSaleTotalPaid(s);
+  const spEl2 = document.getElementById('s-sale-paid');
+  if(spEl2) spEl2.value = saleTotalPaid > 0 ? saleTotalPaid.toFixed(2) : '';
+  sUpdateBalance();
 }
 
 function closeSaleModal() { document.getElementById('sale-modal').classList.add('hidden'); }
@@ -3696,6 +3838,8 @@ function calcSaleTotals() {
   document.getElementById('s-tot-sub').textContent='$'+totalSub.toFixed(2);
   document.getElementById('s-tot-gst').textContent='$'+gst.toFixed(2);
   document.getElementById('s-tot-charged').textContent='$'+charged.toFixed(2);
+  const stEl = document.getElementById('s-sale-total');
+  if(stEl) { stEl.value = charged.toFixed(2); sUpdateBalance(); }
 }
 
 function autoCalcLabour(row) {
@@ -3746,9 +3890,16 @@ function buildSaleRecord(existingId) {
   const oilTypes=[...new Set(items.filter(i=>i.oilType).map(i=>i.oilType))].join(', ');
   // Preserve original id/num if editing
   const existing = existingId ? store.salesRecords.find(r=>r.id===existingId) : null;
+  // Payment fields
+  const _sPaid = parseFloat(document.getElementById('s-sale-paid')?.value)||0;
+  const _sBal = Math.max(0, charged - _sPaid);
+  const _sSalePayments = existing?.salePayments?.length
+    ? existing.salePayments
+    : (_sPaid > 0 ? [{ date: document.getElementById('s-date').value, amount: _sPaid, method: document.getElementById('s-payment').value, note: 'Recorded at sale' }] : []);
   return {
     id: existingId || Date.now(),
     num: existing?.num || `SAL-${String(store.saleCounter).padStart(4,'0')}`,
+    _createdAt: existing?._createdAt || Date.now(),
     date: document.getElementById('s-date').value,
     custName: document.getElementById('s-cust-name').value.trim()||'Walk-in',
     custPhone: document.getElementById('s-cust-phone').value,
@@ -3763,7 +3914,13 @@ function buildSaleRecord(existingId) {
     items, oilTypes,
     totalCost, gst, charged, profit,
     mainService: items[0]?.desc||'—',
-    cat: items[0]?.cat||'Other'
+    cat: items[0]?.cat||'Other',
+    // Payment tracking
+    saleTotal: charged,
+    salePaid: _sPaid,
+    saleBalance: _sBal,
+    saleStatus: _sBal <= 0.01 ? 'paid' : (_sPaid > 0 ? 'partial' : 'unpaid'),
+    salePayments: _sSalePayments
   };
 }
 
@@ -3901,7 +4058,7 @@ function renderSalesPage() {
   const q=(document.getElementById('sales-search').value||'').toLowerCase();
   const cat=document.getElementById('sales-filter-cat').value;
   const mech=document.getElementById('sales-filter-mech').value;
-  let rows=[...store.salesRecords].reverse().filter(s=>{
+  let rows=[...store.salesRecords].sort((a,b)=>(b._createdAt||b.id)-(a._createdAt||a.id)).filter(s=>{
     const matchQ=!q||s.custName.toLowerCase().includes(q)||[s.year,s.make,s.model].join(' ').toLowerCase().includes(q)||s.mainService.toLowerCase().includes(q);
     const matchC=!cat||s.cat===cat;
     const matchM=!mech||s.mechanicId==mech;
@@ -3917,7 +4074,7 @@ function renderSalesPage() {
       ? `<span class="badge badge-partial" style="font-size:10px;">Balance $${bal.toFixed(2)}</span>`
       : (s.saleStatus==='unpaid' ? `<span class="badge badge-out" style="font-size:10px;">Unpaid</span>` : '');
     return `<tr>
-      <td class="mono text-muted" style="font-size:12px">${s.date}</td>
+      <td class="mono text-muted" style="font-size:12px">${s.date}${s._createdAt?`<br><span style="font-size:10px;color:var(--text3)">${new Date(s._createdAt).toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit',hour12:true})}</span>`:''}</td>
       <td><div style="font-weight:500">${s.custName}</div><div style="font-size:11px;color:var(--text3)">${s.custPhone||''}</div></td>
       <td style="font-size:12px">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}</td>
       <td style="font-size:12px">${s.mainService}</td>
@@ -4084,6 +4241,15 @@ function qsUpdateBalance() {
   document.getElementById('qs-balance').textContent = '$' + bal.toFixed(2);
   document.getElementById('qs-balance').style.color = bal > 0 ? 'var(--red)' : 'var(--green)';
 }
+function sUpdateBalance() {
+  const total = parseFloat(document.getElementById('s-sale-total')?.value)||0;
+  const paid = parseFloat(document.getElementById('s-sale-paid')?.value)||0;
+  const bal = Math.max(0, total - paid);
+  const el = document.getElementById('s-sale-balance');
+  if(!el) return;
+  el.textContent = '$' + bal.toFixed(2);
+  el.style.color = bal > 0 ? 'var(--red)' : 'var(--green)';
+}
 
 function saveQuickSale() {
   const total = parseFloat(document.getElementById('qs-total').value)||0;
@@ -4098,6 +4264,7 @@ function saveQuickSale() {
   const balance = Math.max(0, total - paid);
   const rec = {
     id: Date.now(), num: `SAL-${String(store.saleCounter).padStart(4,'0')}`,
+    _createdAt: Date.now(),
     date: document.getElementById('qs-date').value,
     custName: customer, custPhone: document.getElementById('qs-phone').value,
     mechanicId: mechId, mechanicName: mech?.name||'',
@@ -4835,7 +5002,10 @@ function notifySaleWhatsApp(saleId) {
   const s = store.salesRecords.find(r => r.id === saleId);
   if(!s) return;
   const vehicle = [s.year, s.make, s.model].filter(Boolean).join(' ');
-  notifyWhatsApp(s.custPhone, s.custName, vehicle, s.num, s.saleTotal||s.charged, 'sale');
+  const linkedInv = store.docs.find(d => d.type === 'invoice' && d.customer === s.custName && d.date === s.date);
+  const refNum = linkedInv ? linkedInv.num : s.num;
+  const docType = linkedInv ? 'invoice' : 'sale';
+  notifyWhatsApp(s.custPhone, s.custName, vehicle, refNum, s.saleTotal||s.charged, docType);
 }
 
 function notifyInvoiceWhatsApp(docId) {
