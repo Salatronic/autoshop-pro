@@ -3478,8 +3478,8 @@ ${store.settings.address || ''}
 const DRIVE_CLIENT_ID = '956298556483-9pavngaa4b3jakv8ti34r9tc66gfqsc1.apps.googleusercontent.com';
 const DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILE_NAME = 'autoshop-data.json';
-let driveAccessToken = sessionStorage.getItem('drive_token') || null;
-let driveFileId = sessionStorage.getItem('drive_file_id') || null;
+let driveAccessToken = localStorage.getItem('drive_token') || null;
+let driveFileId = localStorage.getItem('drive_file_id') || null;
 
 function connectDrive() {
   if(typeof google === 'undefined' || !google.accounts) {
@@ -3491,7 +3491,7 @@ function connectDrive() {
     callback: async (resp) => {
       if(resp.error) { showToast('Drive auth failed: ' + resp.error); return; }
       driveAccessToken = resp.access_token;
-      sessionStorage.setItem('drive_token', driveAccessToken);
+      localStorage.setItem('drive_token', driveAccessToken);
       store.driveConnected = true;
       save();
       updateDriveUI(true);
@@ -3504,7 +3504,7 @@ function connectDrive() {
 
 function disconnectDrive() {
   driveAccessToken = null; driveFileId = null;
-  sessionStorage.removeItem('drive_token'); sessionStorage.removeItem('drive_file_id');
+  localStorage.removeItem('drive_token'); localStorage.removeItem('drive_file_id');
   store.driveConnected = false; save();
   updateDriveUI(false);
   showToast('Google Drive disconnected');
@@ -3531,7 +3531,7 @@ function updateDriveUI(connected) {
 async function driveFetch(url, opts={}) {
   if(!driveAccessToken) return null;
   const res = await fetch(url, { ...opts, headers: { ...(opts.headers||{}), 'Authorization': 'Bearer ' + driveAccessToken } });
-  if(res.status === 401) { driveAccessToken = null; sessionStorage.removeItem('drive_token'); sessionStorage.removeItem('drive_file_id'); updateDriveUI(false); showToast('Drive session expired — reconnect'); return null; }
+  if(res.status === 401) { driveAccessToken = null; localStorage.removeItem('drive_token'); localStorage.removeItem('drive_file_id'); updateDriveUI(false); showToast('Drive session expired — reconnect'); return null; }
   return res;
 }
 
@@ -3540,7 +3540,7 @@ async function driveGetFileId() {
   const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%27${DRIVE_FILE_NAME}%27&fields=files(id,name)`);
   if(!res) return null;
   const data = await res.json();
-  if(data.files && data.files.length > 0) { driveFileId = data.files[0].id; sessionStorage.setItem('drive_file_id', driveFileId); return driveFileId; }
+  if(data.files && data.files.length > 0) { driveFileId = data.files[0].id; localStorage.setItem('drive_file_id', driveFileId); return driveFileId; }
   return null;
 }
 
@@ -3616,7 +3616,7 @@ async function driveSaveNow() {
     form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
     form.append('file', blob);
     const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', { method: 'POST', body: form });
-    if(res) { const d = await res.json(); driveFileId = d.id; sessionStorage.setItem('drive_file_id', driveFileId); }
+    if(res) { const d = await res.json(); driveFileId = d.id; localStorage.setItem('drive_file_id', driveFileId); }
     return;
   }
   await driveFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: content });
