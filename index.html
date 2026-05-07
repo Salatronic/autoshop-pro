@@ -1227,7 +1227,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="pdi-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="pdi-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('pdi')">Decode</button></div></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="pdi-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('pdi')">Decode</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="scanVin('pdi')">📷</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" title="Relay VIN from phone" onclick="startVinRelay('pdi')">📱</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="pdi-odometer" class="input" placeholder="km"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">COLOR</label><input id="pdi-color" class="input" placeholder="White"></div>
       </div>
@@ -1273,7 +1273,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="insp-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="insp-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('insp')">Decode</button></div></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="insp-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('insp')">Decode</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="scanVin('insp')">📷</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" title="Relay VIN from phone" onclick="startVinRelay('insp')">📱</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="insp-odometer" class="input" placeholder="km"></div>
       </div>
       <div style="font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;">INSPECTION CHECKLIST</div>
@@ -1326,7 +1326,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="wo-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="wo-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('wo')">Decode</button></div></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="wo-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('wo')">Decode</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="scanVin('wo')">📷</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" title="Relay VIN from phone" onclick="startVinRelay('wo')">📱</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="wo-odometer" class="input" placeholder="km"></div>
       </div>
       <div style="font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;">WORK DESCRIPTION</div>
@@ -1387,7 +1387,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="fl-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="fl-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('fl')">Decode</button></div></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="fl-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('fl')">Decode</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="scanVin('fl')">📷</button><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" title="Relay VIN from phone" onclick="startVinRelay('fl')">📱</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">COLOR</label><input id="fl-color" class="input" placeholder="White"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="fl-odometer" class="input" placeholder="km"></div>
       </div>
@@ -6130,7 +6130,7 @@ function renderSalesPage() {
   });
   let rows=[...store.salesRecords].filter(s=>!s._deleted).sort((a,b)=>{
     const dir=_salesSort.dir==='asc'?1:-1;
-    if(_salesSort.col==='date') return dir*((a._createdAt||a.id)-(b._createdAt||b.id));
+    if(_salesSort.col==='date') return dir*(a.date||'').localeCompare(b.date||'');
     if(_salesSort.col==='amount') return dir*((a.charged||0)-(b.charged||0));
     if(_salesSort.col==='num') return dir*(a.num||'').localeCompare(b.num||'');
     return 0;
@@ -7494,5 +7494,211 @@ if('serviceWorker' in navigator) {
 }
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- VIN Camera Scanner Modal -->
+<div id="vin-scan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="width:100%;max-width:480px;padding:16px;box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="color:#fff;font-size:15px;font-weight:600;">📷 Scan VIN Barcode</span>
+      <button onclick="closeVinScanner()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="position:relative;width:100%;background:#000;border-radius:8px;overflow:hidden;">
+      <video id="vin-scan-video" autoplay playsinline muted style="width:100%;display:block;max-height:60vh;object-fit:cover;"></video>
+      <canvas id="vin-scan-canvas" style="display:none;"></canvas>
+      <!-- targeting overlay -->
+      <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;">
+        <div style="width:85%;height:60px;border:2px solid rgba(74,158,255,0.8);border-radius:4px;box-shadow:0 0 0 9999px rgba(0,0,0,0.35);"></div>
+      </div>
+    </div>
+    <p id="vin-scan-status" style="color:rgba(255,255,255,0.7);font-size:13px;text-align:center;margin:12px 0 4px;">Aim camera at the VIN barcode on the dashboard or door jamb</p>
+    <p style="color:rgba(255,255,255,0.4);font-size:11px;text-align:center;margin:0;">Works best in good lighting. VIN barcode is usually Code 39.</p>
+  </div>
+</div>
+
+<script>
+
+// ─── VIN Camera Scanner ───────────────────────────────────────────────────────
+let _vinScanStream = null;
+let _vinScanPrefix = null;
+let _vinScanDetector = null;
+let _vinScanLoop = null;
+
+async function scanVin(prefix) {
+  _vinScanPrefix = prefix;
+  const modal = document.getElementById('vin-scan-modal');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  document.getElementById('vin-scan-status').textContent = 'Starting camera…';
+
+  // Check BarcodeDetector support
+  if(typeof BarcodeDetector === 'undefined') {
+    document.getElementById('vin-scan-status').textContent =
+      '⚠️ Camera scanning not supported on this browser. Use Chrome on Android or iOS 17+. Type VIN manually.';
+    return;
+  }
+
+  try {
+    _vinScanDetector = new BarcodeDetector({ formats: ['code_39','code_128','data_matrix','qr_code'] });
+  } catch(e) {
+    document.getElementById('vin-scan-status').textContent = '⚠️ Barcode detector error. Type VIN manually.';
+    return;
+  }
+
+  try {
+    _vinScanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    const video = document.getElementById('vin-scan-video');
+    video.srcObject = _vinScanStream;
+    await video.play();
+    document.getElementById('vin-scan-status').textContent = 'Aim at VIN barcode…';
+    _startVinScanLoop();
+  } catch(e) {
+    document.getElementById('vin-scan-status').textContent =
+      '⚠️ Camera access denied. Allow camera permission and try again.';
+  }
+}
+
+function _startVinScanLoop() {
+  const video = document.getElementById('vin-scan-video');
+  const canvas = document.getElementById('vin-scan-canvas');
+  let lastGood = '';
+  let goodCount = 0;
+
+  async function tick() {
+    if(!_vinScanStream || !video.readyState || video.readyState < 2) {
+      _vinScanLoop = requestAnimationFrame(tick); return;
+    }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    try {
+      const barcodes = await _vinScanDetector.detect(canvas);
+      for(const b of barcodes) {
+        const raw = (b.rawValue||'').trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');
+        if(raw.length >= 11) {
+          if(raw === lastGood) { goodCount++; } else { lastGood = raw; goodCount = 1; }
+          if(goodCount >= 2) {
+            // Confirmed — fill the VIN field and decode
+            document.getElementById('vin-scan-status').textContent = '✅ VIN detected! Decoding…';
+            closeVinScanner();
+            const vinEl = document.getElementById(_vinScanPrefix + '-vin');
+            if(vinEl) { vinEl.value = raw; }
+            setTimeout(() => decodeVinGeneric(_vinScanPrefix), 100);
+            return;
+          }
+          document.getElementById('vin-scan-status').textContent = `Detected: ${raw} — hold steady…`;
+        }
+      }
+    } catch(e) { /* ignore single-frame errors */ }
+    _vinScanLoop = requestAnimationFrame(tick);
+  }
+  _vinScanLoop = requestAnimationFrame(tick);
+}
+
+function closeVinScanner() {
+  if(_vinScanLoop) { cancelAnimationFrame(_vinScanLoop); _vinScanLoop = null; }
+  if(_vinScanStream) { _vinScanStream.getTracks().forEach(t => t.stop()); _vinScanStream = null; }
+  const modal = document.getElementById('vin-scan-modal');
+  if(modal) modal.style.display = 'none';
+}
+
+</script>
+
+<!-- VIN Phone Relay Modal -->
+<div id="vin-relay-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border-radius:12px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:15px;font-weight:600;">📱 Scan with Phone</span>
+      <button onclick="closeVinRelay()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">✕</button>
+    </div>
+    <div id="vin-relay-qr-wrap" style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;min-height:220px;">
+      <img id="vin-relay-qr" src="" alt="QR Code" style="width:220px;height:220px;border-radius:8px;background:#fff;" />
+    </div>
+    <p id="vin-relay-status" style="font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5;">Scan QR with your phone camera, then point the phone at the VIN barcode on the car</p>
+    <p id="vin-relay-warn" style="font-size:11px;color:var(--yellow,#e8a020);display:none;line-height:1.4;margin-bottom:8px;"></p>
+    <button class="btn btn-ghost" style="font-size:12px;margin-top:4px;" onclick="closeVinRelay()">Cancel</button>
+  </div>
+</div>
+
+<script>
+
+// ─── VIN Phone Relay (laptop side) ───────────────────────────────────────────
+let _vinRelaySSE = null;
+let _vinRelayPrefix = null;
+let _vinRelayTimeout = null;
+
+function startVinRelay(prefix) {
+  _vinRelayPrefix = prefix;
+  const modal = document.getElementById('vin-relay-modal');
+  if (!modal) return;
+
+  // Warn if running as local file (phone won't be able to open scan.html)
+  const warnEl = document.getElementById('vin-relay-warn');
+  if (window.location.protocol === 'file:') {
+    warnEl.textContent = '⚠️ App is running as a local file — the phone may not be able to open this link. Host the app on a web server or GitHub Pages for phone relay to work.';
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  // Generate ephemeral topic ID
+  const rnd = Array.from(crypto.getRandomValues(new Uint8Array(5))).map(b=>b.toString(36).padStart(2,'0')).join('').slice(0,8);
+  const topic = 'mkauto-' + rnd;
+
+  // Build scan.html URL relative to this page
+  const base = window.location.href.split('?')[0];
+  const dir = base.substring(0, base.lastIndexOf('/') + 1);
+  const scanUrl = dir + 'scan.html?topic=' + topic;
+
+  // Show modal + QR
+  modal.style.display = 'flex';
+  document.getElementById('vin-relay-status').textContent = 'Scan QR with phone → point phone at VIN barcode on car';
+  const qrImg = document.getElementById('vin-relay-qr');
+  qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(scanUrl) + '&ecc=L&color=000000&bgcolor=ffffff';
+  qrImg.onerror = () => {
+    document.getElementById('vin-relay-qr-wrap').innerHTML =
+      '<div style="font-size:12px;color:var(--text2);padding:20px;">QR image failed to load.<br>Check internet connection.</div>';
+  };
+
+  // Listen for VIN via ntfy.sh SSE
+  try {
+    _vinRelaySSE = new EventSource('https://ntfy.sh/' + topic + '/sse');
+    _vinRelaySSE.addEventListener('message', e => {
+      try {
+        const data = JSON.parse(e.data);
+        const vin = (data.message || '').trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+        if (vin.length >= 11) {
+          document.getElementById('vin-relay-status').textContent = '✅ VIN received! Decoding…';
+          setTimeout(() => {
+            closeVinRelay();
+            const vinEl = document.getElementById(_vinRelayPrefix + '-vin');
+            if (vinEl) vinEl.value = vin;
+            setTimeout(() => decodeVinGeneric(_vinRelayPrefix), 80);
+          }, 600);
+        }
+      } catch(e2) {}
+    });
+    _vinRelaySSE.onerror = () => {
+      if (_vinRelaySSE && _vinRelaySSE.readyState === 2) {
+        document.getElementById('vin-relay-status').textContent = '⚠️ Connection lost. Close and try again.';
+      }
+    };
+  } catch(e) {
+    document.getElementById('vin-relay-status').textContent = '⚠️ Could not connect to relay. Check internet.';
+  }
+
+  // Auto-close after 3 minutes
+  _vinRelayTimeout = setTimeout(() => closeVinRelay(), 180000);
+}
+
+function closeVinRelay() {
+  if (_vinRelaySSE) { _vinRelaySSE.close(); _vinRelaySSE = null; }
+  if (_vinRelayTimeout) { clearTimeout(_vinRelayTimeout); _vinRelayTimeout = null; }
+  const modal = document.getElementById('vin-relay-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+</script>
 </body>
 </html>
