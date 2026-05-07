@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>VIN Scanner — AutoShop Pro</title>
+<!-- BarcodeDetector polyfill — enables barcode scanning on iOS Safari, Firefox, etc. -->
+<script src="https://cdn.jsdelivr.net/npm/barcode-detector@2/dist/es2019/polyfill.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -69,7 +71,7 @@ const box = document.getElementById('scan-box');
 if (!topic) {
   st.innerHTML = '<span class="err">⚠️ No session. Open this link from AutoShop Pro on the laptop (click 📱 on a VIN field).</span>';
 } else if (typeof BarcodeDetector === 'undefined') {
-  st.innerHTML = '<span class="err">⚠️ Barcode scanning not supported here.<br>Use <strong>Chrome on Android</strong> or <strong>Safari iOS 17+</strong>.</span>';
+  st.innerHTML = '<span class="err">⚠️ Could not load barcode engine.<br>Check your internet connection and reload.</span>';
 } else {
   let sent = false;
   let detector;

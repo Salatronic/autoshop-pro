@@ -782,10 +782,16 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <button class="date-filter-btn" id="sfbtn-week" onclick="setSalesDateFilter('week')">This Week</button>
       <button class="date-filter-btn" id="sfbtn-month" onclick="setSalesDateFilter('month')">This Month</button>
       <button class="date-filter-btn" id="sfbtn-lastmonth" onclick="setSalesDateFilter('lastmonth')">Last Month</button>
-      <input type="date" class="form-input" id="sales-filter-date" onchange="setSalesDateFilter('specific')" style="width:150px;font-size:12px;" />
+      <button class="date-filter-btn" id="sfbtn-range" onclick="setSalesDateFilter('range')">Custom Range</button>
+      <span id="sales-range-inputs" style="display:none;gap:4px;align-items:center;">
+        <input type="date" class="form-input" id="sales-range-from" onchange="renderSalesPage()" style="width:140px;font-size:12px;" />
+        <span style="font-size:11px;color:var(--text3);">to</span>
+        <input type="date" class="form-input" id="sales-range-to" onchange="renderSalesPage()" style="width:140px;font-size:12px;" />
+      </span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input class="form-input" id="sales-search" placeholder="Search customer, vehicle, service..." oninput="renderSalesPage()" style="flex:1;min-width:180px;" />
+      <button class="btn btn-sm" onclick="printSalesReport()" style="white-space:nowrap;">📊 Print Report</button>
       <select class="form-input" id="sales-filter-cat" onchange="renderSalesPage()" style="width:160px;">
         <option value="">All categories</option>
         <option>Oil Change</option><option>Tires</option><option>Brakes</option>
@@ -1066,9 +1072,16 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
     <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">PERIOD:</span>
     <button class="btn btn-sm active" id="rpt-month" onclick="setReportPeriod('month')">This Month</button>
-    <button class="btn btn-sm" id="rpt-quarter" onclick="setReportPeriod('quarter')">This Quarter</button>
-    <button class="btn btn-sm" id="rpt-year" onclick="setReportPeriod('year')">This Year</button>
+    <button class="btn btn-sm" id="rpt-lastmonth" onclick="setReportPeriod('lastmonth')">Last Month</button>
+    <button class="btn btn-sm" id="rpt-week" onclick="setReportPeriod('week')">This Week</button>
+    <button class="btn btn-sm" id="rpt-lastweek" onclick="setReportPeriod('lastweek')">Last Week</button>
     <button class="btn btn-sm" id="rpt-all" onclick="setReportPeriod('all')">All Time</button>
+    <button class="btn btn-sm" id="rpt-custom" onclick="setReportPeriod('custom')">Custom</button>
+    <span id="rpt-custom-range" style="display:none;gap:6px;align-items:center;">
+      <input type="date" class="form-input" id="rpt-from" onchange="renderReports()" style="width:140px;font-size:12px;" />
+      <span style="font-size:11px;color:var(--text3);">to</span>
+      <input type="date" class="form-input" id="rpt-to" onchange="renderReports()" style="width:140px;font-size:12px;" />
+    </span>
   </div>
   <div class="metrics" id="rpt-metrics"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
@@ -4435,16 +4448,22 @@ function renderDashReminders() {
 let reportPeriod = 'month';
 function setReportPeriod(p) {
   reportPeriod = p;
-  ['month','quarter','year','all'].forEach(x => document.getElementById('rpt-'+x)?.classList.toggle('active', x===p));
-  renderReports();
+  ['week','lastweek','month','lastmonth','all','custom'].forEach(x => document.getElementById('rpt-'+x)?.classList.toggle('active', x===p));
+  const cr = document.getElementById('rpt-custom-range');
+  if(cr) cr.style.display = p === 'custom' ? 'flex' : 'none';
+  if(p !== 'custom') renderReports();
 }
 
 function getReportDates() {
-  const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
-  if(reportPeriod === 'month') return { from: new Date(y,m,1).toISOString().slice(0,10), to: new Date(y,m+1,0).toISOString().slice(0,10) };
-  if(reportPeriod === 'quarter') { const q = Math.floor(m/3)*3; return { from: new Date(y,q,1).toISOString().slice(0,10), to: new Date(y,q+3,0).toISOString().slice(0,10) }; }
-  if(reportPeriod === 'year') return { from: `${y}-01-01`, to: `${y}-12-31` };
-  return { from: '2000-01-01', to: '2099-12-31' };
+  const pad = n => String(n).padStart(2,'0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const today = new Date(); const y = today.getFullYear(); const m = today.getMonth();
+  if(reportPeriod === 'custom') { const f=document.getElementById('rpt-from')?.value; const t=document.getElementById('rpt-to')?.value; return {from:f||'2000-01-01',to:t||todayLocal()}; }
+  if(reportPeriod === 'week') { const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7)); return {from:fmt(mon),to:fmt(today)}; }
+  if(reportPeriod === 'lastweek') { const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7)-7); const sun=new Date(mon); sun.setDate(mon.getDate()+6); return {from:fmt(mon),to:fmt(sun)}; }
+  if(reportPeriod === 'month') return {from:`${y}-${pad(m+1)}-01`, to:fmt(new Date(y,m+1,0))};
+  if(reportPeriod === 'lastmonth') { const f=new Date(y,m-1,1); const l=new Date(y,m,0); return {from:fmt(f),to:fmt(l)}; }
+  return {from:'2000-01-01',to:'2099-12-31'};
 }
 
 function renderReports() {
@@ -6073,23 +6092,22 @@ function getSalesDateRange(filter) {
     const last  = new Date(today.getFullYear(), today.getMonth(), 0);
     return { from: fmt(first), to: fmt(last) };
   }
-  if(filter === 'specific') {
-    const v = document.getElementById('sales-filter-date')?.value;
-    if(v) return { from: v, to: v };
+  if(filter === 'range') {
+    const from = document.getElementById('sales-range-from')?.value;
+    const to   = document.getElementById('sales-range-to')?.value || from;
+    if(from) return { from, to: to || from };
   }
   return null; // 'all'
 }
 
 function setSalesDateFilter(preset) {
   _salesDateFilter = preset;
-  ['all','today','yesterday','week','month','lastmonth'].forEach(k => {
+  ['all','today','yesterday','week','month','lastmonth','range'].forEach(k => {
     const btn = document.getElementById('sfbtn-'+k);
     if(btn) btn.classList.toggle('active', k === preset);
   });
-  if(preset !== 'specific') {
-    const di = document.getElementById('sales-filter-date');
-    if(di) di.value = '';
-  }
+  const ri = document.getElementById('sales-range-inputs');
+  if(ri) ri.style.display = preset === 'range' ? 'flex' : 'none';
   renderSalesPage();
 }
 
@@ -7697,6 +7715,77 @@ function closeVinRelay() {
   if (_vinRelayTimeout) { clearTimeout(_vinRelayTimeout); _vinRelayTimeout = null; }
   const modal = document.getElementById('vin-relay-modal');
   if (modal) modal.style.display = 'none';
+}
+
+
+function printSalesReport() {
+  const range = getSalesDateRange(_salesDateFilter) || {from:'2000-01-01', to:'2099-12-31'};
+  const sales = store.salesRecords.filter(s => !s._deleted && s.date >= range.from && s.date <= range.to);
+  const periodMap = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',month:'This Month',lastmonth:'Last Month'};
+  const periodLabel = _salesDateFilter === 'range'
+    ? `${range.from} to ${range.to}`
+    : (periodMap[_salesDateFilter] || range.from);
+  const user = currentUser?.name || currentUser?.username || 'N/A';
+
+  const byPay = {};
+  let totalCharged=0, totalPaid=0, totalBal=0;
+  sales.forEach(s => {
+    const charged = s.saleTotal||s.charged||0;
+    const paid = (s.salePaid != null) ? s.salePaid : charged;
+    const bal = Math.max(0, charged - paid);
+    const pm = s.payment || 'Other';
+    if(!byPay[pm]) byPay[pm] = {count:0, total:0};
+    byPay[pm].count++; byPay[pm].total += charged;
+    totalCharged += charged; totalPaid += paid; totalBal += bal;
+  });
+  const gstRate = (store.settings?.gstRate||5)/100;
+  const gstTotal = sales.reduce((a,s)=>{ const t=s.saleTotal||s.charged||0; return a+t-t/(1+gstRate); },0);
+
+  const payRows = Object.entries(byPay).sort((a,b)=>b[1].total-a[1].total)
+    .map(([pm,d])=>`<tr><td style="padding:7px 10px;">${pm}</td><td style="padding:7px 10px;text-align:center;font-weight:600;">${d.count}</td><td style="padding:7px 10px;text-align:right;">$${d.total.toFixed(2)}</td></tr>`).join('');
+
+  const balRows = sales.filter(s=>{
+    const c=s.saleTotal||s.charged||0; const p=(s.salePaid!=null)?s.salePaid:c;
+    return Math.max(0,c-p)>0.01;
+  }).map(s=>{
+    const c=s.saleTotal||s.charged||0; const p=(s.salePaid!=null)?s.salePaid:c;
+    const b=Math.max(0,c-p);
+    return `<tr><td style="padding:6px 10px;">${s.custName||s.customerName||'—'}</td><td style="padding:6px 10px;text-align:center;">${s.date||'—'}</td><td style="padding:6px 10px;text-align:right;color:#c0392b;font-weight:600;">$${b.toFixed(2)}</td></tr>`;
+  }).join('');
+
+  const shop = store.settings || {};
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:24px 20px;">
+      <div style="text-align:center;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:20px;">
+        <div style="font-size:22px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
+        <div style="font-size:12px;color:#555;margin:2px 0;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
+        <div style="font-size:17px;font-weight:600;margin-top:10px;">Sales Summary Report</div>
+        <div style="font-size:13px;color:#555;margin-top:4px;">Period: <strong>${periodLabel}</strong></div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">Prepared by: ${user} &nbsp;|&nbsp; Generated: ${todayLocal()}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px;">
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;font-size:15px;">Total Jobs</td><td style="padding:9px 10px;text-align:right;font-size:22px;font-weight:700;">${sales.length}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Total Charged</td><td style="padding:9px 10px;text-align:right;">$${totalCharged.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Total Collected</td><td style="padding:9px 10px;text-align:right;">$${totalPaid.toFixed(2)}</td></tr>
+        <tr style="background:#fff0f0;"><td style="padding:9px 10px;font-weight:600;">Outstanding Balance</td><td style="padding:9px 10px;text-align:right;color:#c0392b;font-weight:700;">$${totalBal.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">GST Collected (est. ${shop.gstRate||5}%)</td><td style="padding:9px 10px;text-align:right;">$${gstTotal.toFixed(2)}</td></tr>
+      </table>
+      <div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Breakdown by Payment Method</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+        <thead><tr style="background:#f4f4f4;"><th style="padding:7px 10px;text-align:left;">Method</th><th style="padding:7px 10px;text-align:center;">Jobs</th><th style="padding:7px 10px;text-align:right;">Total</th></tr></thead>
+        <tbody>${payRows||'<tr><td colspan="3" style="padding:8px 10px;color:#999;">No records</td></tr>'}</tbody>
+      </table>
+      ${balRows ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Customers with Outstanding Balance</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+        <thead><tr style="background:#fff0f0;"><th style="padding:6px 10px;text-align:left;">Customer</th><th style="padding:6px 10px;text-align:center;">Date</th><th style="padding:6px 10px;text-align:right;">Balance Owing</th></tr></thead>
+        <tbody>${balRows}</tbody>
+      </table>` : ''}
+      <div style="font-size:10px;color:#999;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential</div>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Sales Report — ${periodLabel}`;
+  window.addEventListener('afterprint', ()=>{ document.title = _pt; }, {once:true});
+  window.print();
 }
 
 </script>
