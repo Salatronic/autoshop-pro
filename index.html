@@ -1386,15 +1386,20 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="fl-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><input id="fl-vin" class="input" placeholder="VIN #"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="fl-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVin()">Decode</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">COLOR</label><input id="fl-color" class="input" placeholder="White"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="fl-odometer" class="input" placeholder="km"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">STOCK #</label><input id="fl-stock" class="input" placeholder="SK-001"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">CONDITION</label>
           <select id="fl-condition" class="input" style="background:var(--surface2);">
             <option value="excellent">Excellent</option><option value="good">Good</option><option value="fair">Fair</option><option value="poor">Poor</option>
+          </select>
+        </div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">TITLE</label>
+          <select id="fl-title-status" class="input" style="background:var(--surface2);">
+            <option value="active">Active</option><option value="salvage">Salvage</option><option value="rebuild">Rebuild</option>
           </select>
         </div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">STATUS</label>
@@ -1427,9 +1432,18 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="addFlPayment()">+ Add Payment</button>
         <div id="fl-sale-summary" style="background:var(--surface2);border-radius:6px;padding:10px;margin-top:10px;font-size:12px;display:none;"></div>
       </div>
+      <div>
+        <div style="font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:8px;">ATTACHMENTS <span style="font-weight:400;color:var(--text3);">&#8212; invoices, bill of sale, etc.</span></div>
+        <div id="fl-attachments-list" style="margin-bottom:8px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="file" id="fl-attach-input" style="font-size:12px;flex:1;" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+          <button class="btn btn-ghost btn-sm" onclick="uploadFleetAttachment()">Upload</button>
+        </div>
+      </div>
       <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">NOTES</label><textarea id="fl-notes" class="input" rows="2" style="resize:vertical;" placeholder="Any additional notes..."></textarea></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button class="btn btn-ghost" onclick="closeFleetModal()">Cancel</button>
+        <button class="btn btn-ghost" id="fl-report-btn" onclick="printFleetReport(_flId)" style="display:none;">Print Report</button>
         <button class="btn btn-ghost" id="fl-print-btn" onclick="printFleetVehicle(_flId)" style="display:none;">Print Invoice</button>
         <button class="btn" onclick="saveFleetModal()">Save Vehicle</button>
       </div>
@@ -2946,13 +2960,14 @@ function renderFleetPage() {
       return `<div class="card" style="padding:12px 16px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${v.year||''} ${v.make||''} ${v.model||''} ${statusBadge(v.status)} ${v.stockNo?'<span style="color:var(--text3);font-size:11px;">'+v.stockNo+'</span>':''}</div>
+            <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${v.year||''} ${v.make||''} ${v.model||''} ${statusBadge(v.status)} ${v.titleStatus&&v.titleStatus!=='active'?`<span style="background:#3a1a00;color:#e8a020;font-size:10px;padding:2px 8px;border-radius:10px;">${v.titleStatus.charAt(0).toUpperCase()+v.titleStatus.slice(1)}</span>`:''} ${v.stockNo?'<span style="color:var(--text3);font-size:11px;">'+v.stockNo+'</span>':''}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">Cost: <strong>$${totalCost.toFixed(2)}</strong> (purchase $${(parseFloat(v.purchasePrice)||0).toFixed(2)} + parts $${(v.expenses||[]).reduce((s,e)=>s+(parseFloat(e.amount)||0),0).toFixed(2)})${v.status==='sold'?' · Received: <strong>$'+received.toFixed(2)+'</strong>':''}</div>
             ${v.status==='sold'&&agreedPrice>0?`<div style="font-size:11px;margin-top:2px;color:${balance>0?'var(--red)':'#4caf7d'};">${balance>0?'Balance owing: <strong>$'+balance.toFixed(2)+'</strong>'+(v.sale?.balanceDueDate?' (due '+v.sale.balanceDueDate+')':''):'Fully paid'} · Profit: <strong style="color:${profit>=0?'#4caf7d':'var(--red)'};">$'+profit.toFixed(2)+'</strong></div>`:''}
             ${v.sale?.buyerName?`<div style="font-size:11px;color:var(--text3);">Buyer: ${v.sale.buyerName} ${v.sale.buyerPhone?'· '+v.sale.buyerPhone:''}</div>`:''}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
-            ${v.status==='sold'?`<button class="btn btn-sm btn-ghost" onclick="printFleetVehicle('${v.id}')">Print</button>`:''}
+            ${v.status==='sold'?`<button class="btn btn-sm btn-ghost" onclick="printFleetVehicle('${v.id}')">Invoice</button>`:''}
+            <button class="btn btn-sm btn-ghost" onclick="printFleetReport('${v.id}')">Report</button>
             <button class="btn btn-sm btn-ghost" onclick="openFleetModal('${v.id}')">Edit</button>
             <button class="btn btn-sm btn-red" onclick="deleteFleet('${v.id}')">Del</button>
           </div>
@@ -3048,6 +3063,7 @@ function openFleetModal(id) {
   document.getElementById('fl-buyer-email').value = v?.sale?.buyerEmail||'';
   document.getElementById('fl-agreed-price').value = v?.sale?.agreedPrice||'';
   document.getElementById('fl-balance-due').value = v?.sale?.balanceDueDate||'';
+  document.getElementById('fl-title-status').value = v?.titleStatus||'active';
   document.getElementById('fl-notes').value = v?.notes||'';
   document.getElementById('fl-expenses-list').innerHTML = '';
   document.getElementById('fl-payments-list').innerHTML = '';
@@ -3055,6 +3071,9 @@ function openFleetModal(id) {
   (v?.sale?.payments||[]).forEach(p=>addFlPayment(p));
   const printBtn = document.getElementById('fl-print-btn');
   if(printBtn) printBtn.style.display = (id && v?.status==='sold') ? '' : 'none';
+  const reportBtn = document.getElementById('fl-report-btn');
+  if(reportBtn) reportBtn.style.display = id ? '' : 'none';
+  renderFlAttachments(id||null);
   toggleFlSaleSection();
   updateFlSaleSummary();
   document.getElementById('fleet-modal-overlay').classList.remove('hidden');
@@ -3074,6 +3093,7 @@ function saveFleetModal() {
     note: row.querySelector('[data-fl-pnote]')?.value?.trim()||''
   })).filter(p=>p.amount>0);
   const status = document.getElementById('fl-status').value;
+  const existingV = _flId ? getFleet().find(x=>x.id===_flId) : null;
   const rec = {
     id: _flId || ('fl'+Date.now()),
     make: document.getElementById('fl-make').value.trim(),
@@ -3084,6 +3104,7 @@ function saveFleetModal() {
     odometer: document.getElementById('fl-odometer').value.trim(),
     stockNo: document.getElementById('fl-stock').value.trim(),
     condition: document.getElementById('fl-condition').value,
+    titleStatus: document.getElementById('fl-title-status').value,
     status,
     purchasePrice: parseFloat(document.getElementById('fl-purchase-price').value)||0,
     purchaseDate: document.getElementById('fl-purchase-date').value,
@@ -3098,6 +3119,7 @@ function saveFleetModal() {
       payments
     } : null,
     notes: document.getElementById('fl-notes').value.trim(),
+    attachments: existingV?.attachments||[],
     _updatedAt: Date.now()
   };
   const vehicles = getFleet();
@@ -3155,6 +3177,143 @@ function printFleetVehicle(id) {
     </div>`;
   window.print();
 }
+
+function printFleetReport(id) {
+  const v = id ? getFleet().find(x=>x.id===id) : null;
+  if(!v) return;
+  const fmt = n => '$'+(parseFloat(n)||0).toFixed(2);
+  const totalExp = (v.expenses||[]).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const totalCost = (parseFloat(v.purchasePrice)||0) + totalExp;
+  const received = ((v.sale&&v.sale.payments)||[]).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const agreed = parseFloat(v.sale?.agreedPrice)||0;
+  const balance = agreed - received;
+  const profit = v.status==='sold' ? received - totalCost : null;
+  const titleMap = {active:'Active',salvage:'Salvage',rebuild:'Rebuild'};
+  const allCostRows = [
+    `<tr><td style="padding:5px 10px;border-top:1px solid #eee;">${v.purchaseDate||'—'}</td><td style="padding:5px 10px;border-top:1px solid #eee;">Purchase</td><td style="padding:5px 10px;border-top:1px solid #eee;">${v.purchasedFrom||'—'}</td><td style="padding:5px 10px;border-top:1px solid #eee;">Pool</td><td style="padding:5px 10px;border-top:1px solid #eee;text-align:right;font-weight:600;">${fmt(v.purchasePrice)}</td></tr>`,
+    ...(v.expenses||[]).map(e=>`<tr><td style="padding:5px 10px;border-top:1px solid #eee;">${e.date||'—'}</td><td style="padding:5px 10px;border-top:1px solid #eee;">${e.type||''}</td><td style="padding:5px 10px;border-top:1px solid #eee;">${e.desc||''}</td><td style="padding:5px 10px;border-top:1px solid #eee;">${e.paidBy||'Pool'}</td><td style="padding:5px 10px;border-top:1px solid #eee;text-align:right;">${fmt(e.amount)}</td></tr>`)
+  ].join('');
+  const payRows = (v.sale?.payments||[]).map(p=>`<tr><td style="padding:5px 10px;border-top:1px solid #eee;">${p.date||'—'}</td><td style="padding:5px 10px;border-top:1px solid #eee;text-align:right;">${fmt(p.amount)}</td><td style="padding:5px 10px;border-top:1px solid #eee;">${p.note||''}</td></tr>`).join('');
+  const saleSection = v.status==='sold' ? `
+    <div style="font-weight:600;font-size:12px;border-bottom:1px solid #ddd;padding-bottom:4px;margin:16px 0 8px;">SALE DETAILS</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid #ddd;margin-bottom:10px;">
+      <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;width:130px;">Buyer</td><td style="padding:6px 10px;">${v.sale?.buyerName||'—'}</td><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;width:100px;">Phone</td><td style="padding:6px 10px;">${v.sale?.buyerPhone||'—'}</td></tr>
+      <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Agreed Price</td><td colspan="3" style="padding:6px 10px;font-weight:600;">${fmt(agreed)}</td></tr>
+    </table>
+    ${payRows?`<table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid #ddd;margin-bottom:10px;"><thead><tr style="background:#f5f5f5;"><th style="padding:5px 10px;text-align:left;">Date</th><th style="padding:5px 10px;text-align:right;">Amount</th><th style="padding:5px 10px;text-align:left;">Note</th></tr></thead><tbody>${payRows}</tbody><tfoot><tr style="border-top:2px solid #ddd;"><td style="padding:6px 10px;font-weight:600;">Total Received</td><td style="padding:6px 10px;text-align:right;font-weight:600;color:green;">${fmt(received)}</td><td></td></tr>${balance>0.01?`<tr><td style="padding:6px 10px;color:red;">Balance Owing</td><td style="padding:6px 10px;text-align:right;color:red;font-weight:600;">${fmt(balance)}</td><td style="padding:6px 10px;font-size:11px;">${v.sale?.balanceDueDate?'due '+v.sale.balanceDueDate:''}</td></tr>`:''}</tfoot></table>`:''}
+    <div style="background:${profit>=0?'#f0fff4':'#fff0f0'};border:2px solid ${profit>=0?'green':'red'};border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+      <span style="font-weight:700;font-size:14px;">NET PROFIT / LOSS</span>
+      <span style="font-weight:700;font-size:18px;color:${profit>=0?'green':'red'};">${profit>=0?'+':''}${fmt(profit)}</span>
+    </div>` : '';
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;color:#000;padding:20px;max-width:740px;margin:0 auto;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;border-bottom:2px solid #000;padding-bottom:12px;">
+        <div><div style="font-size:22px;font-weight:700;">VEHICLE REPORT</div><div style="font-size:12px;color:#555;">Internal P&amp;L Summary — Confidential</div></div>
+        <div style="text-align:right;font-size:11px;color:#555;"><div>Stock #: <strong>${v.stockNo||'—'}</strong></div><div>Printed: <strong>${todayLocal()}</strong></div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid #ddd;margin-bottom:16px;">
+        <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;width:130px;">Vehicle</td><td style="padding:6px 10px;">${v.year||''} ${v.make||''} ${v.model||''}</td><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;width:100px;">Color</td><td style="padding:6px 10px;">${v.color||'—'}</td></tr>
+        <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">VIN</td><td colspan="3" style="padding:6px 10px;font-family:monospace;font-size:12px;">${v.vin||'—'}</td></tr>
+        <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Odometer</td><td style="padding:6px 10px;">${v.odometer||'—'}</td><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Title</td><td style="padding:6px 10px;">${titleMap[v.titleStatus]||'Active'}</td></tr>
+        <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Condition</td><td style="padding:6px 10px;">${(v.condition||'').charAt(0).toUpperCase()+(v.condition||'').slice(1)}</td><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Status</td><td style="padding:6px 10px;">${v.status==='in_repair'?'In Repair':v.status==='available'?'Available':'Sold'}</td></tr>
+        <tr><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Purchased From</td><td style="padding:6px 10px;">${v.purchasedFrom||'—'}</td><td style="font-weight:600;padding:6px 10px;background:#f5f5f5;">Purchase Date</td><td style="padding:6px 10px;">${v.purchaseDate||'—'}</td></tr>
+      </table>
+      <div style="font-weight:600;font-size:12px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;">COSTS &amp; EXPENSES</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #ddd;margin-bottom:4px;">
+        <thead><tr style="background:#f5f5f5;"><th style="padding:5px 10px;text-align:left;">Date</th><th style="padding:5px 10px;text-align:left;">Type</th><th style="padding:5px 10px;text-align:left;">Description</th><th style="padding:5px 10px;text-align:left;">Paid By</th><th style="padding:5px 10px;text-align:right;">Amount</th></tr></thead>
+        <tbody>${allCostRows}</tbody>
+        <tfoot><tr style="border-top:2px solid #000;"><td colspan="4" style="padding:6px 10px;font-weight:700;">TOTAL COST</td><td style="padding:6px 10px;text-align:right;font-weight:700;">${fmt(totalCost)}</td></tr></tfoot>
+      </table>
+      ${saleSection}
+      ${v.notes?`<div style="margin-top:12px;font-size:12px;border-top:1px solid #ddd;padding-top:8px;"><strong>Notes:</strong> ${v.notes}</div>`:''}
+    </div>`;
+  const _pt = document.title;
+  document.title = `Report — ${(v.year+' '+v.make+' '+v.model).trim()} ${v.stockNo||''}`.trim();
+  window.addEventListener('afterprint',()=>{document.title=_pt;},{once:true});
+  window.print();
+}
+
+async function decodeVin() {
+  const vin = document.getElementById('fl-vin').value.trim();
+  if(vin.length < 11) { showToast('Enter a valid VIN (min 11 chars)'); return; }
+  try {
+    showToast('Decoding VIN...');
+    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/${encodeURIComponent(vin)}?format=json`);
+    const data = await res.json();
+    const get = variable => data.Results.find(r=>r.Variable===variable)?.Value||'';
+    const year=get('Model Year'), make=get('Make'), model=get('Model');
+    if(make&&make!=='null') document.getElementById('fl-make').value = make.charAt(0).toUpperCase()+make.slice(1).toLowerCase();
+    if(model&&model!=='null') document.getElementById('fl-model').value = model.charAt(0).toUpperCase()+model.slice(1).toLowerCase();
+    if(year&&year!=='null') document.getElementById('fl-year').value = year;
+    if(make&&make!=='null') showToast(`Decoded: ${year} ${make} ${model}`);
+    else showToast('VIN not recognized — fill in manually');
+  } catch(e) { showToast('VIN decode failed — check connection'); }
+}
+
+async function uploadFleetAttachment() {
+  if(!_flId) { showToast('Save vehicle first before uploading'); return; }
+  if(!driveAccessToken) { showToast('Connect Google Drive first'); return; }
+  const inp = document.getElementById('fl-attach-input');
+  if(!inp?.files?.length) { showToast('Choose a file first'); return; }
+  const file = inp.files[0];
+  showToast('Uploading '+file.name+'...');
+  try {
+    const meta = { name: `[ASP-${_flId}] ${file.name}`, parents: ['appDataFolder'] };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    form.append('file', file);
+    const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',body:form});
+    if(!res) { showToast('Upload failed'); return; }
+    const d = await res.json();
+    const vehicles = getFleet();
+    const v = vehicles.find(x=>x.id===_flId);
+    if(!v) { showToast('Vehicle not found — save first'); return; }
+    if(!v.attachments) v.attachments=[];
+    v.attachments.push({id:d.id, name:file.name, uploadedAt:Date.now()});
+    saveFleet(vehicles);
+    inp.value='';
+    renderFlAttachments(_flId);
+    showToast('Uploaded: '+file.name);
+  } catch(e) { showToast('Upload error'); }
+}
+
+async function downloadFleetAttachment(fileId) {
+  if(!driveAccessToken) { showToast('Connect Google Drive first'); return; }
+  const v = getFleet().find(x=>x.id===_flId);
+  const att = (v?.attachments||[]).find(a=>a.id===fileId);
+  const fileName = att?.name||'attachment';
+  try {
+    const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{});
+    if(!res) { showToast('Download failed'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+  } catch(e) { showToast('Download error'); }
+}
+
+async function deleteFleetAttachment(fileId) {
+  if(!confirm('Remove this attachment?')) return;
+  const vehicles = getFleet();
+  const v = vehicles.find(x=>x.id===_flId);
+  if(!v) return;
+  v.attachments = (v.attachments||[]).filter(a=>a.id!==fileId);
+  saveFleet(vehicles);
+  renderFlAttachments(_flId);
+  if(driveAccessToken) driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`,{method:'DELETE'}).catch(()=>{});
+}
+
+function renderFlAttachments(vid) {
+  const el = document.getElementById('fl-attachments-list');
+  if(!el) return;
+  if(!vid) { el.innerHTML='<div style="color:var(--text3);font-size:12px;">Save vehicle first to add attachments.</div>'; return; }
+  const v = getFleet().find(x=>x.id===vid);
+  const atts = v?.attachments||[];
+  if(!atts.length) { el.innerHTML='<div style="color:var(--text3);font-size:12px;">No attachments yet.</div>'; return; }
+  el.innerHTML = atts.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);"><span style="flex:1;font-size:12px;">&#128206; ${a.name}</span><button class="btn btn-sm btn-ghost" onclick="downloadFleetAttachment('${a.id}')">Download</button><button class="btn btn-sm btn-red" onclick="deleteFleetAttachment('${a.id}')">&#x2715;</button></div>`).join('');
+}
+
 
 // ─── Capital contributions modal ──────────────────────────────────────────────
 let _capId = null;
