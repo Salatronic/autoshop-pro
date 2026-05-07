@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>VIN Scanner — AutoShop Pro</title>
 <!-- BarcodeDetector polyfill — enables barcode scanning on iOS Safari, Firefox, etc. -->
-<script src="https://cdn.jsdelivr.net/npm/barcode-detector@2/dist/es2019/polyfill.min.js"></script>
+<script>
+(function(){
+  if(typeof BarcodeDetector !== 'undefined') return; // native already available
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/barcode-detector@2/dist/es2019/polyfill.min.js';
+  s.onerror = function(){ window._barcodePolyfillFailed = true; };
+  document.head.appendChild(s);
+})();
+</script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -47,6 +55,19 @@ body {
   border-radius: 4px; padding: 2px 10px; font-family: monospace;
   font-size: 15px; letter-spacing: 1px; margin-top: 4px;
 }
+.manual-wrap {
+  padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.manual-input {
+  width: 100%; max-width: 340px; padding: 10px 14px; border-radius: 6px;
+  border: 1.5px solid #4a9eff; background: #1a1a1a; color: #fff;
+  font-family: monospace; font-size: 16px; letter-spacing: 2px; text-transform: uppercase;
+  text-align: center;
+}
+.manual-btn {
+  padding: 10px 28px; border-radius: 6px; border: none;
+  background: #4a9eff; color: #0a0a0a; font-size: 15px; font-weight: 700; cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -60,6 +81,11 @@ body {
     <div class="target"><div class="box" id="scan-box"></div></div>
   </div>
   <div class="status" id="status">Starting camera…</div>
+  <div class="manual-wrap" id="manual-wrap" style="display:none">
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin:0;">Enter VIN manually and tap Send:</p>
+    <input class="manual-input" id="manual-vin" placeholder="17-CHAR VIN" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false" />
+    <button class="manual-btn" onclick="sendManualVin()">Send VIN</button>
+  </div>
 </div>
 
 <script>
@@ -68,76 +94,105 @@ const topic = params.get('topic');
 const st = document.getElementById('status');
 const box = document.getElementById('scan-box');
 
-if (!topic) {
-  st.innerHTML = '<span class="err">⚠️ No session. Open this link from AutoShop Pro on the laptop (click 📱 on a VIN field).</span>';
-} else if (typeof BarcodeDetector === 'undefined') {
-  st.innerHTML = '<span class="err">⚠️ Could not load barcode engine.<br>Check your internet connection and reload.</span>';
-} else {
+function showManualEntry(msg) {
+  st.innerHTML = '<span class="err">' + msg + '</span>';
+  document.getElementById('cam-wrap').style.display = 'none';
+  document.getElementById('manual-wrap').style.display = 'flex';
+}
+
+async function sendManualVin() {
+  const raw = (document.getElementById('manual-vin').value || '').trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');
+  if(raw.length < 11) { st.innerHTML = '<span class="err">VIN too short — must be at least 11 characters.</span>'; return; }
+  try {
+    await fetch('https://ntfy.sh/' + topic, { method:'POST', body:raw, headers:{'Title':'VIN Scanned','Content-Type':'text/plain'} });
+    st.innerHTML = '<span class="ok">✅ VIN sent to laptop!</span><br><div class="vin-display">'+raw+'</div>';
+    document.getElementById('manual-wrap').style.display = 'none';
+  } catch(e) {
+    st.innerHTML = '<span class="err">⚠️ Could not send — check internet and retry.</span>';
+  }
+}
+
+function initScanner() {
+  if(typeof BarcodeDetector === 'undefined') {
+    showManualEntry('⚠️ Barcode engine unavailable on this browser.<br>Use Chrome on Android for camera scan, or enter VIN below:');
+    return;
+  }
   let sent = false;
   let detector;
   try {
     detector = new BarcodeDetector({ formats: ['code_39', 'code_128', 'data_matrix', 'qr_code'] });
   } catch(e) {
-    st.innerHTML = '<span class="err">⚠️ Detector error. Try Chrome on Android.</span>';
-    detector = null;
+    showManualEntry('⚠️ Detector error. Try Chrome on Android, or enter VIN below:');
+    return;
   }
 
-  if (detector) {
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    }).then(stream => {
-      const video = document.getElementById('video');
-      video.srcObject = stream;
-      st.textContent = 'Aim at the VIN barcode on the dashboard or door jamb';
-      box.classList.add('pulse');
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+  }).then(stream => {
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    st.textContent = 'Aim at the VIN barcode on the dashboard or door jamb';
+    box.classList.add('pulse');
 
-      let lastRaw = '', count = 0;
-      const canvas = document.createElement('canvas');
+    let lastRaw = '', count = 0;
+    const canvas = document.createElement('canvas');
 
-      async function scan() {
-        if (sent) return;
-        if (video.readyState >= 2 && video.videoWidth > 0) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          canvas.getContext('2d').drawImage(video, 0, 0);
-          try {
-            const results = await detector.detect(canvas);
-            for (const b of results) {
-              const raw = (b.rawValue || '').trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-              if (raw.length >= 11) {
-                if (raw === lastRaw) { count++; } else { lastRaw = raw; count = 1; }
-                if (count < 2) {
-                  st.innerHTML = `Detected — hold steady… <div class="vin-display">${raw}</div>`;
-                } else {
-                  sent = true;
-                  box.classList.remove('pulse');
-                  box.style.borderColor = '#4caf7d';
-                  stream.getTracks().forEach(t => t.stop());
-                  st.innerHTML = `<span class="ok">✅ VIN sent to laptop!</span><br><div class="vin-display">${raw}</div>`;
-                  try {
-                    await fetch('https://ntfy.sh/' + topic, {
-                      method: 'POST',
-                      body: raw,
-                      headers: { 'Title': 'VIN Scanned', 'Content-Type': 'text/plain' }
-                    });
-                  } catch(e) {
-                    st.innerHTML = '<span class="err">⚠️ Could not send — check internet connection and retry.</span>';
-                    sent = false; stream.getTracks().forEach(t => t.stop());
-                  }
-                  return;
+    async function scan() {
+      if (sent) return;
+      if (video.readyState >= 2 && video.videoWidth > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        try {
+          const results = await detector.detect(canvas);
+          for (const b of results) {
+            const raw = (b.rawValue || '').trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+            if (raw.length >= 11) {
+              if (raw === lastRaw) { count++; } else { lastRaw = raw; count = 1; }
+              if (count < 2) {
+                st.innerHTML = `Detected — hold steady… <div class="vin-display">${raw}</div>`;
+              } else {
+                sent = true;
+                box.classList.remove('pulse');
+                box.style.borderColor = '#4caf7d';
+                stream.getTracks().forEach(t => t.stop());
+                st.innerHTML = `<span class="ok">✅ VIN sent to laptop!</span><br><div class="vin-display">${raw}</div>`;
+                try {
+                  await fetch('https://ntfy.sh/' + topic, {
+                    method: 'POST',
+                    body: raw,
+                    headers: { 'Title': 'VIN Scanned', 'Content-Type': 'text/plain' }
+                  });
+                } catch(e) {
+                  st.innerHTML = '<span class="err">⚠️ Could not send — check internet connection and retry.</span>';
+                  sent = false; stream.getTracks().forEach(t => t.stop());
                 }
+                return;
               }
             }
-          } catch(e2) { /* single frame errors are fine */ }
-        }
-        requestAnimationFrame(scan);
+          }
+        } catch(e2) { /* single frame errors are fine */ }
       }
       requestAnimationFrame(scan);
+    }
+    requestAnimationFrame(scan);
 
-    }).catch(() => {
-      st.innerHTML = '<span class="err">⚠️ Camera access denied.<br>Tap the lock icon in your browser address bar → allow Camera.</span>';
-    });
-  }
+  }).catch(() => {
+    showManualEntry('⚠️ Camera access denied.<br>Allow camera in your browser or enter VIN below:');
+  });
+}
+
+if (!topic) {
+  st.innerHTML = '<span class="err">⚠️ No session. Open this link from AutoShop Pro on the laptop (click 📱 on a VIN field).</span>';
+} else {
+  // Wait briefly for polyfill to load, then init
+  setTimeout(function() {
+    if(window._barcodePolyfillFailed && typeof BarcodeDetector === 'undefined') {
+      showManualEntry('⚠️ Barcode engine failed to load.<br>Check internet or enter VIN below:');
+    } else {
+      initScanner();
+    }
+  }, 600);
 }
 </script>
 </body>

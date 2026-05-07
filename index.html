@@ -733,8 +733,33 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 <!-- QUOTES -->
 <div id="page-quotes" class="hidden">
   <div class="page-header">
-    <div><div class="page-title">Quotes</div></div>
-    <button class="btn btn-accent" onclick="openNewDoc('quote')">+ New Quote</button>
+    <div>
+      <div class="page-title">Quotes</div>
+      <div class="page-sub">Customer estimates and quoted jobs</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="printQuotesReport()">📊 Quote Report</button>
+      <button class="btn btn-accent" onclick="openNewDoc('quote')">+ New Quote</button>
+    </div>
+  </div>
+  <div class="metrics" id="quotes-metrics"></div>
+  <div class="card" style="padding:14px 18px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="date-filter-btn active" id="qfbtn-all" onclick="setQuotesDateFilter('all')">All Time</button>
+      <button class="date-filter-btn" id="qfbtn-today" onclick="setQuotesDateFilter('today')">Today</button>
+      <button class="date-filter-btn" id="qfbtn-yesterday" onclick="setQuotesDateFilter('yesterday')">Yesterday</button>
+      <button class="date-filter-btn" id="qfbtn-week" onclick="setQuotesDateFilter('week')">This Week</button>
+      <button class="date-filter-btn" id="qfbtn-lastweek" onclick="setQuotesDateFilter('lastweek')">Last Week</button>
+      <button class="date-filter-btn" id="qfbtn-month" onclick="setQuotesDateFilter('month')">This Month</button>
+      <button class="date-filter-btn" id="qfbtn-lastmonth" onclick="setQuotesDateFilter('lastmonth')">Last Month</button>
+      <button class="date-filter-btn" id="qfbtn-year" onclick="setQuotesDateFilter('year')">This Year</button>
+      <button class="date-filter-btn" id="qfbtn-range" onclick="setQuotesDateFilter('range')">Custom Range</button>
+      <span id="quotes-range-inputs" style="display:none;gap:4px;align-items:center;">
+        <input type="date" class="form-input" id="quotes-range-from" onchange="renderQuotesPage()" style="width:140px;font-size:12px;" />
+        <span style="font-size:11px;color:var(--text3);">to</span>
+        <input type="date" class="form-input" id="quotes-range-to" onchange="renderQuotesPage()" style="width:140px;font-size:12px;" />
+      </span>
+    </div>
   </div>
   <div class="card">
     <div class="table-wrap"><table>
@@ -747,8 +772,33 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
 <!-- INVOICES -->
 <div id="page-invoices" class="hidden">
   <div class="page-header">
-    <div><div class="page-title">Invoices</div></div>
-    <button class="btn btn-accent" onclick="openNewDoc('invoice')">+ New Invoice</button>
+    <div>
+      <div class="page-title">Invoices</div>
+      <div class="page-sub">Customer invoices — paid and outstanding</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="printInvoicesReport()">🖨 Invoice Report</button>
+      <button class="btn btn-accent" onclick="openNewDoc('invoice')">+ New Invoice</button>
+    </div>
+  </div>
+  <div class="metrics" id="invoices-metrics"></div>
+  <div class="card" style="padding:14px 18px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="date-filter-btn active" id="ifbtn-all" onclick="setInvoicesDateFilter('all')">All Time</button>
+      <button class="date-filter-btn" id="ifbtn-today" onclick="setInvoicesDateFilter('today')">Today</button>
+      <button class="date-filter-btn" id="ifbtn-yesterday" onclick="setInvoicesDateFilter('yesterday')">Yesterday</button>
+      <button class="date-filter-btn" id="ifbtn-week" onclick="setInvoicesDateFilter('week')">This Week</button>
+      <button class="date-filter-btn" id="ifbtn-lastweek" onclick="setInvoicesDateFilter('lastweek')">Last Week</button>
+      <button class="date-filter-btn" id="ifbtn-month" onclick="setInvoicesDateFilter('month')">This Month</button>
+      <button class="date-filter-btn" id="ifbtn-lastmonth" onclick="setInvoicesDateFilter('lastmonth')">Last Month</button>
+      <button class="date-filter-btn" id="ifbtn-year" onclick="setInvoicesDateFilter('year')">This Year</button>
+      <button class="date-filter-btn" id="ifbtn-range" onclick="setInvoicesDateFilter('range')">Custom Range</button>
+      <span id="invoices-range-inputs" style="display:none;gap:4px;align-items:center;">
+        <input type="date" class="form-input" id="invoices-range-from" onchange="renderInvoicesPage()" style="width:140px;font-size:12px;" />
+        <span style="font-size:11px;color:var(--text3);">to</span>
+        <input type="date" class="form-input" id="invoices-range-to" onchange="renderInvoicesPage()" style="width:140px;font-size:12px;" />
+      </span>
+    </div>
   </div>
   <div class="card">
     <div class="table-wrap"><table>
@@ -776,12 +826,14 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <!-- Filter bar -->
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-      <button class="date-filter-btn active" id="sfbtn-all" onclick="setSalesDateFilter('all')">All</button>
+      <button class="date-filter-btn active" id="sfbtn-all" onclick="setSalesDateFilter('all')">All Time</button>
       <button class="date-filter-btn" id="sfbtn-today" onclick="setSalesDateFilter('today')">Today</button>
       <button class="date-filter-btn" id="sfbtn-yesterday" onclick="setSalesDateFilter('yesterday')">Yesterday</button>
       <button class="date-filter-btn" id="sfbtn-week" onclick="setSalesDateFilter('week')">This Week</button>
+      <button class="date-filter-btn" id="sfbtn-lastweek" onclick="setSalesDateFilter('lastweek')">Last Week</button>
       <button class="date-filter-btn" id="sfbtn-month" onclick="setSalesDateFilter('month')">This Month</button>
       <button class="date-filter-btn" id="sfbtn-lastmonth" onclick="setSalesDateFilter('lastmonth')">Last Month</button>
+      <button class="date-filter-btn" id="sfbtn-year" onclick="setSalesDateFilter('year')">This Year</button>
       <button class="date-filter-btn" id="sfbtn-range" onclick="setSalesDateFilter('range')">Custom Range</button>
       <span id="sales-range-inputs" style="display:none;gap:4px;align-items:center;">
         <input type="date" class="form-input" id="sales-range-from" onchange="renderSalesPage()" style="width:140px;font-size:12px;" />
@@ -1066,15 +1118,18 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="page-title">Reports</div>
       <div class="page-sub">Business performance, GST summary, and trends</div>
     </div>
-    <button class="btn btn-accent" onclick="window.print()">🖨 Print Report</button>
+    <button class="btn btn-accent" onclick="printReportsPage()">🖨 Print Report</button>
   </div>
   <!-- Report period selector -->
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
     <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">PERIOD:</span>
-    <button class="btn btn-sm active" id="rpt-month" onclick="setReportPeriod('month')">This Month</button>
-    <button class="btn btn-sm" id="rpt-lastmonth" onclick="setReportPeriod('lastmonth')">Last Month</button>
+    <button class="btn btn-sm" id="rpt-today" onclick="setReportPeriod('today')">Today</button>
+    <button class="btn btn-sm" id="rpt-yesterday" onclick="setReportPeriod('yesterday')">Yesterday</button>
     <button class="btn btn-sm" id="rpt-week" onclick="setReportPeriod('week')">This Week</button>
     <button class="btn btn-sm" id="rpt-lastweek" onclick="setReportPeriod('lastweek')">Last Week</button>
+    <button class="btn btn-sm active" id="rpt-month" onclick="setReportPeriod('month')">This Month</button>
+    <button class="btn btn-sm" id="rpt-lastmonth" onclick="setReportPeriod('lastmonth')">Last Month</button>
+    <button class="btn btn-sm" id="rpt-year" onclick="setReportPeriod('year')">This Year</button>
     <button class="btn btn-sm" id="rpt-all" onclick="setReportPeriod('all')">All Time</button>
     <button class="btn btn-sm" id="rpt-custom" onclick="setReportPeriod('custom')">Custom</button>
     <span id="rpt-custom-range" style="display:none;gap:6px;align-items:center;">
@@ -4118,8 +4173,8 @@ window.addEventListener('storage', (e) => {
     const active = pages.find(p => !document.getElementById('page-'+p)?.classList.contains('hidden'));
     if(active === 'dashboard') renderDashboard();
     else if(active === 'sales') renderSalesPage();
-    else if(active === 'invoices') renderDocs('invoice');
-    else if(active === 'quotes') renderDocs('quote');
+    else if(active === 'invoices') renderInvoicesPage();
+    else if(active === 'quotes') renderQuotesPage();
     else if(active === 'inventory') renderInventory();
     else if(active === 'customers') renderCustomers();
     else if(active === 'debtors') renderDebtors();
@@ -4282,8 +4337,8 @@ function showPage(name) {
     document.getElementById('nav-'+p)?.classList.toggle('active', p === name);
   });
   if(name==='dashboard') renderDashboard();
-  if(name==='quotes') renderDocs('quote');
-  if(name==='invoices') renderDocs('invoice');
+  if(name==='quotes') renderQuotesPage();
+  if(name==='invoices') renderInvoicesPage();
   if(name==='sales') renderSalesPage();
   if(name==='inventory') renderInventory();
   if(name==='users') renderUsersPage();
@@ -4448,27 +4503,20 @@ function renderDashReminders() {
 let reportPeriod = 'month';
 function setReportPeriod(p) {
   reportPeriod = p;
-  ['week','lastweek','month','lastmonth','all','custom'].forEach(x => document.getElementById('rpt-'+x)?.classList.toggle('active', x===p));
+  ['today','yesterday','week','lastweek','month','lastmonth','year','all','custom'].forEach(x => document.getElementById('rpt-'+x)?.classList.toggle('active', x===p));
   const cr = document.getElementById('rpt-custom-range');
   if(cr) cr.style.display = p === 'custom' ? 'flex' : 'none';
   if(p !== 'custom') renderReports();
 }
 
 function getReportDates() {
-  const pad = n => String(n).padStart(2,'0');
-  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const today = new Date(); const y = today.getFullYear(); const m = today.getMonth();
   if(reportPeriod === 'custom') { const f=document.getElementById('rpt-from')?.value; const t=document.getElementById('rpt-to')?.value; return {from:f||'2000-01-01',to:t||todayLocal()}; }
-  if(reportPeriod === 'week') { const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7)); return {from:fmt(mon),to:fmt(today)}; }
-  if(reportPeriod === 'lastweek') { const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7)-7); const sun=new Date(mon); sun.setDate(mon.getDate()+6); return {from:fmt(mon),to:fmt(sun)}; }
-  if(reportPeriod === 'month') return {from:`${y}-${pad(m+1)}-01`, to:fmt(new Date(y,m+1,0))};
-  if(reportPeriod === 'lastmonth') { const f=new Date(y,m-1,1); const l=new Date(y,m,0); return {from:fmt(f),to:fmt(l)}; }
-  return {from:'2000-01-01',to:'2099-12-31'};
+  return getDateRangeForFilter(reportPeriod, 'rpt-from', 'rpt-to') || {from:'2000-01-01',to:'2099-12-31'};
 }
 
 function renderReports() {
   const { from, to } = getReportDates();
-  const sales = store.salesRecords.filter(s => s.date >= from && s.date <= to);
+  const sales = store.salesRecords.filter(s => !s._deleted && s.date >= from && s.date <= to);
   const revenue = sales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
   const gstRate = (store.settings?.gstRate||5) / 100;
   const gstCollected = sales.reduce((a,s) => {
@@ -4476,14 +4524,19 @@ function renderReports() {
     return a + total - (total / (1 + gstRate));
   }, 0);
   const profit = sales.reduce((a,s) => a + (s.profit||0), 0);
-  const paid = sales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
+  const partsCost = sales.reduce((a,s) => a + (s.totalCost||0), 0);
+  const labourTotal = sales.reduce((a,s) => a + ((s.items||[]).reduce((b,i) => b + (i.labour||0), 0)), 0);
+  const cashTotal = sales.filter(s => s.payment==='Cash').reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
+  const etransferTotal = sales.filter(s => (s.payment||'').toLowerCase().includes('transfer')).reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
 
   document.getElementById('rpt-metrics').innerHTML = `
     <div class="metric"><div class="metric-label">GROSS REVENUE</div><div class="metric-value green">$${revenue.toFixed(2)}</div></div>
     <div class="metric"><div class="metric-label">GST COLLECTED</div><div class="metric-value accent">$${gstCollected.toFixed(2)}</div></div>
-    <div class="metric"><div class="metric-label">NET PROFIT</div><div class="metric-value">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">ALL PARTS COST</div><div class="metric-value" style="color:var(--red)">$${partsCost.toFixed(2)}</div></div>
     <div class="metric"><div class="metric-label">TOTAL JOBS</div><div class="metric-value">${sales.length}</div></div>
-    <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${paid.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">PROFIT MADE</div><div class="metric-value ${profit>=0?'green':''}">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${cashTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">E-TRANSFER</div><div class="metric-value green">$${etransferTotal.toFixed(2)}</div></div>
   `;
 
   // GST Summary
@@ -4777,14 +4830,14 @@ function renderDocs(type) {
 
 function markPaid(id) {
   const doc = store.docs.find(d=>d.id===id);
-  if(doc) { doc.status='paid'; save(); renderDocs('invoice'); showToast('Marked as paid'); }
+  if(doc) { doc.status='paid'; save(); renderInvoicesPage(); showToast('Marked as paid'); }
 }
 function deleteDoc(id) {
   if(!confirm('Move this document to Recycle Bin?')) return;
   const d=store.docs.find(x=>x.id===id);
   const type=d?.type||'quote';
   if(d){d._deleted=true;d._deletedAt=Date.now();}
-  save(); renderDocs(type); renderDashboard(); showToast('Moved to Recycle Bin');
+  save(); if(type==='invoice') renderInvoicesPage(); else renderQuotesPage(); renderDashboard(); showToast('Moved to Recycle Bin');
 }
 
 // ─── INVENTORY ───────────────────────────────────────────────────────────────
@@ -6070,7 +6123,7 @@ function setSalesSort(col) {
   renderSalesPage();
 }
 
-function getSalesDateRange(filter) {
+function getDateRangeForFilter(filter, fromId, toId) {
   const today = new Date();
   const pad = n => String(n).padStart(2,'0');
   const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -6084,25 +6137,33 @@ function getSalesDateRange(filter) {
     const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay()+6)%7));
     return { from: fmt(mon), to: todayStr };
   }
-  if(filter === 'month') {
-    return { from: `${today.getFullYear()}-${pad(today.getMonth()+1)}-01`, to: todayStr };
+  if(filter === 'lastweek') {
+    const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay()+6)%7) - 7);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    return { from: fmt(mon), to: fmt(sun) };
   }
+  if(filter === 'month') return { from: `${today.getFullYear()}-${pad(today.getMonth()+1)}-01`, to: todayStr };
   if(filter === 'lastmonth') {
     const first = new Date(today.getFullYear(), today.getMonth()-1, 1);
     const last  = new Date(today.getFullYear(), today.getMonth(), 0);
     return { from: fmt(first), to: fmt(last) };
   }
+  if(filter === 'year') return { from: `${today.getFullYear()}-01-01`, to: todayStr };
   if(filter === 'range') {
-    const from = document.getElementById('sales-range-from')?.value;
-    const to   = document.getElementById('sales-range-to')?.value || from;
+    const from = document.getElementById(fromId)?.value;
+    const to   = document.getElementById(toId)?.value || from;
     if(from) return { from, to: to || from };
   }
   return null; // 'all'
 }
 
+function getSalesDateRange(filter) {
+  return getDateRangeForFilter(filter, 'sales-range-from', 'sales-range-to');
+}
+
 function setSalesDateFilter(preset) {
   _salesDateFilter = preset;
-  ['all','today','yesterday','week','month','lastmonth','range'].forEach(k => {
+  ['all','today','yesterday','week','lastweek','month','lastmonth','year','range'].forEach(k => {
     const btn = document.getElementById('sfbtn-'+k);
     if(btn) btn.classList.toggle('active', k === preset);
   });
@@ -6124,6 +6185,8 @@ function renderSalesPage() {
     : store.salesRecords.filter(s=>!s._deleted);
   const rev=metricRecords.reduce((a,s)=>a+(s.saleTotal||s.charged||0),0);
   const profit=metricRecords.reduce((a,s)=>a+(s.profit||0),0);
+  const partsCostM=metricRecords.reduce((a,s)=>a+(s.totalCost||0),0);
+  const labourM=metricRecords.reduce((a,s)=>a+((s.items||[]).reduce((b,i)=>b+(i.labour||0),0)),0);
   const margin=rev>0?((profit/rev)*100):0;
   const isHideProfit = currentUser?.hideProfit;
   const isHideCost = !(!currentUser || currentUser.role === 'admin' || currentUser.canSeeCost);
@@ -6131,10 +6194,12 @@ function renderSalesPage() {
   if(salesTbl) { isHideProfit ? salesTbl.classList.add('hide-profit') : salesTbl.classList.remove('hide-profit'); }
   if(salesTbl) { isHideCost ? salesTbl.classList.add('hide-cost') : salesTbl.classList.remove('hide-cost'); }
   document.getElementById('sales-metrics').innerHTML=`
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">TOTAL REVENUE</div><div class="metric-value green">$${rev.toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">NET PROFIT (🔒)</div><div class="metric-value accent">$${profit.toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">MARGIN (🔒)</div><div class="metric-value">${margin.toFixed(1)}%</div></div>`}
     <div class="metric"><div class="metric-label">TOTAL SALES</div><div class="metric-value">${metricRecords.length}</div></div>
+    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">REVENUE</div><div class="metric-value green">$${rev.toFixed(2)}</div></div>`}
+    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">PARTS COST (🔒)</div><div class="metric-value" style="color:var(--red)">$${partsCostM.toFixed(2)}</div></div>`}
+    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">LABOUR (🔒)</div><div class="metric-value accent">$${labourM.toFixed(2)}</div></div>`}
+    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">PROFIT (🔒)</div><div class="metric-value ${profit>=0?'green':''}">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>`}
+    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">MARGIN (🔒)</div><div class="metric-value">${margin.toFixed(1)}%</div></div>`}
   `;
   // Filter
   const dateRange = getSalesDateRange(_salesDateFilter);
@@ -7256,7 +7321,7 @@ function savePartialPay() {
   document.getElementById('partial-pay-modal').classList.add('hidden');
   // Refresh whichever page is visible
   if(!document.getElementById('page-debtors').classList.contains('hidden')) renderDebtors();
-  if(!document.getElementById('page-invoices').classList.contains('hidden')) renderDocs('invoice');
+  if(!document.getElementById('page-invoices').classList.contains('hidden')) renderInvoicesPage();
   if(!document.getElementById('page-dashboard').classList.contains('hidden')) renderDashboard();
   if(!document.getElementById('page-customers').classList.contains('hidden')) renderCustomers();
 }
@@ -7718,13 +7783,283 @@ function closeVinRelay() {
 }
 
 
+// ─── QUOTES DATE FILTER ───────────────────────────────────────────────────────
+let _quotesDateFilter = 'all';
+function setQuotesDateFilter(preset) {
+  _quotesDateFilter = preset;
+  ['all','today','yesterday','week','lastweek','month','lastmonth','year','range'].forEach(k => {
+    const btn = document.getElementById('qfbtn-'+k);
+    if(btn) btn.classList.toggle('active', k === preset);
+  });
+  const ri = document.getElementById('quotes-range-inputs');
+  if(ri) ri.style.display = preset === 'range' ? 'flex' : 'none';
+  renderQuotesPage();
+}
+
+function renderQuotesPage() {
+  const range = getDateRangeForFilter(_quotesDateFilter, 'quotes-range-from', 'quotes-range-to');
+  const docs = store.docs.filter(d => d.type==='quote' && !d._deleted && (!range || (d.date >= range.from && d.date <= range.to)));
+  const totalQuoted = docs.reduce((a,d) => a + (d.total||0), 0);
+  const committed = docs.filter(d => d.status === 'accepted' || d._convertedToSale);
+  const committedAmt = committed.reduce((a,d) => a + (d.total||0), 0);
+  const pending = docs.filter(d => d.status !== 'accepted' && !d._convertedToSale);
+  const pendingAmt = pending.reduce((a,d) => a + (d.total||0), 0);
+  const convRate = docs.length > 0 ? Math.round((committed.length / docs.length) * 100) : 0;
+  document.getElementById('quotes-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">TOTAL QUOTES</div><div class="metric-value">${docs.length}</div></div>
+    <div class="metric"><div class="metric-label">TOTAL QUOTED</div><div class="metric-value green">$${totalQuoted.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">COMMITTED / SOLD</div><div class="metric-value accent">$${committedAmt.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">PENDING</div><div class="metric-value" style="color:var(--red)">$${pendingAmt.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">CONVERSION RATE</div><div class="metric-value">${convRate}%</div></div>
+  `;
+  const tbody = document.getElementById('quotes-table');
+  tbody.innerHTML = docs.length ? [...docs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d => {
+    const itemDesc = (d.items||[]).map(i=>i.desc).filter(Boolean).join(', ') || d.notes || '—';
+    const badgeClass = d.status==='paid'?'paid':d.status==='partial'?'partial':d.status==='pending'?'pending':'quote';
+    return `<tr>
+      <td class="mono text-accent">${d.num}</td>
+      <td>${d.customer}</td>
+      <td>${[d.year,d.make,d.model].filter(Boolean).join(' ')||'—'}</td>
+      <td style="font-size:12px;color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${itemDesc}">${itemDesc}</td>
+      <td>${d.date}</td>
+      <td class="mono">$${d.total.toFixed(2)}</td>
+      <td><span class="badge badge-${badgeClass}">${d.status}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${d.phone ? `<button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;" onclick="notifyInvoiceWhatsApp(${d.id})" title="WhatsApp">📱</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="openEditDoc(${d.id})">Edit</button>
+        <button class="btn btn-sm" onclick="printDocById(${d.id})">Print</button>
+        <button class="btn btn-sm btn-accent" onclick="convertQuoteToSale(${d.id})" title="Convert to Sale">→ Sale</button>
+        <button class="btn btn-sm" style="color:var(--red)" onclick="deleteDoc(${d.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:20px">No quotes for this period</td></tr>`;
+}
+
+function printQuotesReport() {
+  const range = getDateRangeForFilter(_quotesDateFilter, 'quotes-range-from', 'quotes-range-to');
+  const docs = store.docs.filter(d => d.type==='quote' && !d._deleted && (!range || (d.date >= range.from && d.date <= range.to)));
+  const periodLabels = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',lastweek:'Last Week',month:'This Month',lastmonth:'Last Month',year:'This Year'};
+  const periodLabel = _quotesDateFilter === 'range' ? `${range?.from} to ${range?.to}` : (periodLabels[_quotesDateFilter] || 'All Time');
+  const shop = store.settings || {};
+  const totalQuoted = docs.reduce((a,d)=>a+(d.total||0),0);
+  const committed = docs.filter(d=>d.status==='accepted'||d._convertedToSale);
+  const committedAmt = committed.reduce((a,d)=>a+(d.total||0),0);
+  const pending = docs.filter(d=>d.status!=='accepted'&&!d._convertedToSale);
+  const pendingAmt = pending.reduce((a,d)=>a+(d.total||0),0);
+  const convRate = docs.length > 0 ? Math.round((committed.length/docs.length)*100) : 0;
+  const rows = [...docs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d=>
+    `<tr><td style="padding:5px 8px;">${d.num}</td><td style="padding:5px 8px;">${d.customer}</td><td style="padding:5px 8px;">${d.date}</td><td style="padding:5px 8px;text-align:right;">$${d.total.toFixed(2)}</td><td style="padding:5px 8px;text-align:center;">${d.status}</td></tr>`
+  ).join('');
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:24px 20px;">
+      <div style="text-align:center;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:20px;">
+        <div style="font-size:22px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
+        <div style="font-size:12px;color:#555;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
+        <div style="font-size:17px;font-weight:600;margin-top:10px;">Quotes Report</div>
+        <div style="font-size:13px;color:#555;">Period: <strong>${periodLabel}</strong></div>
+        <div style="font-size:11px;color:#777;">Generated: ${todayLocal()}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px;">
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Total Quotes</td><td style="padding:9px 10px;text-align:right;font-size:20px;font-weight:700;">${docs.length}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Total Quoted Value</td><td style="padding:9px 10px;text-align:right;">$${totalQuoted.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Committed / Won</td><td style="padding:9px 10px;text-align:right;">$${committedAmt.toFixed(2)} (${committed.length} quotes)</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Pending / Open</td><td style="padding:9px 10px;text-align:right;color:#c0392b;">$${pendingAmt.toFixed(2)} (${pending.length} quotes)</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Conversion Rate</td><td style="padding:9px 10px;text-align:right;">${convRate}%</td></tr>
+      </table>
+      <div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">All Quotes</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#f4f4f4;"><th style="padding:6px 8px;text-align:left;">Quote #</th><th style="padding:6px 8px;text-align:left;">Customer</th><th style="padding:6px 8px;text-align:left;">Date</th><th style="padding:6px 8px;text-align:right;">Total</th><th style="padding:6px 8px;text-align:center;">Status</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="5" style="padding:8px;color:#999;">No quotes</td></tr>'}</tbody>
+      </table>
+      <div style="font-size:10px;color:#999;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential</div>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Quotes Report — ${periodLabel}`;
+  window.addEventListener('afterprint', ()=>{ document.title = _pt; }, {once:true});
+  window.print();
+}
+
+// ─── INVOICES DATE FILTER ─────────────────────────────────────────────────────
+let _invoicesDateFilter = 'all';
+function setInvoicesDateFilter(preset) {
+  _invoicesDateFilter = preset;
+  ['all','today','yesterday','week','lastweek','month','lastmonth','year','range'].forEach(k => {
+    const btn = document.getElementById('ifbtn-'+k);
+    if(btn) btn.classList.toggle('active', k === preset);
+  });
+  const ri = document.getElementById('invoices-range-inputs');
+  if(ri) ri.style.display = preset === 'range' ? 'flex' : 'none';
+  renderInvoicesPage();
+}
+
+function renderInvoicesPage() {
+  const range = getDateRangeForFilter(_invoicesDateFilter, 'invoices-range-from', 'invoices-range-to');
+  const docs = store.docs.filter(d => d.type==='invoice' && !d._deleted && (!range || (d.date >= range.from && d.date <= range.to)));
+  const paid = docs.filter(d => d.status==='paid');
+  const pending = docs.filter(d => d.status==='pending' || d.status==='partial');
+  const paidAmt = paid.reduce((a,d)=>a+(d.total||0),0);
+  const pendingAmt = pending.reduce((a,d)=>a+getInvoiceBalance(d),0);
+  const totalAmt = docs.reduce((a,d)=>a+(d.total||0),0);
+  document.getElementById('invoices-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">TOTAL INVOICES</div><div class="metric-value">${docs.length}</div></div>
+    <div class="metric"><div class="metric-label">TOTAL INVOICED</div><div class="metric-value green">$${totalAmt.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">PAID INVOICES</div><div class="metric-value green">$${paidAmt.toFixed(2)} <span style="font-size:11px;opacity:.7">(${paid.length})</span></div></div>
+    <div class="metric"><div class="metric-label">PENDING / OWING</div><div class="metric-value" style="color:var(--red)">$${pendingAmt.toFixed(2)} <span style="font-size:11px;opacity:.7">(${pending.length})</span></div></div>
+  `;
+  const tbody = document.getElementById('invoices-table');
+  tbody.innerHTML = docs.length ? [...docs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d => {
+    const isPending = d.status==='pending'||d.status==='partial';
+    const bal = getInvoiceBalance(d);
+    const amtPaid = getInvoiceAmountPaid(d);
+    const badgeClass = d.status==='paid'?'paid':d.status==='partial'?'partial':d.status==='pending'?'pending':'quote';
+    const itemDesc = (d.items||[]).map(i=>i.desc).filter(Boolean).join(', ')||d.notes||'—';
+    return `<tr>
+      <td class="mono text-accent">${d.num}</td>
+      <td>${d.customer}</td>
+      <td>${[d.year,d.make,d.model].filter(Boolean).join(' ')||'—'}</td>
+      <td style="font-size:12px;color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${itemDesc}">${itemDesc}</td>
+      <td>${d.date}</td>
+      <td class="mono">$${d.total.toFixed(2)}${amtPaid>0&&isPending?`<div style="font-size:10px;color:var(--green)">paid $${amtPaid.toFixed(2)}</div><div style="font-size:10px;color:var(--red)">bal $${bal.toFixed(2)}</div>`:''}</td>
+      <td><span class="badge badge-${badgeClass}">${d.status}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${d.phone ? `<button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;" onclick="notifyInvoiceWhatsApp(${d.id})" title="WhatsApp">📱</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="openEditDoc(${d.id})">Edit</button>
+        <button class="btn btn-sm" onclick="printDocById(${d.id})">Print</button>
+        ${isPending?`<button class="btn btn-sm" onclick="openPartialPay(${d.id})">💳 Pay</button>
+        <button class="btn btn-sm btn-green" onclick="markPaid(${d.id})">Full Paid</button>`:''}
+        <button class="btn btn-sm" style="color:var(--red)" onclick="deleteDoc(${d.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:20px">No invoices for this period</td></tr>`;
+}
+
+function printInvoicesReport() {
+  const range = getDateRangeForFilter(_invoicesDateFilter, 'invoices-range-from', 'invoices-range-to');
+  const docs = store.docs.filter(d => d.type==='invoice' && !d._deleted && (!range || (d.date >= range.from && d.date <= range.to)));
+  const periodLabels = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',lastweek:'Last Week',month:'This Month',lastmonth:'Last Month',year:'This Year'};
+  const periodLabel = _invoicesDateFilter === 'range' ? `${range?.from} to ${range?.to}` : (periodLabels[_invoicesDateFilter] || 'All Time');
+  const shop = store.settings || {};
+  const paidDocs = docs.filter(d=>d.status==='paid');
+  const pendingDocs = docs.filter(d=>d.status==='pending'||d.status==='partial');
+  const paidAmt = paidDocs.reduce((a,d)=>a+(d.total||0),0);
+  const pendingAmt = pendingDocs.reduce((a,d)=>a+getInvoiceBalance(d),0);
+  const totalAmt = docs.reduce((a,d)=>a+(d.total||0),0);
+  const paidRows = paidDocs.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d=>
+    `<tr><td style="padding:5px 8px;">${d.num}</td><td style="padding:5px 8px;">${d.customer}</td><td style="padding:5px 8px;">${d.date}</td><td style="padding:5px 8px;text-align:right;font-weight:600;">$${d.total.toFixed(2)}</td><td style="padding:5px 8px;text-align:center;color:green;">PAID</td></tr>`
+  ).join('');
+  const pendingRows = pendingDocs.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d=>{
+    const bal = getInvoiceBalance(d);
+    return `<tr><td style="padding:5px 8px;">${d.num}</td><td style="padding:5px 8px;">${d.customer}</td><td style="padding:5px 8px;">${d.date}</td><td style="padding:5px 8px;text-align:right;">$${d.total.toFixed(2)}</td><td style="padding:5px 8px;text-align:right;color:#c0392b;font-weight:600;">$${bal.toFixed(2)}</td></tr>`;
+  }).join('');
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:24px 20px;">
+      <div style="text-align:center;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:20px;">
+        <div style="font-size:22px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
+        <div style="font-size:12px;color:#555;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
+        <div style="font-size:17px;font-weight:600;margin-top:10px;">Invoice Report</div>
+        <div style="font-size:13px;color:#555;">Period: <strong>${periodLabel}</strong></div>
+        <div style="font-size:11px;color:#777;">Generated: ${todayLocal()}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px;">
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Total Invoices</td><td style="padding:9px 10px;text-align:right;font-size:20px;font-weight:700;">${docs.length}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Total Invoiced</td><td style="padding:9px 10px;text-align:right;">$${totalAmt.toFixed(2)}</td></tr>
+        <tr style="background:#e8f5e9;"><td style="padding:9px 10px;font-weight:600;">Paid Invoices</td><td style="padding:9px 10px;text-align:right;color:#2e7d32;font-weight:700;">$${paidAmt.toFixed(2)} (${paidDocs.length})</td></tr>
+        <tr style="background:#fff0f0;"><td style="padding:9px 10px;font-weight:600;">Outstanding / Owing</td><td style="padding:9px 10px;text-align:right;color:#c0392b;font-weight:700;">$${pendingAmt.toFixed(2)} (${pendingDocs.length})</td></tr>
+      </table>
+      ${paidRows ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Paid Invoices</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#e8f5e9;"><th style="padding:6px 8px;text-align:left;">Invoice #</th><th style="padding:6px 8px;text-align:left;">Customer</th><th style="padding:6px 8px;text-align:left;">Date</th><th style="padding:6px 8px;text-align:right;">Total</th><th style="padding:6px 8px;text-align:center;">Status</th></tr></thead>
+        <tbody>${paidRows}</tbody>
+      </table>` : ''}
+      ${pendingRows ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Outstanding Invoices</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#fff0f0;"><th style="padding:6px 8px;text-align:left;">Invoice #</th><th style="padding:6px 8px;text-align:left;">Customer</th><th style="padding:6px 8px;text-align:left;">Date</th><th style="padding:6px 8px;text-align:right;">Amount</th><th style="padding:6px 8px;text-align:right;">Balance Owing</th></tr></thead>
+        <tbody>${pendingRows}</tbody>
+      </table>` : ''}
+      <div style="font-size:10px;color:#999;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential</div>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Invoice Report — ${periodLabel}`;
+  window.addEventListener('afterprint', ()=>{ document.title = _pt; }, {once:true});
+  window.print();
+}
+
+// ─── REPORTS PRINT ────────────────────────────────────────────────────────────
+function printReportsPage() {
+  const { from, to } = getReportDates();
+  const sales = store.salesRecords.filter(s => !s._deleted && s.date >= from && s.date <= to);
+  const periodLabels = {today:'Today',yesterday:'Yesterday',week:'This Week',lastweek:'Last Week',month:'This Month',lastmonth:'Last Month',year:'This Year',all:'All Time'};
+  const periodLabel = reportPeriod === 'custom' ? `${from} to ${to}` : (periodLabels[reportPeriod] || 'Selected Period');
+  const shop = store.settings || {};
+  const gstRate = (shop.gstRate||5) / 100;
+  const revenue = sales.reduce((a,s)=>a+(s.saleTotal||s.charged||0),0);
+  const gstCollected = sales.reduce((a,s)=>{ const t=s.saleTotal||s.charged||0; return a+t-t/(1+gstRate); },0);
+  const partsCost = sales.reduce((a,s)=>a+(s.totalCost||0),0);
+  const profit = sales.reduce((a,s)=>a+(s.profit||0),0);
+  const cashTotal = sales.filter(s=>s.payment==='Cash').reduce((a,s)=>a+(s.saleTotal||s.charged||0),0);
+  const etransferTotal = sales.filter(s=>(s.payment||'').toLowerCase().includes('transfer')).reduce((a,s)=>a+(s.saleTotal||s.charged||0),0);
+
+  const svcMap = {};
+  sales.forEach(s=>(s.items||[{desc:s.service||'Service',sell:s.charged}]).forEach(it=>{ const k=it.desc||'Other'; svcMap[k]=(svcMap[k]||0)+(it.sell||0); }));
+  const topSvc = Object.entries(svcMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  const monthly = {};
+  sales.forEach(s=>{ const mo=(s.date||'').slice(0,7); if(mo){ if(!monthly[mo]) monthly[mo]={rev:0,jobs:0,cost:0,profit:0}; monthly[mo].rev+=(s.saleTotal||s.charged||0); monthly[mo].jobs++; monthly[mo].cost+=(s.totalCost||0); monthly[mo].profit+=(s.profit||0); } });
+  const months = Object.keys(monthly).sort().reverse().slice(0,24);
+
+  const custMap = {};
+  sales.forEach(s=>{ const k=s.custName||'Unknown'; custMap[k]=(custMap[k]||0)+(s.saleTotal||s.charged||0); });
+  const topCust = Object.entries(custMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;padding:24px 20px;">
+      <div style="text-align:center;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:20px;">
+        <div style="font-size:22px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
+        <div style="font-size:12px;color:#555;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
+        <div style="font-size:17px;font-weight:600;margin-top:10px;">Business Report</div>
+        <div style="font-size:13px;color:#555;">Period: <strong>${periodLabel}</strong></div>
+        <div style="font-size:11px;color:#777;">Generated: ${todayLocal()}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px;">
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Total Jobs</td><td style="padding:9px 10px;text-align:right;font-size:22px;font-weight:700;">${sales.length}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Gross Revenue</td><td style="padding:9px 10px;text-align:right;font-size:18px;font-weight:700;color:#2e7d32;">$${revenue.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">GST Collected (${(gstRate*100).toFixed(0)}%)</td><td style="padding:9px 10px;text-align:right;">$${gstCollected.toFixed(2)}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">All Parts Cost</td><td style="padding:9px 10px;text-align:right;color:#c0392b;">$${partsCost.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Profit Made</td><td style="padding:9px 10px;text-align:right;font-weight:700;">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Cash Collected</td><td style="padding:9px 10px;text-align:right;">$${cashTotal.toFixed(2)}</td></tr>
+        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">E-Transfer Collected</td><td style="padding:9px 10px;text-align:right;">$${etransferTotal.toFixed(2)}</td></tr>
+        <tr><td style="padding:9px 10px;font-weight:600;">Revenue before GST</td><td style="padding:9px 10px;text-align:right;">$${(revenue/(1+gstRate)).toFixed(2)}</td></tr>
+      </table>
+      ${topSvc.length ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Top Services by Revenue</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#f4f4f4;"><th style="padding:6px 8px;text-align:left;">Service</th><th style="padding:6px 8px;text-align:right;">Revenue</th></tr></thead>
+        <tbody>${topSvc.map(([k,v])=>`<tr><td style="padding:5px 8px;">${k}</td><td style="padding:5px 8px;text-align:right;font-weight:600;">$${v.toFixed(2)}</td></tr>`).join('')}</tbody>
+      </table>` : ''}
+      ${months.length ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Monthly Breakdown</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#f4f4f4;"><th style="padding:6px 8px;text-align:left;">Month</th><th style="padding:6px 8px;text-align:right;">Revenue</th><th style="padding:6px 8px;text-align:right;">Parts Cost</th><th style="padding:6px 8px;text-align:right;">Profit</th><th style="padding:6px 8px;text-align:right;">Jobs</th></tr></thead>
+        <tbody>${months.map(mo=>`<tr><td style="padding:5px 8px;">${mo}</td><td style="padding:5px 8px;text-align:right;">$${monthly[mo].rev.toFixed(2)}</td><td style="padding:5px 8px;text-align:right;color:#c0392b;">$${monthly[mo].cost.toFixed(2)}</td><td style="padding:5px 8px;text-align:right;font-weight:600;">$${monthly[mo].profit.toFixed(2)}</td><td style="padding:5px 8px;text-align:right;">${monthly[mo].jobs}</td></tr>`).join('')}</tbody>
+      </table>` : ''}
+      ${topCust.length ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Top Customers</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#f4f4f4;"><th style="padding:6px 8px;text-align:left;">Customer</th><th style="padding:6px 8px;text-align:right;">Total Spent</th></tr></thead>
+        <tbody>${topCust.map(([k,v])=>`<tr><td style="padding:5px 8px;">${k}</td><td style="padding:5px 8px;text-align:right;">$${v.toFixed(2)}</td></tr>`).join('')}</tbody>
+      </table>` : ''}
+      <div style="font-size:10px;color:#999;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential</div>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Business Report — ${periodLabel}`;
+  window.addEventListener('afterprint', ()=>{ document.title = _pt; }, {once:true});
+  window.print();
+}
+
 function printSalesReport() {
   const range = getSalesDateRange(_salesDateFilter) || {from:'2000-01-01', to:'2099-12-31'};
   const sales = store.salesRecords.filter(s => !s._deleted && s.date >= range.from && s.date <= range.to);
-  const periodMap = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',month:'This Month',lastmonth:'Last Month'};
+  const periodMap = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',lastweek:'Last Week',month:'This Month',lastmonth:'Last Month',year:'This Year'};
   const periodLabel = _salesDateFilter === 'range'
     ? `${range.from} to ${range.to}`
-    : (periodMap[_salesDateFilter] || range.from);
+    : (periodMap[_salesDateFilter] || 'Selected Period');
   const user = currentUser?.name || currentUser?.username || 'N/A';
 
   const byPay = {};
