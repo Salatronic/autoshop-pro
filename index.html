@@ -1178,7 +1178,8 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="page-title">Fleet &amp; Partnerships</div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px;">Vehicle inventory, capital pool &amp; partner investment tracking</div>
     </div>
-    <div style="display:flex;gap:8px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="printFleetPoolReport()">Pool Report</button>
       <button class="btn btn-ghost" onclick="openCapitalModal(null)">+ Add Capital</button>
       <button class="btn" onclick="openFleetModal(null)">+ Add Vehicle</button>
     </div>
@@ -1226,7 +1227,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="pdi-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><input id="pdi-vin" class="input" placeholder="VIN #"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="pdi-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('pdi')">Decode</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="pdi-odometer" class="input" placeholder="km"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">COLOR</label><input id="pdi-color" class="input" placeholder="White"></div>
       </div>
@@ -1272,7 +1273,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="insp-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><input id="insp-vin" class="input" placeholder="VIN #"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="insp-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('insp')">Decode</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="insp-odometer" class="input" placeholder="km"></div>
       </div>
       <div style="font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;">INSPECTION CHECKLIST</div>
@@ -1325,7 +1326,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="wo-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><input id="wo-vin" class="input" placeholder="VIN #"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="wo-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('wo')">Decode</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="wo-odometer" class="input" placeholder="km"></div>
       </div>
       <div style="font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;">WORK DESCRIPTION</div>
@@ -1386,7 +1387,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">YEAR</label><input id="fl-year" class="input" placeholder="2020" maxlength="4"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="fl-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVin()">Decode</button></div></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">VIN</label><div style="display:flex;gap:6px;"><input id="fl-vin" class="input" placeholder="VIN #" style="flex:1;"><button class="btn btn-ghost" style="font-size:11px;padding:0 10px;white-space:nowrap;" onclick="decodeVinGeneric('fl')">Decode</button></div></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">COLOR</label><input id="fl-color" class="input" placeholder="White"></div>
         <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">ODOMETER</label><input id="fl-odometer" class="input" placeholder="km"></div>
       </div>
@@ -1443,6 +1444,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">NOTES</label><textarea id="fl-notes" class="input" rows="2" style="resize:vertical;" placeholder="Any additional notes..."></textarea></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button class="btn btn-ghost" onclick="closeFleetModal()">Cancel</button>
+        <button class="btn btn-ghost" id="fl-bos-btn" onclick="printBillOfSale(_flId)" style="display:none;">Bill of Sale</button>
         <button class="btn btn-ghost" id="fl-report-btn" onclick="printFleetReport(_flId)" style="display:none;">Print Report</button>
         <button class="btn btn-ghost" id="fl-print-btn" onclick="printFleetVehicle(_flId)" style="display:none;">Print Invoice</button>
         <button class="btn" onclick="saveFleetModal()">Save Vehicle</button>
@@ -1658,7 +1660,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <label class="form-label">VIN Number</label>
         <input class="form-input mono" id="veh-vin" placeholder="Enter VIN — auto-fills details" oninput="handleVinInput(this.value)" maxlength="17" />
       </div>
-      <button class="btn" onclick="decodeVin()" style="margin-bottom:1px;">🔍 Decode VIN</button>
+      <button class="btn" onclick="decodeVinGeneric('fl')" style="margin-bottom:1px;">🔍 Decode VIN</button>
       <button class="btn" onclick="scanVin()" style="margin-bottom:1px;">📷 Scan</button>
     </div>
     <div class="form-grid form-grid-4" style="margin-bottom:16px;">
@@ -3073,6 +3075,8 @@ function openFleetModal(id) {
   if(printBtn) printBtn.style.display = (id && v?.status==='sold') ? '' : 'none';
   const reportBtn = document.getElementById('fl-report-btn');
   if(reportBtn) reportBtn.style.display = id ? '' : 'none';
+  const bosBtn = document.getElementById('fl-bos-btn');
+  if(bosBtn) bosBtn.style.display = id ? '' : 'none';
   renderFlAttachments(id||null);
   toggleFlSaleSection();
   updateFlSaleSummary();
@@ -3233,19 +3237,273 @@ function printFleetReport(id) {
   window.print();
 }
 
-async function decodeVin() {
-  const vin = document.getElementById('fl-vin').value.trim();
+function printBillOfSale(id) {
+  const v = id ? getFleet().find(x=>x.id===id) : null;
+  if(!v) return;
+  const s = store.settings || {};
+  const shopName = s.name || 'MKAUTO';
+  const shopPhone = s.phone || '';
+  const shopAddress = s.address || 'Edmonton, Alberta';
+  const shopGst = s.gst || '';
+  const agreed = parseFloat(v.sale?.agreedPrice)||0;
+  const saleDate = v.sale?.date || todayLocal();
+  const fmtPrice = n => n.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;max-width:760px;margin:0 auto;padding:20px;color:#000;font-size:13px;">
+      <div style="text-align:center;margin-bottom:20px;border-bottom:3px double #000;padding-bottom:14px;">
+        <div style="font-size:26px;font-weight:800;letter-spacing:1px;">BILL OF SALE — MOTOR VEHICLE</div>
+        <div style="font-size:12px;color:#444;margin-top:4px;">Province of Alberta</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div style="border:1px solid #bbb;border-radius:6px;padding:12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#555;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;">SELLER (DEALER)</div>
+          <div style="font-size:14px;font-weight:700;">${shopName}</div>
+          ${shopAddress ? `<div style="margin-top:3px;">${shopAddress}</div>` : ''}
+          ${shopPhone ? `<div>Tel: ${shopPhone}</div>` : ''}
+          ${shopGst ? `<div style="color:#555;font-size:11px;margin-top:3px;">GST #: ${shopGst}</div>` : ''}
+        </div>
+        <div style="border:1px solid #bbb;border-radius:6px;padding:12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#555;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;">BUYER / PURCHASER</div>
+          <div style="font-size:14px;font-weight:700;">${v.sale?.buyerName||'_____________________________'}</div>
+          <div style="margin-top:3px;">Tel: ${v.sale?.buyerPhone||'_____________________'}</div>
+          <div>Address: _____________________________</div>
+        </div>
+      </div>
+      <div style="border:1px solid #bbb;border-radius:6px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#555;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:4px;">VEHICLE DESCRIPTION</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;width:120px;">Year</td><td style="padding:4px 8px;">${v.year||'—'}</td>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;width:120px;">Make</td><td style="padding:4px 8px;">${v.make||'—'}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">Model</td><td style="padding:4px 8px;">${v.model||'—'}</td>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">Colour</td><td style="padding:4px 8px;">${v.color||'—'}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">VIN</td>
+            <td colspan="3" style="padding:4px 8px;font-family:monospace;letter-spacing:1px;">${v.vin||'—'}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">Odometer</td><td style="padding:4px 8px;">${v.odometer ? v.odometer+' km' : '—'}</td>
+            <td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">Title Status</td><td style="padding:4px 8px;">${v.titleStatus ? v.titleStatus.charAt(0).toUpperCase()+v.titleStatus.slice(1) : 'Active'}</td>
+          </tr>
+          ${v.stockNo ? `<tr><td style="padding:4px 8px;background:#f8f8f8;font-weight:600;">Stock #</td><td colspan="3" style="padding:4px 8px;">${v.stockNo}</td></tr>` : ''}
+        </table>
+      </div>
+      <div style="border:2px solid #222;border-radius:6px;padding:12px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#555;margin-bottom:4px;">PURCHASE PRICE</div>
+            <div style="font-size:22px;font-weight:800;">$${fmtPrice(agreed)} CAD</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#555;margin-bottom:4px;">DATE OF SALE</div>
+            <div style="font-size:16px;font-weight:700;">${saleDate}</div>
+          </div>
+        </div>
+      </div>
+      <div style="border:1px solid #bbb;border-radius:6px;padding:12px;margin-bottom:20px;background:#fafafa;">
+        <div style="font-size:11px;line-height:1.65;color:#222;">
+          <strong>AS-IS SALE / WARRANTY DISCLAIMER:</strong> This vehicle is sold "as is" and "where is" without any express or implied warranties or conditions as to its quality or fitness for any particular purpose. The seller makes no representation or warranty regarding the condition, reliability, or roadworthiness of the vehicle. The buyer acknowledges that they have had the opportunity to inspect the vehicle and accepts it in its present condition.
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px;">
+        <div>
+          <div style="height:40px;"></div>
+          <div style="border-top:1px solid #000;padding-top:6px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;">SELLER SIGNATURE &amp; DATE</div>
+            <div style="font-size:11px;color:#555;margin-top:2px;">${shopName}</div>
+          </div>
+        </div>
+        <div>
+          <div style="height:40px;"></div>
+          <div style="border-top:1px solid #000;padding-top:6px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;">BUYER SIGNATURE &amp; DATE</div>
+            <div style="font-size:11px;color:#555;margin-top:2px;">${v.sale?.buyerName||''}</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px;">
+        Generated ${todayLocal()} · ${shopName}${shopPhone ? ' · '+shopPhone : ''}
+      </div>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Bill of Sale — ${[v.year,v.make,v.model].filter(Boolean).join(' ')} ${v.stockNo||''}`.trim();
+  window.addEventListener('afterprint',()=>{document.title=_pt;},{once:true});
+  window.print();
+}
+
+function printFleetPoolReport() {
+  const sm = getFleetSummary();
+  const capital = getFleetCapital();
+  const s = store.settings || {};
+  const shopName = s.name || 'MKAUTO';
+  const fmt = n => '$'+(parseFloat(n)||0).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtPL = n => { const v=parseFloat(n)||0; return `<span style="color:${v>=0?'green':'red'};font-weight:700;">${v>=0?'+':''}${fmt(v)}</span>`; };
+  const totalInv = sm.totalInvested || 1;
+
+  // ── Investor summary rows ─────────────────────────────────────────────────
+  const invRows = Object.entries(sm.investorMap).map(([name,amt]) => {
+    const pct = (amt/totalInv*100).toFixed(1);
+    const plShare = sm.realizedPL * (amt/totalInv);
+    const payout = amt + plShare;
+    return `<tr>
+      <td style="padding:6px 10px;font-weight:700;">${name}</td>
+      <td style="padding:6px 10px;text-align:right;">${fmt(amt)}</td>
+      <td style="padding:6px 10px;text-align:center;">${pct}%</td>
+      <td style="padding:6px 10px;text-align:right;">${fmtPL(plShare)}</td>
+      <td style="padding:6px 10px;text-align:right;font-weight:700;">${fmt(payout)}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Sold car rows ─────────────────────────────────────────────────────────
+  const soldCars = sm.carAnalysis.filter(ca => ca.pl !== null);
+  const carRows = soldCars.map(ca => {
+    const v = ca.v;
+    const mkShare = ca.pl * ((sm.investorMap['MK']||0)/totalInv);
+    const abShare = ca.pl * ((sm.investorMap['ABDIYARE']||0)/totalInv);
+    return `<tr>
+      <td style="padding:5px 8px;font-size:12px;">${v.stockNo||'—'}</td>
+      <td style="padding:5px 8px;font-size:12px;">${v.year||''} ${v.make||''} ${v.model||''}</td>
+      <td style="padding:5px 8px;text-align:right;">${fmt(ca.purchase)}</td>
+      <td style="padding:5px 8px;text-align:right;">${fmt(ca.partsTotal)}</td>
+      <td style="padding:5px 8px;text-align:right;">${fmt(ca.labourTotal)}</td>
+      <td style="padding:5px 8px;text-align:right;font-weight:600;">${fmt(ca.totalCost)}</td>
+      <td style="padding:5px 8px;text-align:right;">${fmt(ca.totalReceived)}</td>
+      <td style="padding:5px 8px;text-align:right;">${fmtPL(ca.pl)}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:11px;">${fmtPL(mkShare)}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:11px;">${fmtPL(abShare)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="padding:10px;text-align:center;color:#888;">No sold vehicles yet</td></tr>';
+
+  // ── Capital contributions rows ────────────────────────────────────────────
+  const capRows = capital.map(c =>
+    `<tr>
+      <td style="padding:5px 8px;">${c.date||'—'}</td>
+      <td style="padding:5px 8px;font-weight:600;">${c.investor||'—'}</td>
+      <td style="padding:5px 8px;text-align:right;color:green;font-weight:600;">${fmt(c.amount)}</td>
+      <td style="padding:5px 8px;font-size:11px;color:#555;">${c.note||''}</td>
+    </tr>`
+  ).join('') || '<tr><td colspan="4" style="padding:10px;text-align:center;color:#888;">No contributions recorded</td></tr>';
+
+  document.getElementById('print-area').innerHTML = `
+    <div style="font-family:Arial,sans-serif;color:#000;padding:20px;max-width:900px;margin:0 auto;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;border-bottom:2px solid #000;padding-bottom:12px;">
+        <div>
+          <div style="font-size:22px;font-weight:800;">FLEET POOL REPORT</div>
+          <div style="font-size:12px;color:#555;">Partnership P&amp;L &amp; Investor Positions — Confidential</div>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#555;">
+          <div>${shopName}</div>
+          <div>Printed: <strong>${todayLocal()}</strong></div>
+        </div>
+      </div>
+
+      <!-- Pool summary metrics -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+        <div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:600;color:#777;margin-bottom:4px;">TOTAL CONTRIBUTIONS</div>
+          <div style="font-size:18px;font-weight:700;">${fmt(sm.poolContributions)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:600;color:#777;margin-bottom:4px;">TOTAL INVESTED (w/ labour/parts)</div>
+          <div style="font-size:18px;font-weight:700;">${fmt(sm.totalInvested)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:600;color:#777;margin-bottom:4px;">REALIZED P&amp;L</div>
+          <div style="font-size:18px;font-weight:700;">${fmtPL(sm.realizedPL)}</div>
+        </div>
+        <div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:600;color:#777;margin-bottom:4px;">POOL CASH BALANCE</div>
+          <div style="font-size:18px;font-weight:700;color:${sm.poolBalance>=0?'green':'red'};">${fmt(sm.poolBalance)}</div>
+        </div>
+      </div>
+
+      <!-- Investor positions -->
+      <div style="font-weight:700;font-size:12px;letter-spacing:.05em;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;">INVESTOR POSITIONS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid #ddd;margin-bottom:16px;">
+        <thead>
+          <tr style="background:#f5f5f5;">
+            <th style="padding:7px 10px;text-align:left;">Investor</th>
+            <th style="padding:7px 10px;text-align:right;">Total Invested</th>
+            <th style="padding:7px 10px;text-align:center;">Share %</th>
+            <th style="padding:7px 10px;text-align:right;">P&amp;L Share</th>
+            <th style="padding:7px 10px;text-align:right;">Total Payout</th>
+          </tr>
+        </thead>
+        <tbody>${invRows}</tbody>
+      </table>
+
+      <!-- Sold car P&L detail -->
+      <div style="font-weight:700;font-size:12px;letter-spacing:.05em;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;">SOLD VEHICLES — P&amp;L DETAIL</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #ddd;margin-bottom:16px;">
+        <thead>
+          <tr style="background:#f5f5f5;">
+            <th style="padding:5px 8px;text-align:left;">Stock #</th>
+            <th style="padding:5px 8px;text-align:left;">Vehicle</th>
+            <th style="padding:5px 8px;text-align:right;">Purchase</th>
+            <th style="padding:5px 8px;text-align:right;">Parts (MK)</th>
+            <th style="padding:5px 8px;text-align:right;">Labour (50/50)</th>
+            <th style="padding:5px 8px;text-align:right;">Total Cost</th>
+            <th style="padding:5px 8px;text-align:right;">Received</th>
+            <th style="padding:5px 8px;text-align:right;">P&amp;L</th>
+            <th style="padding:5px 8px;text-align:right;">MK Share</th>
+            <th style="padding:5px 8px;text-align:right;">ABDIYARE</th>
+          </tr>
+        </thead>
+        <tbody>${carRows}</tbody>
+        ${soldCars.length ? `<tfoot><tr style="border-top:2px solid #000;font-weight:700;background:#fafafa;">
+          <td colspan="2" style="padding:6px 8px;">TOTAL (${soldCars.length} cars)</td>
+          <td style="padding:6px 8px;text-align:right;">${fmt(soldCars.reduce((s,ca)=>s+ca.purchase,0))}</td>
+          <td style="padding:6px 8px;text-align:right;">${fmt(soldCars.reduce((s,ca)=>s+ca.partsTotal,0))}</td>
+          <td style="padding:6px 8px;text-align:right;">${fmt(soldCars.reduce((s,ca)=>s+ca.labourTotal,0))}</td>
+          <td style="padding:6px 8px;text-align:right;">${fmt(soldCars.reduce((s,ca)=>s+ca.totalCost,0))}</td>
+          <td style="padding:6px 8px;text-align:right;">${fmt(soldCars.reduce((s,ca)=>s+ca.totalReceived,0))}</td>
+          <td style="padding:6px 8px;text-align:right;">${fmtPL(sm.realizedPL)}</td>
+          <td colspan="2"></td>
+        </tr></tfoot>` : ''}
+      </table>
+
+      <!-- Capital contributions log -->
+      <div style="font-weight:700;font-size:12px;letter-spacing:.05em;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px;">CAPITAL CONTRIBUTIONS LOG</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #ddd;">
+        <thead>
+          <tr style="background:#f5f5f5;">
+            <th style="padding:5px 8px;text-align:left;">Date</th>
+            <th style="padding:5px 8px;text-align:left;">Investor</th>
+            <th style="padding:5px 8px;text-align:right;">Amount</th>
+            <th style="padding:5px 8px;text-align:left;">Note</th>
+          </tr>
+        </thead>
+        <tbody>${capRows}</tbody>
+      </table>
+    </div>`;
+  const _pt = document.title;
+  document.title = `Fleet Pool Report — ${shopName} ${todayLocal()}`;
+  window.addEventListener('afterprint',()=>{document.title=_pt;},{once:true});
+  window.print();
+}
+
+async function decodeVinGeneric(prefix) {
+  const vinEl = document.getElementById(prefix+'-vin');
+  if(!vinEl) return;
+  const vin = vinEl.value.trim().toUpperCase();
   if(vin.length < 11) { showToast('Enter a valid VIN (min 11 chars)'); return; }
+  showToast('Decoding VIN...');
   try {
-    showToast('Decoding VIN...');
-    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/${encodeURIComponent(vin)}?format=json`);
+    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${encodeURIComponent(vin)}?format=json`);
     const data = await res.json();
-    const get = variable => data.Results.find(r=>r.Variable===variable)?.Value||'';
-    const year=get('Model Year'), make=get('Make'), model=get('Model');
-    if(make&&make!=='null') document.getElementById('fl-make').value = make.charAt(0).toUpperCase()+make.slice(1).toLowerCase();
-    if(model&&model!=='null') document.getElementById('fl-model').value = model.charAt(0).toUpperCase()+model.slice(1).toLowerCase();
-    if(year&&year!=='null') document.getElementById('fl-year').value = year;
-    if(make&&make!=='null') showToast(`Decoded: ${year} ${make} ${model}`);
+    const r = data.Results?.[0];
+    if(!r) { showToast('VIN not recognized'); return; }
+    const makeEl=document.getElementById(prefix+'-make');
+    const modelEl=document.getElementById(prefix+'-model');
+    const yearEl=document.getElementById(prefix+'-year');
+    const mk=r.Make||'', mo=r.Model||'', yr=r.ModelYear||'';
+    if(makeEl && mk && mk!=='null') makeEl.value=mk.toUpperCase();
+    if(modelEl && mo && mo!=='null') modelEl.value=mo.toUpperCase();
+    if(yearEl && yr && yr!=='null') yearEl.value=yr;
+    if(mk && mk!=='null') showToast(`Decoded: ${yr} ${mk} ${mo}`);
     else showToast('VIN not recognized — fill in manually');
   } catch(e) { showToast('VIN decode failed — check connection'); }
 }
@@ -4955,8 +5213,8 @@ function saveSettings() {
 }
 
 // ─── VIN ─────────────────────────────────────────────────────────────────────
-function handleVinInput(v) { if(v.length===17) decodeVin(); }
-async function decodeVin() {
+function handleVinInput(v) { if(v.length===17) decodeVinVeh(); }
+async function decodeVinVeh() {
   const vin = document.getElementById('veh-vin').value.trim().toUpperCase();
   if(vin.length!==17) { showToast('VIN must be 17 characters'); return; }
   showToast('Decoding VIN...');
