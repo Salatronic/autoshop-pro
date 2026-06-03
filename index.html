@@ -134,7 +134,8 @@ tr:hover td { background: var(--surface2); }
 
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; }
+.modal { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; }
 .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; }
 .modal-title { font-size: 17px; font-weight: 700; }
 .modal-body { padding: 20px 24px; }
@@ -282,7 +283,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .page-header > div:last-child { align-self: stretch; }
   .page-header button, .page-header .btn { width: 100%; justify-content: center; }
-  .modal { width: 95vw !important; max-width: 95vw !important; margin: 10px auto; max-height: 92vh; overflow-y: auto; }
+  .modal-box { width: 95vw !important; max-width: 95vw !important; margin: 10px auto; max-height: 92vh; overflow-y: auto; }
   .modal-body { padding: 14px; }
   .card { padding: 14px; }
   table { font-size: 12px; }
@@ -622,6 +623,14 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
     <button class="nav-item" onclick="showPage('reports')" id="nav-reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Reports
+    </button>
+    <button class="nav-item" onclick="showPage('cashlog')" id="nav-cashlog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+      Cash Log
+    </button>
+    <button class="nav-item" onclick="showPage('expenses')" id="nav-expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Expenses
     </button>
     <button class="nav-item" onclick="showPage('activity')" id="nav-activity">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -1239,6 +1248,44 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div id="wo-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"></div>
 </div>
 
+<!-- CASH LOG PAGE -->
+<div id="page-cashlog" class="hidden">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div class="page-title">Cash Log</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Daily cash transactions &amp; mechanic labour tracking</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="printCashReport()">Print Report</button>
+      <button class="btn" onclick="openCashEntryModal()">+ Add Entry</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <input type="month" id="cashlog-month" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text1);font-size:13px;" onchange="renderCashLog()">
+    <button class="btn btn-secondary" onclick="document.getElementById('cashlog-month').value='';renderCashLog()" style="font-size:12px;padding:5px 10px;">All</button>
+  </div>
+  <div id="cashlog-list"></div>
+</div>
+
+<!-- EXPENSES PAGE -->
+<div id="page-expenses" class="hidden">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div class="page-title">Expenses</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Track outgoing money — cash, e-transfer, debit</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="printExpenseReport()">Print Report</button>
+      <button class="btn" onclick="openExpenseModal()">+ Add Expense</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <input type="month" id="expenses-month" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text1);font-size:13px;" onchange="renderExpenses()">
+    <button class="btn btn-secondary" onclick="document.getElementById('expenses-month').value='';renderExpenses()" style="font-size:12px;padding:5px 10px;">All</button>
+  </div>
+  <div id="expenses-list"></div>
+</div>
+
 <!-- FLEET PAGE -->
 <div id="page-fleet" class="hidden">
   <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
@@ -1656,6 +1703,10 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;">CUSTOMER TOTAL</div>
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:4px;"><span>Subtotal</span><span id="s-tot-sub">$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:4px;"><span>GST (5%)</span><span id="s-tot-gst">$0.00</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--accent);margin:6px 0;padding:6px 8px;border:1px dashed var(--accent);border-radius:4px;background:rgba(99,102,241,0.06);">
+          <label style="font-weight:600;margin:0;cursor:default;">Labour Charged ($)</label>
+          <input type="number" id="s-labour-charged" step="0.01" min="0" placeholder="0.00" oninput="calcTotals()" style="width:90px;text-align:right;padding:3px 6px;font-size:14px;font-weight:700;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--accent);" />
+        </div>
         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--accent);border-top:1px solid var(--border);padding-top:8px;margin-top:6px;"><span>Total Charged</span><span id="s-tot-charged">$0.00</span></div>
       </div>
     </div>
@@ -1908,6 +1959,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <select class="form-input" id="mech-role"><option>Technician</option><option>Lead Mechanic</option><option>Service Advisor</option><option>Apprentice</option></select>
       </div>
       <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="mech-phone" /></div>
+      <div class="form-group"><label class="form-label">Labour Split — Their % (0–100)</label><input class="form-input mono" id="mech-split" type="number" min="0" max="100" placeholder="e.g. 50 = half goes to mechanic" /></div>
     </div>
   </div>
   <div class="modal-footer">
@@ -2311,7 +2363,8 @@ async function hashStr(s) {
 const hashPassword = hashStr; // alias for password hashing
 
 // ─── USER STORE (dynamic, localStorage) ──────────────────────────────────────
-const ASP_SECTIONS = ['dashboard','sales','quotes','invoices','inventory','mechanics','customers','debtors','reminders','reports','activity','pdi','inspection','workorders'];
+const ASP_SECTIONS = ['dashboard','sales','quotes','invoices','inventory','mechanics','customers','debtors','reminders','reports','activity','pdi','inspection','workorders','cashlog','expenses'];
+const STAFF_SECTIONS = ['dashboard','sales','quotes','invoices','inventory','mechanics','customers','debtors','reminders','reports','pdi','inspection','workorders','cashlog','expenses'];
 const ADMIN_SECTIONS = [...ASP_SECTIONS, 'users', 'settings'];
 
 function getAspUsers() {
@@ -2322,7 +2375,7 @@ function saveAspUsers(users) {
 }
 function seedAspUsers() {
   if(getAspUsers()) return;
-  const staffSections = ['dashboard','sales','inventory','debtors','reminders'];
+  const staffSections = STAFF_SECTIONS;
   const users = USERS_DEF.map(u => ({
     id: u.id,
     usernameHash: u.usernameHash,
@@ -2346,6 +2399,18 @@ async function initPasswordHashes() {
     if(!localStorage.getItem('pw_'+u.id)) localStorage.setItem('pw_'+u.id, u.defaultHash);
   }
   seedAspUsers();
+  // Migrate: upgrade staff users who have old limited sections
+  const _users = getAspUsers();
+  if(_users) {
+    let changed = false;
+    _users.forEach(u => {
+      if(u.role !== 'admin' && (!u.sections.includes('pdi') || !u.sections.includes('cashlog'))) {
+        u.sections = STAFF_SECTIONS.slice();
+        changed = true;
+      }
+    });
+    if(changed) saveAspUsers(_users);
+  }
 }
 
 // True if user hasn't changed their password yet (still on default)
@@ -4095,7 +4160,7 @@ function doLogout() {
 function applyAccessControl() {
   const sections = currentUser?.sections || [];
   const isAdmin = currentUser?.role === 'admin';
-  const sectionNav = ['dashboard','sales','quotes','invoices','inventory','mechanics','customers','debtors','reminders','reports','activity','pdi','inspection','workorders'];
+  const sectionNav = ['dashboard','sales','quotes','invoices','inventory','mechanics','customers','debtors','reminders','reports','activity','pdi','inspection','workorders','cashlog','expenses'];
   sectionNav.forEach(p => {
     const el = document.getElementById('nav-'+p);
     if(el) el.style.display = (isAdmin || sections.includes(p)) ? '' : 'none';
@@ -4134,7 +4199,9 @@ let store = {
     email: "", gst: "", amvic: "", gstRate: 5
   },
   invCounter: 1, qteCounter: 1, saleCounter: 1, custCounter: 1,
-  driveConnected: false
+  driveConnected: false,
+  cashLog: [], cashCounter: 1,
+  expenses: [], expenseCounter: 1
 };
 
 // Load from localStorage
@@ -4147,6 +4214,10 @@ if(!store.purchaseOrders) store.purchaseOrders = [];
 if(!store.poCounter) store.poCounter = 1;
 if(!store.reminders) store.reminders = [];
 if(!store.remindCounter) store.remindCounter = 1;
+if(!store.cashLog) store.cashLog = [];
+if(!store.cashCounter) store.cashCounter = 1;
+if(!store.expenses) store.expenses = [];
+if(!store.expenseCounter) store.expenseCounter = 1;
 
 function save() {
   try {
@@ -4313,7 +4384,7 @@ function populateModels() {
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────────────
-const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','debtors','reminders','reports','settings','activity','users','pdi','inspection','workorders','fleet'];
+const pages = ['dashboard','quotes','invoices','sales','inventory','mechanics','customers','debtors','reminders','reports','cashlog','expenses','settings','activity','users','pdi','inspection','workorders','fleet'];
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
@@ -4353,6 +4424,8 @@ function showPage(name) {
   if(name==='activity') renderActivityLog();
   if(name==='settings') { loadSettings(); renderVendorListUI(); renderRecycleBin(); }
   if(name==='reports') renderReports();
+  if(name==='cashlog') renderCashLog();
+  if(name==='expenses') renderExpenses();
 }
 
 // ─── DASHBOARD ──────────────────────────────────────────────────────────────
@@ -4390,7 +4463,7 @@ function renderDashboard() {
   if(isLevel1) {
     // ── EMPLOYEE DASHBOARD ──────────────────────────────────────────────────
     const todaySales = store.salesRecords.filter(s => s.date === today);
-    const totalCollected = todaySales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
+    const totalCollected = todaySales.reduce((a,s) => a + getSaleTotalPaid(s), 0);
     const pending = todaySales.filter(s => s.saleStatus === 'pending' || s.saleBalance > 0);
 
     document.getElementById('dash-metrics').innerHTML = `
@@ -4432,7 +4505,7 @@ function renderDashboard() {
   const filteredSales = store.salesRecords.filter(s => s.date >= from && s.date <= to);
   const revenue = filteredSales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
   const profit = filteredSales.reduce((a,s) => a + (s.profit||0), 0);
-  const collected = filteredSales.reduce((a,s) => a + (s.salePaid||s.charged||0), 0);
+  const collected = filteredSales.reduce((a,s) => a + getSaleTotalPaid(s), 0);
   const lowStock = store.parts.filter(p=>p.qty<=p.reorder && p.qty>0).length;
   const outStock = store.parts.filter(p=>p.qty===0).length;
   const gstRate = (store.settings?.gstRate||5)/100;
@@ -5210,18 +5283,18 @@ function deletePO(id) {
 function renderMechanics() {
   document.getElementById('mechanics-table').innerHTML = store.mechanics.filter(m=>!m._deleted).map(m=>{
     const jobs = store.docs.filter(d=>d.mechanicId==m.id).length;
-    return `<tr><td>${m.name}</td><td>${m.role}</td><td>${m.phone}</td><td>${jobs}</td>
+    const sp = m.labourSplit != null ? m.labourSplit+'%' : '—'; return `<tr><td>${m.name}</td><td>${m.role}</td><td>${m.phone}</td><td>${jobs}</td><td>${sp}</td>
     <td><button class="btn btn-sm btn-ghost" onclick="deleteMechanic(${m.id})">✕</button></td></tr>`;
   }).join('');
 }
 function openAddMechanic() {
-  document.getElementById('mech-name').value=''; document.getElementById('mech-phone').value='';
+  document.getElementById('mech-name').value=''; document.getElementById('mech-phone').value=''; document.getElementById('mech-split').value='';
   document.getElementById('mech-modal').classList.remove('hidden');
 }
 function saveMechanic() {
   const name = document.getElementById('mech-name').value.trim();
   if(!name) { showToast('Name required'); return; }
-  store.mechanics.push({ id:Date.now(), name, role:document.getElementById('mech-role').value, phone:document.getElementById('mech-phone').value, _updatedAt: Date.now() });
+  const split = parseFloat(document.getElementById('mech-split').value); store.mechanics.push({ id:Date.now(), name, role:document.getElementById('mech-role').value, phone:document.getElementById('mech-phone').value, labourSplit: isNaN(split)?null:Math.min(100,Math.max(0,split)), _updatedAt: Date.now() });
   save(); document.getElementById('mech-modal').classList.add('hidden'); renderMechanics(); showToast('Mechanic added');
 }
 function deleteMechanic(id) {
@@ -5785,6 +5858,8 @@ function openEditSale(id) {
   document.getElementById('s-line-body').innerHTML = '';
   sLineCounter = 0;
   (s.items||[]).forEach(item => addSaleLineWithData(item));
+  const lcEl = document.getElementById('s-labour-charged');
+  if(lcEl) lcEl.value = (s.labourCharged||0) > 0 ? (s.labourCharged).toFixed(2) : '';
   calcSaleTotals();
   // Populate payment fields
   const saleTotalPaid = getSaleTotalPaid(s);
@@ -5956,18 +6031,21 @@ function calcSaleTotals() {
     totalSub += lineCharged;
   });
   const gstRate=(parseFloat(store.settings.gstRate)||5)/100;
-  const isCash=document.getElementById('s-payment')?.value==='Cash';
-  const gst=isCash?0:totalSub*gstRate;
+  const _sPayVal=document.getElementById('s-payment')?.value;
+  const isNoTax=_sPayVal==='Cash'||_sPayVal==='E-Transfer';
+  const gst=isNoTax?0:totalSub*gstRate;
   const charged=totalSub+gst;
   const profit=charged-totalCost;
   document.getElementById('s-tot-cost').textContent='$'+totalCost.toFixed(2);
   document.getElementById('s-tot-labour').textContent='$'+totalLabour.toFixed(2);
   document.getElementById('s-tot-profit').textContent='$'+profit.toFixed(2);
   document.getElementById('s-tot-sub').textContent='$'+totalSub.toFixed(2);
-  document.getElementById('s-tot-gst').textContent=isCash?'Cash — No Tax':'$'+gst.toFixed(2);
-  document.getElementById('s-tot-charged').textContent='$'+charged.toFixed(2);
+  document.getElementById('s-tot-gst').textContent=isNoTax?_sPayVal+' — No Tax':'$'+gst.toFixed(2);
+  const labourInput = parseFloat(document.getElementById('s-labour-charged')?.value)||0;
+  const grandTotal = charged + labourInput;
+  document.getElementById('s-tot-charged').textContent='$'+grandTotal.toFixed(2);
   const stEl = document.getElementById('s-sale-total');
-  if(stEl) { stEl.value = charged.toFixed(2); sUpdateBalance(); }
+  if(stEl) { stEl.value = grandTotal.toFixed(2); sUpdateBalance(); }
 }
 
 function autoCalcLabour(row) {
@@ -6009,10 +6087,13 @@ function buildSaleRecord(existingId) {
   const items=getSaleItems();
   const totalCost=items.reduce((a,i)=>a+i.qty*i.cost,0);
   const totalSub=items.reduce((a,i)=>a+i.lineCharged,0);
-  const gstRate=(parseFloat(store.settings.gstRate)||5)/100;
+  const _bPayment=document.getElementById('s-payment')?.value||'';
+  const gstRate=(_bPayment==='Cash'||_bPayment==='E-Transfer')?0:(parseFloat(store.settings.gstRate)||5)/100;
   const gst=totalSub*gstRate;
   const charged=totalSub+gst;
-  const profit=charged-totalCost;
+  const labourCharged = parseFloat(document.getElementById('s-labour-charged')?.value)||0;
+  const grandCharged = charged + labourCharged;
+  const profit=grandCharged-totalCost;
   const mechId=document.getElementById('s-mechanic').value;
   const mech=store.mechanics.find(m=>m.id==mechId);
   const oilTypes=[...new Set(items.filter(i=>i.oilType).map(i=>i.oilType))].join(', ');
@@ -6020,7 +6101,7 @@ function buildSaleRecord(existingId) {
   const existing = existingId ? store.salesRecords.find(r=>r.id===existingId) : null;
   // Payment fields
   const _sPaid = parseFloat(document.getElementById('s-sale-paid')?.value)||0;
-  const _sBal = Math.max(0, charged - _sPaid);
+  const _sBal = Math.max(0, grandCharged - _sPaid);
   const _sSalePayments = existing?.salePayments?.length
     ? existing.salePayments
     : (_sPaid > 0 ? [{ date: document.getElementById('s-date').value, amount: _sPaid, method: document.getElementById('s-payment').value, note: 'Recorded at sale' }] : []);
@@ -6041,11 +6122,11 @@ function buildSaleRecord(existingId) {
     payment: document.getElementById('s-payment').value,
     notes: document.getElementById('s-notes').value,
     items, oilTypes,
-    totalCost, gst, charged, profit,
+    totalCost, gst, charged: grandCharged, labourCharged, profit,
     mainService: items[0]?.desc||'—',
     cat: items[0]?.cat||'Other',
     // Payment tracking
-    saleTotal: charged,
+    saleTotal: grandCharged,
     salePaid: _sPaid,
     saleBalance: _sBal,
     saleStatus: _sBal <= 0.01 ? 'paid' : (_sPaid > 0 ? 'partial' : 'unpaid'),
@@ -6195,11 +6276,6 @@ function renderSalesPage() {
   if(salesTbl) { isHideCost ? salesTbl.classList.add('hide-cost') : salesTbl.classList.remove('hide-cost'); }
   document.getElementById('sales-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">TOTAL SALES</div><div class="metric-value">${metricRecords.length}</div></div>
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">REVENUE</div><div class="metric-value green">$${rev.toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">PARTS COST (🔒)</div><div class="metric-value" style="color:var(--red)">$${partsCostM.toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">LABOUR (🔒)</div><div class="metric-value accent">$${labourM.toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">PROFIT (🔒)</div><div class="metric-value ${profit>=0?'green':''}">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>`}
-    ${isHideProfit ? '' : `<div class="metric"><div class="metric-label">MARGIN (🔒)</div><div class="metric-value">${margin.toFixed(1)}%</div></div>`}
   `;
   // Filter
   const dateRange = getSalesDateRange(_salesDateFilter);
@@ -6458,7 +6534,7 @@ function calcQsTotals() {
     if(ch) ch.textContent = '$' + charged.toFixed(2);
   });
   const method = document.getElementById('qs-method')?.value || '';
-  const gstRate = method === 'Cash' ? 0 : (parseFloat(store.settings?.gstRate)||5)/100;
+  const gstRate = (method==='Cash'||method==='E-Transfer') ? 0 : (parseFloat(store.settings?.gstRate)||5)/100;
   const gst = subtotal * gstRate;
   const total = subtotal + gst;
   const subEl = document.getElementById('qs-subtotal'); if(subEl) subEl.textContent = '$' + subtotal.toFixed(2);
@@ -6491,7 +6567,7 @@ function saveQuickSale() {
   const paid = parseFloat(document.getElementById('qs-paid').value)||0;
   const customer = document.getElementById('qs-customer').value.trim() || 'Walk-in';
   const method = document.getElementById('qs-method').value;
-  const gstRate = method === 'Cash' ? 0 : (parseFloat(store.settings?.gstRate)||5)/100;
+  const gstRate = (method==='Cash'||method==='E-Transfer') ? 0 : (parseFloat(store.settings?.gstRate)||5)/100;
   const subtotal = items.reduce((s,i)=>s+i.lineCharged, 0);
   const gst = subtotal * gstRate;
   const profit = subtotal - totalCost;
@@ -6557,7 +6633,10 @@ function openSalePayment(saleId) {
 }
 
 function getSaleTotalPaid(s) {
-  return (s.salePayments||[]).reduce((a,p)=>a+(p.amount||0), 0);
+  const ceiling = parseFloat(s.saleTotal||s.charged||0);
+  const fromArr = (s.salePayments||[]).reduce((a,p) => a + (parseFloat(p.amount)||0), 0);
+  const raw = (fromArr === 0 && s.salePaid != null) ? (parseFloat(s.salePaid)||0) : fromArr;
+  return ceiling > 0 ? Math.min(raw, ceiling) : raw;
 }
 
 function getSaleBalance(s) {
@@ -7704,6 +7783,127 @@ function closeVinScanner() {
   </div>
 </div>
 
+<!-- CASH LOG MODAL -->
+<div id="modal-cashlog" class="modal" style="display:none;" onclick="if(event.target===this)closeCashEntryModal()">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span id="cashlog-modal-title">Add Cash Entry</span>
+      <button onclick="closeCashEntryModal()" class="modal-close">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="cl-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Date</label>
+          <input type="date" id="cl-date" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Amount ($)</label>
+          <input type="number" id="cl-amount" class="form-input" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Customer Name</label>
+          <input type="text" id="cl-customer" class="form-input" placeholder="Customer name">
+        </div>
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" id="cl-phone" class="form-input" placeholder="(780) 000-0000">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Services Done</label>
+        <input type="text" id="cl-services" class="form-input" placeholder="e.g. Oil change, brake pads">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Mechanic</label>
+          <select id="cl-mechanic" class="form-input"></select>
+        </div>
+        <div>
+          <label class="form-label">Labour Amount ($)</label>
+          <input type="number" id="cl-labour" class="form-input" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Note (optional)</label>
+        <input type="text" id="cl-note" class="form-input" placeholder="Any notes">
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeCashEntryModal()">Cancel</button>
+      <button class="btn" onclick="saveCashEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div id="modal-expense" class="modal" style="display:none;" onclick="if(event.target===this)closeExpenseModal()">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span id="expense-modal-title">Add Expense</span>
+      <button onclick="closeExpenseModal()" class="modal-close">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="exp-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Date</label>
+          <input type="date" id="exp-date" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Amount ($)</label>
+          <input type="number" id="exp-amount" class="form-input" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Payment Method</label>
+          <select id="exp-method" class="form-input">
+            <option value="cash">Cash</option>
+            <option value="etransfer">E-Transfer</option>
+            <option value="debit">Debit</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">By Who</label>
+          <input type="text" id="exp-bywho" class="form-input" placeholder="Name">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Used For</label>
+        <input type="text" id="exp-usedfor" class="form-input" placeholder="What was this money used for?">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Category</label>
+          <select id="exp-category" class="form-input">
+            <option value="customer">Customer / Job Related</option>
+            <option value="personal">Personal</option>
+            <option value="business">Business Operations</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Type</label>
+          <select id="exp-type" class="form-input">
+            <option value="cost">Cost (no profit return)</option>
+            <option value="investment">Investment (profit expected)</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Note (optional)</label>
+        <input type="text" id="exp-note" class="form-input" placeholder="Any notes">
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeExpenseModal()">Cancel</button>
+      <button class="btn" onclick="saveExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 // ─── VIN Phone Relay (laptop side) ───────────────────────────────────────────
@@ -8055,72 +8255,433 @@ function printReportsPage() {
 
 function printSalesReport() {
   const range = getSalesDateRange(_salesDateFilter) || {from:'2000-01-01', to:'2099-12-31'};
-  const sales = store.salesRecords.filter(s => !s._deleted && s.date >= range.from && s.date <= range.to);
+  const sales = store.salesRecords.filter(s => !s._deleted && s.date >= range.from && s.date <= range.to)
+    .sort((a,b) => (a.date||'').localeCompare(b.date||'') || (a._createdAt||0)-(b._createdAt||0));
   const periodMap = {all:'All Time',today:'Today',yesterday:'Yesterday',week:'This Week',lastweek:'Last Week',month:'This Month',lastmonth:'Last Month',year:'This Year'};
   const periodLabel = _salesDateFilter === 'range'
     ? `${range.from} to ${range.to}`
     : (periodMap[_salesDateFilter] || 'Selected Period');
   const user = currentUser?.name || currentUser?.username || 'N/A';
+  const shop = store.settings || {};
+  const gstRate = (parseFloat(shop.gstRate)||5)/100;
 
-  const byPay = {};
-  let totalCharged=0, totalPaid=0, totalBal=0;
+  // ── Group by date ────────────────────────────────────────────────────────────
+  const byDate = {};
+  let totJobs=0, totPartsCharged=0, totPartsCost=0, totLabour=0, totCollected=0, totBal=0;
+
   sales.forEach(s => {
-    const charged = s.saleTotal||s.charged||0;
-    const paid = (s.salePaid != null) ? s.salePaid : charged;
-    const bal = Math.max(0, charged - paid);
-    const pm = s.payment || 'Other';
-    if(!byPay[pm]) byPay[pm] = {count:0, total:0};
-    byPay[pm].count++; byPay[pm].total += charged;
-    totalCharged += charged; totalPaid += paid; totalBal += bal;
+    const d = s.date || '(no date)';
+    if(!byDate[d]) byDate[d] = [];
+    byDate[d].push(s);
+    const partsCharged = (s.saleTotal||s.charged||0) - (s.labourCharged||0);
+    totJobs++;
+    totPartsCharged += partsCharged;
+    totPartsCost    += s.totalCost||0;
+    totLabour       += s.labourCharged||((s.items||[]).reduce((a,i)=>a+(i.labour||0),0));
+    totCollected    += getSaleTotalPaid(s);
+    totBal          += getSaleBalance(s);
   });
-  const gstRate = (store.settings?.gstRate||5)/100;
-  const gstTotal = sales.reduce((a,s)=>{ const t=s.saleTotal||s.charged||0; return a+t-t/(1+gstRate); },0);
 
-  const payRows = Object.entries(byPay).sort((a,b)=>b[1].total-a[1].total)
-    .map(([pm,d])=>`<tr><td style="padding:7px 10px;">${pm}</td><td style="padding:7px 10px;text-align:center;font-weight:600;">${d.count}</td><td style="padding:7px 10px;text-align:right;">$${d.total.toFixed(2)}</td></tr>`).join('');
+  const totPartsProfit = totPartsCharged - totPartsCost;
 
-  const balRows = sales.filter(s=>{
-    const c=s.saleTotal||s.charged||0; const p=(s.salePaid!=null)?s.salePaid:c;
-    return Math.max(0,c-p)>0.01;
-  }).map(s=>{
-    const c=s.saleTotal||s.charged||0; const p=(s.salePaid!=null)?s.salePaid:c;
-    const b=Math.max(0,c-p);
-    return `<tr><td style="padding:6px 10px;">${s.custName||s.customerName||'—'}</td><td style="padding:6px 10px;text-align:center;">${s.date||'—'}</td><td style="padding:6px 10px;text-align:right;color:#c0392b;font-weight:600;">$${b.toFixed(2)}</td></tr>`;
+  // ── Labour allocation by mechanic ────────────────────────────────────────────
+  const mechLabour = {};
+  sales.forEach(s => {
+    const lc = s.labourCharged||((s.items||[]).reduce((a,i)=>a+(i.labour||0),0));
+    if(!lc) return;
+    const mechName = s.mechanicName || 'Unassigned';
+    const mech = store.mechanics.find(m=>m.id==s.mechanicId);
+    const theirPct = (mech?.labourSplit != null) ? mech.labourSplit : 0;
+    if(!mechLabour[mechName]) mechLabour[mechName] = { total:0, theirPct, theirShare:0, shopShare:0 };
+    mechLabour[mechName].total += lc;
+    mechLabour[mechName].theirShare += lc * theirPct / 100;
+    mechLabour[mechName].shopShare  += lc * (100 - theirPct) / 100;
+  });
+
+  // ── Build day rows ───────────────────────────────────────────────────────────
+  const dayRows = Object.entries(byDate).map(([date, daySales]) => {
+    const dayPartsCharged = daySales.reduce((a,s)=>a+((s.saleTotal||s.charged||0)-(s.labourCharged||0)),0);
+    const dayPartsCost    = daySales.reduce((a,s)=>a+(s.totalCost||0),0);
+    const dayLabour       = daySales.reduce((a,s)=>a+(s.labourCharged||((s.items||[]).reduce((b,i)=>b+(i.labour||0),0))),0);
+    const dayCollected    = daySales.reduce((a,s)=>a+getSaleTotalPaid(s),0);
+    const dayBal          = daySales.reduce((a,s)=>a+getSaleBalance(s),0);
+    const dayProfit       = dayPartsCharged - dayPartsCost;
+
+    const saleRows = daySales.map(s => {
+      const lc = s.labourCharged||((s.items||[]).reduce((a,i)=>a+(i.labour||0),0));
+      const pc = (s.saleTotal||s.charged||0) - lc;
+      const paid = getSaleTotalPaid(s);
+      const bal  = getSaleBalance(s);
+      return `<tr style="font-size:11px;">
+        <td style="padding:3px 6px;color:#555;">${s.num||'—'}</td>
+        <td style="padding:3px 6px;">${s.custName||'—'}</td>
+        <td style="padding:3px 6px;color:#555;">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}</td>
+        <td style="padding:3px 6px;color:#555;">${s.mechanicName||'—'}</td>
+        <td style="padding:3px 6px;color:#555;">${s.payment||'—'}</td>
+        <td style="padding:3px 6px;text-align:right;">$${pc.toFixed(2)}</td>
+        <td style="padding:3px 6px;text-align:right;color:#c0392b;">$${(s.totalCost||0).toFixed(2)}</td>
+        <td style="padding:3px 6px;text-align:right;color:#27ae60;">$${(pc-(s.totalCost||0)).toFixed(2)}</td>
+        <td style="padding:3px 6px;text-align:right;color:#6c3483;">${lc>0?'$'+lc.toFixed(2):'—'}</td>
+        <td style="padding:3px 6px;text-align:right;font-weight:600;">$${paid.toFixed(2)}</td>
+        <td style="padding:3px 6px;text-align:right;color:${bal>0.01?'#c0392b':'#555'};">${bal>0.01?'$'+bal.toFixed(2):'—'}</td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <tr style="background:#2c3e50;color:#fff;">
+        <td colspan="5" style="padding:6px 8px;font-weight:700;font-size:13px;">📅 ${date} — ${daySales.length} job${daySales.length!==1?'s':''}</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Parts</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Cost</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Profit</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Labour</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Collected</td>
+        <td style="padding:6px 8px;text-align:right;font-size:11px;">Balance</td>
+      </tr>
+      ${saleRows}
+      <tr style="background:#ecf0f1;font-weight:600;font-size:11px;border-top:1px solid #bdc3c7;">
+        <td colspan="5" style="padding:5px 8px;color:#555;">Day Total</td>
+        <td style="padding:5px 8px;text-align:right;">$${dayPartsCharged.toFixed(2)}</td>
+        <td style="padding:5px 8px;text-align:right;color:#c0392b;">$${dayPartsCost.toFixed(2)}</td>
+        <td style="padding:5px 8px;text-align:right;color:${dayProfit>=0?'#27ae60':'#c0392b'};">$${dayProfit.toFixed(2)}</td>
+        <td style="padding:5px 8px;text-align:right;color:#6c3483;">${dayLabour>0?'$'+dayLabour.toFixed(2):'—'}</td>
+        <td style="padding:5px 8px;text-align:right;color:#27ae60;font-weight:700;">$${dayCollected.toFixed(2)}</td>
+        <td style="padding:5px 8px;text-align:right;color:${dayBal>0.01?'#c0392b':'#555'};">${dayBal>0.01?'$'+dayBal.toFixed(2):'✓'}</td>
+      </tr>
+      <tr><td colspan="11" style="padding:4px;"></td></tr>`;
   }).join('');
 
-  const shop = store.settings || {};
+  // ── Labour allocation table ───────────────────────────────────────────────────
+  const labourRows = Object.entries(mechLabour).map(([name,d])=>`
+    <tr>
+      <td style="padding:7px 10px;">${name}</td>
+      <td style="padding:7px 10px;text-align:right;">$${d.total.toFixed(2)}</td>
+      <td style="padding:7px 10px;text-align:center;">${d.theirPct}%</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#6c3483;">$${d.theirShare.toFixed(2)}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#27ae60;">$${d.shopShare.toFixed(2)}</td>
+    </tr>`).join('');
+
   document.getElementById('print-area').innerHTML = `
-    <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:24px 20px;">
-      <div style="text-align:center;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:20px;">
-        <div style="font-size:22px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
-        <div style="font-size:12px;color:#555;margin:2px 0;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
-        <div style="font-size:17px;font-weight:600;margin-top:10px;">Sales Summary Report</div>
-        <div style="font-size:13px;color:#555;margin-top:4px;">Period: <strong>${periodLabel}</strong></div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">Prepared by: ${user} &nbsp;|&nbsp; Generated: ${todayLocal()}</div>
+    <div style="font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:20px 16px;font-size:12px;">
+      <div style="text-align:center;border-bottom:3px solid #2c3e50;padding-bottom:12px;margin-bottom:16px;">
+        <div style="font-size:20px;font-weight:700;">${shop.name||'AutoShop Pro'}</div>
+        <div style="font-size:11px;color:#555;">${shop.address||''} ${shop.phone?'| '+shop.phone:''} ${shop.gst?'| GST# '+shop.gst:''}</div>
+        <div style="font-size:16px;font-weight:700;margin-top:8px;">Sales Report — ${periodLabel}</div>
+        <div style="font-size:11px;color:#777;margin-top:3px;">Prepared by: <strong>${user}</strong> &nbsp;|&nbsp; ${todayLocal()}</div>
       </div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px;">
-        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;font-size:15px;">Total Jobs</td><td style="padding:9px 10px;text-align:right;font-size:22px;font-weight:700;">${sales.length}</td></tr>
-        <tr><td style="padding:9px 10px;font-weight:600;">Total Charged</td><td style="padding:9px 10px;text-align:right;">$${totalCharged.toFixed(2)}</td></tr>
-        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">Total Collected</td><td style="padding:9px 10px;text-align:right;">$${totalPaid.toFixed(2)}</td></tr>
-        <tr style="background:#fff0f0;"><td style="padding:9px 10px;font-weight:600;">Outstanding Balance</td><td style="padding:9px 10px;text-align:right;color:#c0392b;font-weight:700;">$${totalBal.toFixed(2)}</td></tr>
-        <tr style="background:#f4f4f4;"><td style="padding:9px 10px;font-weight:600;">GST Collected (est. ${shop.gstRate||5}%)</td><td style="padding:9px 10px;text-align:right;">$${gstTotal.toFixed(2)}</td></tr>
+
+      <!-- Period totals summary -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        ${[
+          ['Jobs',totJobs,'#2c3e50'],
+          ['Gross Revenue','$'+(totPartsCharged+totLabour).toFixed(2),'#1a252f'],
+          ['Parts Revenue','$'+totPartsCharged.toFixed(2),'#27ae60'],
+          ['Parts Cost','$'+totPartsCost.toFixed(2),'#c0392b'],
+          ['Parts Profit','$'+totPartsProfit.toFixed(2),totPartsProfit>=0?'#27ae60':'#c0392b'],
+          ['Labour','$'+totLabour.toFixed(2),'#6c3483'],
+          ['Collected','$'+totCollected.toFixed(2),'#2980b9'],
+          ['Outstanding','$'+totBal.toFixed(2),totBal>0?'#c0392b':'#27ae60']
+        ].map(([lbl,val,col])=>`<div style="border:1px solid #ddd;border-radius:4px;padding:8px 12px;min-width:100px;text-align:center;flex:1;">
+          <div style="font-size:9px;color:#888;font-weight:600;text-transform:uppercase;">${lbl}</div>
+          <div style="font-size:16px;font-weight:700;color:${col};">${val}</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Daily detail table -->
+      <div style="font-weight:700;font-size:13px;border-bottom:2px solid #2c3e50;padding-bottom:4px;margin-bottom:8px;">Daily Detail</div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px;">
+        ${dayRows||'<tr><td colspan="11" style="padding:12px;text-align:center;color:#999;">No sales in this period</td></tr>'}
+        <!-- Period Grand Total -->
+        <tr style="background:#2c3e50;color:#fff;font-weight:700;font-size:13px;border-top:2px solid #2c3e50;">
+          <td colspan="5" style="padding:8px 10px;">PERIOD TOTAL — ${totJobs} jobs</td>
+          <td style="padding:8px 10px;text-align:right;">$${totPartsCharged.toFixed(2)}</td>
+          <td style="padding:8px 10px;text-align:right;">$${totPartsCost.toFixed(2)}</td>
+          <td style="padding:8px 10px;text-align:right;">$${totPartsProfit.toFixed(2)}</td>
+          <td style="padding:8px 10px;text-align:right;">$${totLabour.toFixed(2)}</td>
+          <td style="padding:8px 10px;text-align:right;">$${totCollected.toFixed(2)}</td>
+          <td style="padding:8px 10px;text-align:right;">${totBal>0.01?'$'+totBal.toFixed(2):'✓'}</td>
+        </tr>
       </table>
-      <div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Breakdown by Payment Method</div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
-        <thead><tr style="background:#f4f4f4;"><th style="padding:7px 10px;text-align:left;">Method</th><th style="padding:7px 10px;text-align:center;">Jobs</th><th style="padding:7px 10px;text-align:right;">Total</th></tr></thead>
-        <tbody>${payRows||'<tr><td colspan="3" style="padding:8px 10px;color:#999;">No records</td></tr>'}</tbody>
-      </table>
-      ${balRows ? `<div style="font-weight:600;font-size:14px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:8px;">Customers with Outstanding Balance</div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
-        <thead><tr style="background:#fff0f0;"><th style="padding:6px 10px;text-align:left;">Customer</th><th style="padding:6px 10px;text-align:center;">Date</th><th style="padding:6px 10px;text-align:right;">Balance Owing</th></tr></thead>
-        <tbody>${balRows}</tbody>
+
+      <!-- Labour allocation by mechanic -->
+      ${totLabour > 0 ? `
+      <div style="font-weight:700;font-size:13px;border-bottom:2px solid #6c3483;padding-bottom:4px;margin-bottom:8px;">Labour Allocation by Mechanic</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+        <thead><tr style="background:#6c3483;color:#fff;">
+          <th style="padding:7px 10px;text-align:left;">Mechanic</th>
+          <th style="padding:7px 10px;text-align:right;">Labour Charged</th>
+          <th style="padding:7px 10px;text-align:center;">Their %</th>
+          <th style="padding:7px 10px;text-align:right;">Their Share</th>
+          <th style="padding:7px 10px;text-align:right;">Shop Share</th>
+        </tr></thead>
+        <tbody>${labourRows}</tbody>
+        <tfoot><tr style="background:#f0e6ff;font-weight:700;">
+          <td style="padding:7px 10px;">Total</td>
+          <td style="padding:7px 10px;text-align:right;">$${totLabour.toFixed(2)}</td>
+          <td style="padding:7px 10px;"></td>
+          <td style="padding:7px 10px;text-align:right;color:#6c3483;">$${Object.values(mechLabour).reduce((a,d)=>a+d.theirShare,0).toFixed(2)}</td>
+          <td style="padding:7px 10px;text-align:right;color:#27ae60;">$${Object.values(mechLabour).reduce((a,d)=>a+d.shopShare,0).toFixed(2)}</td>
+        </tr></tfoot>
       </table>` : ''}
-      <div style="font-size:10px;color:#999;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential</div>
+
+      <div style="font-size:10px;color:#aaa;text-align:center;margin-top:16px;border-top:1px solid #eee;padding-top:8px;">AutoShop Pro by MK DESIGNS — Confidential Internal Report</div>
     </div>`;
   const _pt = document.title;
-  document.title = `Sales Report — ${periodLabel}`;
+  document.title = `Sales-Report-${range.from}-${range.to}`;
   window.addEventListener('afterprint', ()=>{ document.title = _pt; }, {once:true});
   window.print();
+}
+
+// ─── CASH LOG ────────────────────────────────────────────────────────────────
+function renderCashLog() {
+  const monthFilter = document.getElementById('cashlog-month').value;
+  let logs = [...store.cashLog].sort((a,b) => a.date < b.date ? 1 : -1);
+  if(monthFilter) logs = logs.filter(l => l.date.startsWith(monthFilter));
+  const el = document.getElementById('cashlog-list');
+  if(!logs.length) { el.innerHTML = '<div style="color:var(--text3);text-align:center;padding:40px;">No cash entries found.</div>'; return; }
+  const byDate = {};
+  logs.forEach(l => { (byDate[l.date] = byDate[l.date]||[]).push(l); });
+  const grandTotal = logs.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const grandLabour = logs.reduce((s,e)=>s+(parseFloat(e.labourAmount)||0),0);
+  let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  html += '<thead><tr style="background:var(--card2);"><th style="padding:8px 10px;text-align:left;">Date</th><th style="padding:8px 10px;text-align:left;">Customer</th><th style="padding:8px 10px;text-align:left;">Services</th><th style="padding:8px 10px;text-align:left;">Mechanic</th><th style="padding:8px 10px;text-align:right;">Amount</th><th style="padding:8px 10px;text-align:right;">Labour</th><th style="padding:8px 10px;text-align:right;">Mech Share</th><th style="padding:8px 10px;width:80px;text-align:center;">Actions</th></tr></thead><tbody>';
+  const sortedDates = Object.keys(byDate).sort().reverse();
+  sortedDates.forEach(date => {
+    const entries = byDate[date];
+    const dayTotal = entries.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+    const dayLabour = entries.reduce((s,e)=>s+(parseFloat(e.labourAmount)||0),0);
+    html += `<tr style="background:var(--bg3,#1a2535);"><td colspan="4" style="padding:6px 10px;font-weight:700;font-size:12px;">${date} &mdash; ${entries.length} entr${entries.length>1?'ies':'y'}</td><td style="padding:6px 10px;text-align:right;font-weight:700;">$${dayTotal.toFixed(2)}</td><td style="padding:6px 10px;text-align:right;font-weight:700;color:var(--accent);">$${dayLabour.toFixed(2)}</td><td colspan="2"></td></tr>`;
+    entries.forEach(e => {
+      const mech = store.mechanics.find(m => m.name === e.mechanic);
+      const split = mech ? (parseFloat(mech.labourSplit)||0) : 0;
+      const mechShare = ((parseFloat(e.labourAmount)||0) * split / 100);
+      html += `<tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 10px;">${e.date}</td><td style="padding:8px 10px;">${e.customer||'&mdash;'}<br><span style="color:var(--text3);font-size:11px;">${e.phone||''}</span></td><td style="padding:8px 10px;">${e.services||'&mdash;'}</td><td style="padding:8px 10px;">${e.mechanic||'&mdash;'}</td><td style="padding:8px 10px;text-align:right;font-weight:600;">$${(parseFloat(e.amount)||0).toFixed(2)}</td><td style="padding:8px 10px;text-align:right;color:var(--accent);">$${(parseFloat(e.labourAmount)||0).toFixed(2)}</td><td style="padding:8px 10px;text-align:right;color:var(--green,#4caf50);">$${mechShare.toFixed(2)}</td><td style="padding:8px 10px;text-align:center;white-space:nowrap;"><button class="btn btn-secondary btn-sm" onclick="openCashEntryModal('${e.id}')" style="margin-right:4px;font-size:11px;padding:3px 7px;">Edit</button><button class="btn btn-sm" style="background:var(--red);font-size:11px;padding:3px 7px;" onclick="deleteCashEntry('${e.id}')">Del</button></td></tr>`;
+    });
+  });
+  html += `<tr style="background:var(--card);font-weight:700;border-top:2px solid var(--border);"><td colspan="4" style="padding:10px;">TOTAL (${logs.length} entries)</td><td style="padding:10px;text-align:right;">$${grandTotal.toFixed(2)}</td><td style="padding:10px;text-align:right;color:var(--accent);">$${grandLabour.toFixed(2)}</td><td colspan="2"></td></tr>`;
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function openCashEntryModal(id) {
+  const modal = document.getElementById('modal-cashlog');
+  document.getElementById('cl-id').value = '';
+  document.getElementById('cl-date').value = todayLocal();
+  document.getElementById('cl-amount').value = '';
+  document.getElementById('cl-customer').value = '';
+  document.getElementById('cl-phone').value = '';
+  document.getElementById('cl-services').value = '';
+  document.getElementById('cl-labour').value = '';
+  document.getElementById('cl-note').value = '';
+  document.getElementById('cashlog-modal-title').textContent = 'Add Cash Entry';
+  const mSel = document.getElementById('cl-mechanic');
+  mSel.innerHTML = '<option value="">— Select Mechanic —</option>' + store.mechanics.map(m=>`<option value="${m.name}">${m.name}</option>`).join('');
+  if(id) {
+    const e = store.cashLog.find(c=>c.id===id);
+    if(e) {
+      document.getElementById('cl-id').value = e.id;
+      document.getElementById('cl-date').value = e.date||'';
+      document.getElementById('cl-amount').value = e.amount||'';
+      document.getElementById('cl-customer').value = e.customer||'';
+      document.getElementById('cl-phone').value = e.phone||'';
+      document.getElementById('cl-services').value = e.services||'';
+      document.getElementById('cl-labour').value = e.labourAmount||'';
+      document.getElementById('cl-note').value = e.note||'';
+      mSel.value = e.mechanic||'';
+      document.getElementById('cashlog-modal-title').textContent = 'Edit Cash Entry';
+    }
+  }
+  modal.style.display = 'flex';
+}
+
+function closeCashEntryModal() { document.getElementById('modal-cashlog').style.display = 'none'; }
+
+function saveCashEntry() {
+  const id = document.getElementById('cl-id').value;
+  const date = document.getElementById('cl-date').value;
+  const amount = parseFloat(document.getElementById('cl-amount').value)||0;
+  if(!date || !amount) { showToast('Date and amount are required'); return; }
+  const entry = {
+    id: id || 'CL-' + String(store.cashCounter++).padStart(4,'0'),
+    date, amount,
+    customer: document.getElementById('cl-customer').value.trim(),
+    phone: document.getElementById('cl-phone').value.trim(),
+    services: document.getElementById('cl-services').value.trim(),
+    mechanic: document.getElementById('cl-mechanic').value,
+    labourAmount: parseFloat(document.getElementById('cl-labour').value)||0,
+    note: document.getElementById('cl-note').value.trim()
+  };
+  if(id) { const idx = store.cashLog.findIndex(c=>c.id===id); if(idx>=0) store.cashLog[idx]=entry; }
+  else store.cashLog.push(entry);
+  save(); closeCashEntryModal(); renderCashLog(); showToast('Cash entry saved');
+}
+
+function deleteCashEntry(id) {
+  if(!confirm('Delete this cash entry?')) return;
+  store.cashLog = store.cashLog.filter(c=>c.id!==id);
+  save(); renderCashLog(); showToast('Entry deleted');
+}
+
+function printCashReport() {
+  const monthFilter = document.getElementById('cashlog-month').value;
+  let logs = [...store.cashLog].sort((a,b)=>a.date>b.date?1:-1);
+  if(monthFilter) logs = logs.filter(l=>l.date.startsWith(monthFilter));
+  const byDate = {};
+  logs.forEach(l=>{(byDate[l.date]=byDate[l.date]||[]).push(l);});
+  const mechMap = {};
+  logs.forEach(e=>{
+    if(!e.mechanic) return;
+    if(!mechMap[e.mechanic]) mechMap[e.mechanic]={labour:0,mechShare:0,shopShare:0};
+    const mech = store.mechanics.find(m=>m.name===e.mechanic);
+    const split = mech?(parseFloat(mech.labourSplit)||0):0;
+    const labour = parseFloat(e.labourAmount)||0;
+    mechMap[e.mechanic].labour += labour;
+    mechMap[e.mechanic].mechShare += labour*split/100;
+    mechMap[e.mechanic].shopShare += labour*(100-split)/100;
+  });
+  const grandTotal = logs.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const grandLabour = logs.reduce((s,e)=>s+(parseFloat(e.labourAmount)||0),0);
+  let html = `<html><head><title>Cash Log Report</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:20px;}h1{font-size:18px;margin-bottom:4px;}.sub{font-size:11px;color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;margin-bottom:20px;}th{background:#1e2a35;color:#fff;padding:6px 8px;text-align:left;font-size:11px;}td{padding:5px 8px;border-bottom:1px solid #ddd;}.day-hdr{background:#e8f0fe;font-weight:700;font-size:11px;}.total-row{background:#f0f0f0;font-weight:700;}.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}.sum-card{border:1px solid #ddd;padding:8px 14px;border-radius:4px;min-width:120px;}.sum-label{font-size:10px;color:#666;}.sum-val{font-size:16px;font-weight:700;}@media print{button{display:none!important}}</style></head><body>`;
+  html += `<h1>Cash Log Report &mdash; ${store.settings.name||'Makaniko Automotive'}</h1>`;
+  html += `<div class="sub">${monthFilter?'Period: '+monthFilter:'All time'} &nbsp;|&nbsp; Printed: ${new Date().toLocaleString('en-CA')}</div>`;
+  html += `<div class="summary"><div class="sum-card"><div class="sum-label">Total Collected</div><div class="sum-val">$${grandTotal.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Total Labour</div><div class="sum-val">$${grandLabour.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Entries</div><div class="sum-val">${logs.length}</div></div></div>`;
+  html += `<table><thead><tr><th>Date</th><th>Customer</th><th>Phone</th><th>Services</th><th>Mechanic</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Labour</th><th style="text-align:right;">Mech Share</th><th>Note</th></tr></thead><tbody>`;
+  Object.keys(byDate).sort().forEach(date=>{
+    const entries = byDate[date];
+    const dT = entries.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+    const dL = entries.reduce((s,e)=>s+(parseFloat(e.labourAmount)||0),0);
+    html += `<tr class="day-hdr"><td colspan="5">${date} &mdash; ${entries.length} entr${entries.length>1?'ies':'y'}</td><td style="text-align:right;">$${dT.toFixed(2)}</td><td style="text-align:right;">$${dL.toFixed(2)}</td><td colspan="2"></td></tr>`;
+    entries.forEach(e=>{
+      const mech=store.mechanics.find(m=>m.name===e.mechanic);
+      const split=mech?(parseFloat(mech.labourSplit)||0):0;
+      const ms=((parseFloat(e.labourAmount)||0)*split/100);
+      html += `<tr><td>${e.date}</td><td>${e.customer||'&mdash;'}</td><td>${e.phone||''}</td><td>${e.services||'&mdash;'}</td><td>${e.mechanic||'&mdash;'}</td><td style="text-align:right;">$${(parseFloat(e.amount)||0).toFixed(2)}</td><td style="text-align:right;">$${(parseFloat(e.labourAmount)||0).toFixed(2)}</td><td style="text-align:right;">$${ms.toFixed(2)}</td><td>${e.note||''}</td></tr>`;
+    });
+  });
+  html += `<tr class="total-row"><td colspan="5">GRAND TOTAL</td><td style="text-align:right;">$${grandTotal.toFixed(2)}</td><td style="text-align:right;">$${grandLabour.toFixed(2)}</td><td colspan="2"></td></tr></tbody></table>`;
+  if(Object.keys(mechMap).length){
+    html += `<h2 style="font-size:14px;margin-top:20px;margin-bottom:8px;">Labour Allocation by Mechanic</h2><table><thead><tr><th>Mechanic</th><th>Split %</th><th style="text-align:right;">Total Labour</th><th style="text-align:right;">Mechanic Gets</th><th style="text-align:right;">Shop Gets</th></tr></thead><tbody>`;
+    Object.entries(mechMap).forEach(([name,d])=>{
+      const mech=store.mechanics.find(m=>m.name===name);
+      const split=mech?(parseFloat(mech.labourSplit)||0):0;
+      html += `<tr><td>${name}</td><td>${split}%</td><td style="text-align:right;">$${d.labour.toFixed(2)}</td><td style="text-align:right;">$${d.mechShare.toFixed(2)}</td><td style="text-align:right;">$${d.shopShare.toFixed(2)}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+  html += `</body></html>`;
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html); w.document.close(); w.print();
+}
+
+// ─── EXPENSES ────────────────────────────────────────────────────────────────
+function renderExpenses() {
+  const monthFilter = document.getElementById('expenses-month').value;
+  let exps = [...store.expenses].sort((a,b)=>a.date<b.date?1:-1);
+  if(monthFilter) exps = exps.filter(e=>e.date.startsWith(monthFilter));
+  const el = document.getElementById('expenses-list');
+  if(!exps.length) { el.innerHTML = '<div style="color:var(--text3);text-align:center;padding:40px;">No expenses found.</div>'; return; }
+  const totalCost = exps.filter(e=>e.type==='cost').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const totalInv = exps.filter(e=>e.type==='investment').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  let html = `<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:var(--text3);">Total Spent</div><div style="font-size:20px;font-weight:700;">$${(totalCost+totalInv).toFixed(2)}</div></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:var(--text3);">Pure Costs</div><div style="font-size:20px;font-weight:700;color:var(--red);">$${totalCost.toFixed(2)}</div></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:var(--text3);">Investments</div><div style="font-size:20px;font-weight:700;color:var(--accent);">$${totalInv.toFixed(2)}</div></div>
+  </div>`;
+  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  html += '<thead><tr style="background:var(--card2);"><th style="padding:8px 10px;">Date</th><th style="padding:8px 10px;">Used For</th><th style="padding:8px 10px;">By Who</th><th style="padding:8px 10px;">Method</th><th style="padding:8px 10px;">Category</th><th style="padding:8px 10px;">Type</th><th style="padding:8px 10px;text-align:right;">Amount</th><th style="padding:8px 10px;width:80px;text-align:center;">Actions</th></tr></thead><tbody>';
+  exps.forEach(e=>{
+    const typeColor = e.type==='cost'?'var(--red)':'var(--accent)';
+    const typeLabel = e.type==='cost'?'Cost':'Investment';
+    const catLabel = e.category==='customer'?'Job':e.category==='personal'?'Personal':'Business';
+    const methodLabel = e.payMethod==='etransfer'?'E-Transfer':e.payMethod==='debit'?'Debit':'Cash';
+    html += `<tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 10px;">${e.date}</td><td style="padding:8px 10px;">${e.usedFor||'&mdash;'}${e.note?`<br><span style='color:var(--text3);font-size:11px;'>${e.note}</span>`:''}</td><td style="padding:8px 10px;">${e.byWho||'&mdash;'}</td><td style="padding:8px 10px;">${methodLabel}</td><td style="padding:8px 10px;">${catLabel}</td><td style="padding:8px 10px;"><span style="color:${typeColor};font-weight:600;">${typeLabel}</span></td><td style="padding:8px 10px;text-align:right;font-weight:600;">$${(parseFloat(e.amount)||0).toFixed(2)}</td><td style="padding:8px 10px;text-align:center;white-space:nowrap;"><button class="btn btn-secondary btn-sm" onclick="openExpenseModal('${e.id}')" style="margin-right:4px;font-size:11px;padding:3px 7px;">Edit</button><button class="btn btn-sm" style="background:var(--red);font-size:11px;padding:3px 7px;" onclick="deleteExpense('${e.id}')">Del</button></td></tr>`;
+  });
+  html += `<tr style="background:var(--card);font-weight:700;border-top:2px solid var(--border);"><td colspan="6" style="padding:10px;">TOTAL (${exps.length} entries)</td><td style="padding:10px;text-align:right;">$${(totalCost+totalInv).toFixed(2)}</td><td></td></tr>`;
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function openExpenseModal(id) {
+  const modal = document.getElementById('modal-expense');
+  document.getElementById('exp-id').value = '';
+  document.getElementById('exp-date').value = todayLocal();
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-method').value = 'cash';
+  document.getElementById('exp-bywho').value = '';
+  document.getElementById('exp-usedfor').value = '';
+  document.getElementById('exp-category').value = 'customer';
+  document.getElementById('exp-type').value = 'cost';
+  document.getElementById('exp-note').value = '';
+  document.getElementById('expense-modal-title').textContent = 'Add Expense';
+  if(id) {
+    const e = store.expenses.find(x=>x.id===id);
+    if(e){
+      document.getElementById('exp-id').value = e.id;
+      document.getElementById('exp-date').value = e.date||'';
+      document.getElementById('exp-amount').value = e.amount||'';
+      document.getElementById('exp-method').value = e.payMethod||'cash';
+      document.getElementById('exp-bywho').value = e.byWho||'';
+      document.getElementById('exp-usedfor').value = e.usedFor||'';
+      document.getElementById('exp-category').value = e.category||'customer';
+      document.getElementById('exp-type').value = e.type||'cost';
+      document.getElementById('exp-note').value = e.note||'';
+      document.getElementById('expense-modal-title').textContent = 'Edit Expense';
+    }
+  }
+  modal.style.display = 'flex';
+}
+
+function closeExpenseModal() { document.getElementById('modal-expense').style.display = 'none'; }
+
+function saveExpense() {
+  const id = document.getElementById('exp-id').value;
+  const date = document.getElementById('exp-date').value;
+  const amount = parseFloat(document.getElementById('exp-amount').value)||0;
+  if(!date || !amount) { showToast('Date and amount are required'); return; }
+  const entry = {
+    id: id || 'EXP-' + String(store.expenseCounter++).padStart(4,'0'),
+    date, amount,
+    payMethod: document.getElementById('exp-method').value,
+    byWho: document.getElementById('exp-bywho').value.trim(),
+    usedFor: document.getElementById('exp-usedfor').value.trim(),
+    category: document.getElementById('exp-category').value,
+    type: document.getElementById('exp-type').value,
+    note: document.getElementById('exp-note').value.trim()
+  };
+  if(id) { const idx = store.expenses.findIndex(x=>x.id===id); if(idx>=0) store.expenses[idx]=entry; }
+  else store.expenses.push(entry);
+  save(); closeExpenseModal(); renderExpenses(); showToast('Expense saved');
+}
+
+function deleteExpense(id) {
+  if(!confirm('Delete this expense?')) return;
+  store.expenses = store.expenses.filter(e=>e.id!==id);
+  save(); renderExpenses(); showToast('Expense deleted');
+}
+
+function printExpenseReport() {
+  const monthFilter = document.getElementById('expenses-month').value;
+  let exps = [...store.expenses].sort((a,b)=>a.date>b.date?1:-1);
+  if(monthFilter) exps = exps.filter(e=>e.date.startsWith(monthFilter));
+  const totalCost = exps.filter(e=>e.type==='cost').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const totalInv = exps.filter(e=>e.type==='investment').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const byCash = exps.filter(e=>e.payMethod==='cash').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const byEt = exps.filter(e=>e.payMethod==='etransfer').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const byDebit = exps.filter(e=>e.payMethod==='debit').reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  let html = `<html><head><title>Expense Report</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:20px;}h1{font-size:18px;margin-bottom:4px;}.sub{font-size:11px;color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;margin-bottom:20px;}th{background:#1e2a35;color:#fff;padding:6px 8px;text-align:left;font-size:11px;}td{padding:5px 8px;border-bottom:1px solid #ddd;}.total-row{background:#f0f0f0;font-weight:700;}.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}.sum-card{border:1px solid #ddd;padding:8px 14px;border-radius:4px;min-width:110px;}.sum-label{font-size:10px;color:#666;}.sum-val{font-size:15px;font-weight:700;}.cost{color:#c0392b;}.invest{color:#2980b9;}@media print{button{display:none!important}}</style></head><body>`;
+  html += `<h1>Expense Report &mdash; ${store.settings.name||'Makaniko Automotive'}</h1>`;
+  html += `<div class="sub">${monthFilter?'Period: '+monthFilter:'All time'} &nbsp;|&nbsp; Printed: ${new Date().toLocaleString('en-CA')}</div>`;
+  html += `<div class="summary"><div class="sum-card"><div class="sum-label">Total Spent</div><div class="sum-val">$${(totalCost+totalInv).toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Pure Costs</div><div class="sum-val cost">$${totalCost.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Investments</div><div class="sum-val invest">$${totalInv.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Cash Out</div><div class="sum-val">$${byCash.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">E-Transfer Out</div><div class="sum-val">$${byEt.toFixed(2)}</div></div><div class="sum-card"><div class="sum-label">Debit Out</div><div class="sum-val">$${byDebit.toFixed(2)}</div></div></div>`;
+  html += `<table><thead><tr><th>Date</th><th>Used For</th><th>By Who</th><th>Method</th><th>Category</th><th>Type</th><th style="text-align:right;">Amount</th><th>Note</th></tr></thead><tbody>`;
+  exps.forEach(e=>{
+    const typeLabel=e.type==='cost'?'Cost':'Investment';
+    const tc=e.type==='cost'?'cost':'invest';
+    const catLabel=e.category==='customer'?'Job':e.category==='personal'?'Personal':'Business';
+    const mLabel=e.payMethod==='etransfer'?'E-Transfer':e.payMethod==='debit'?'Debit':'Cash';
+    html += `<tr><td>${e.date}</td><td>${e.usedFor||'&mdash;'}</td><td>${e.byWho||'&mdash;'}</td><td>${mLabel}</td><td>${catLabel}</td><td class="${tc}">${typeLabel}</td><td style="text-align:right;">$${(parseFloat(e.amount)||0).toFixed(2)}</td><td>${e.note||''}</td></tr>`;
+  });
+  html += `<tr class="total-row"><td colspan="6">GRAND TOTAL</td><td style="text-align:right;">$${(totalCost+totalInv).toFixed(2)}</td><td></td></tr></tbody></table></body></html>`;
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html); w.document.close(); w.print();
 }
 
 </script>
