@@ -559,17 +559,21 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div class="login-heading">Employee Sign In</div>
       <div class="login-subheading">Portal Access &mdash; Authorized Staff Only</div>
       <div class="login-err" id="login-err">Incorrect username or password. Please try again.</div>
+      <form id="login-form" method="post" action="#" autocomplete="on" onsubmit="event.preventDefault();doLogin();">
       <div class="form-group" style="margin-bottom:14px;">
-        <label class="form-label">Username</label>
-        <input class="form-input" id="login-user" placeholder="Enter your username" autocomplete="username"
-          onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()" />
+        <label class="form-label" for="login-user">Username</label>
+        <input class="form-input" id="login-user" name="username" placeholder="Enter your username" autocomplete="username" autocapitalize="none" spellcheck="false"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('login-pass').focus();}" />
       </div>
-      <div class="form-group" style="margin-bottom:24px;">
-        <label class="form-label">Password</label>
-        <input class="form-input" id="login-pass" type="password" placeholder="Enter your password" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')doLogin()" />
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label" for="login-pass">Password</label>
+        <input class="form-input" id="login-pass" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" />
       </div>
-      <button class="btn btn-accent" style="width:100%;justify-content:center;padding:12px 0;font-size:14px;font-weight:600;" onclick="doLogin()">Sign In</button>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:20px;cursor:pointer;">
+        <input type="checkbox" id="login-remember" style="width:15px;height:15px;accent-color:var(--accent);"> Keep me signed in on this device (30 days)
+      </label>
+      <button type="submit" class="btn btn-accent" style="width:100%;justify-content:center;padding:12px 0;font-size:14px;font-weight:600;">Sign In</button>
+      </form>
       <div class="login-cert">Licensed &nbsp;&bull;&nbsp; Insured &nbsp;&bull;&nbsp; AMVIC Certified</div>
     </div>
   </div>
@@ -720,8 +724,11 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
     <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">PERIOD:</span>
     <button class="btn btn-sm active" id="dr-today" onclick="setDashRange('today')">Today</button>
+    <button class="btn btn-sm" id="dr-yesterday" onclick="setDashRange('yesterday')">Yesterday</button>
     <button class="btn btn-sm" id="dr-week" onclick="setDashRange('week')">This Week</button>
+    <button class="btn btn-sm" id="dr-lastweek" onclick="setDashRange('lastweek')">Last Week</button>
     <button class="btn btn-sm" id="dr-month" onclick="setDashRange('month')">This Month</button>
+    <button class="btn btn-sm" id="dr-lastmonth" onclick="setDashRange('lastmonth')">Last Month</button>
     <button class="btn btn-sm" id="dr-year" onclick="setDashRange('year')">This Year</button>
     <button class="btn btn-sm" id="dr-all" onclick="setDashRange('all')">All Time</button>
     <span style="font-size:11px;color:var(--text3);margin-left:4px;">or</span>
@@ -872,7 +879,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       </span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <input class="form-input" id="sales-search" placeholder="Search customer, vehicle, service..." oninput="renderSalesPage()" style="flex:1;min-width:180px;" />
+      <input class="form-input" id="sales-search" placeholder="Search anything — customer, phone, car, service, notes, SAL #…" oninput="_salesShow=200;debounceRender(renderSalesPage)" style="flex:1;min-width:180px;" />
       <button class="btn btn-sm" onclick="printSalesReport()" style="white-space:nowrap;">📊 Print Report</button>
       <select class="form-input" id="sales-filter-cat" onchange="renderSalesPage()" style="width:160px;">
         <option value="">All categories</option>
@@ -941,7 +948,15 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
       <div style="font-size:13px;color:var(--text2);">Track parts ordered from suppliers. Mark as received to auto-update inventory.</div>
       <button class="btn btn-accent btn-sm" onclick="openAddPO()">+ New Order</button>
     </div>
-    <input class="form-input" id="po-search" placeholder="Search by supplier, customer, part name..." style="max-width:360px;margin-bottom:12px;font-size:13px;" oninput="renderPOs()" />
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <input class="form-input" id="po-search" placeholder="Search by supplier, customer, part name, PO #..." style="max-width:320px;font-size:13px;" oninput="debounceRender(renderPOs)" />
+      <select class="form-input" id="po-period" onchange="renderPOs()" style="max-width:150px;font-size:13px;">
+        <option value="">📅 All dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="week">This week</option>
+        <option value="lastweek">Last week</option><option value="month">This month</option><option value="lastmonth">Last month</option><option value="year">This year</option><option value="range">Date range…</option>
+      </select>
+      <span id="po-range" style="display:none;gap:6px;align-items:center;"><input type="date" class="form-input" id="po-from" onchange="renderPOs()" style="width:140px;font-size:12px;"><span style="color:var(--text3)">→</span><input type="date" class="form-input" id="po-to" onchange="renderPOs()" style="width:140px;font-size:12px;"></span>
+      <span id="po-period-total" class="mono" style="font-size:12px;color:var(--text2);"></span>
+    </div>
     <div class="table-wrap"><table>
       <thead><tr><th>Order #</th><th>Supplier</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Items</th><th>Cost</th><th>Sell</th><th>Status</th><th></th></tr></thead>
       <tbody id="po-table"></tbody>
@@ -1069,7 +1084,7 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;gap:10px;align-items:center;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text3);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="form-input" id="cust-search-bar" placeholder="Search by name, phone, email, or car (year/make/model)..." oninput="renderCustomers()" style="flex:1;" />
+      <input class="form-input" id="cust-search-bar" placeholder="Search by name, phone, email, or car (year/make/model)..." oninput="debounceRender(renderCustomers)" style="flex:1;" />
     </div>
   </div>
   <div class="card">
@@ -1389,17 +1404,17 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
   <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
     <div>
       <div class="page-title">Order Sheet</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Customer tire &amp; part orders · used tire stock</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Customer orders for tires (new &amp; used), parts and anything else · used tire inventory</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn btn-ghost" onclick="openUsedTireModal()">+ Used Tire</button>
+      <button class="btn btn-ghost" style="border:1px solid var(--border)" onclick="openUsedTireModal()">♻ + Add Used Tire to Inventory</button>
       <button class="btn" onclick="openOrderModal()">+ New Order</button>
     </div>
   </div>
   <div id="ord-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;"></div>
   <div class="tabs">
     <button class="tab active" id="ord-tab-orders" onclick="switchOrdTab('orders')">Customer Orders</button>
-    <button class="tab" id="ord-tab-stock" onclick="switchOrdTab('stock')">Used Tire Stock</button>
+    <button class="tab" id="ord-tab-stock" onclick="switchOrdTab('stock')">♻ Used Tire Inventory <span id="ord-stock-count" class="mono" style="font-size:11px;"></span></button>
   </div>
   <div id="ord-orders-pane">
     <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;align-items:center;">
@@ -1445,14 +1460,22 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <div><label class="form-label">Email</label><input type="email" id="ord-email" class="form-input" placeholder="Optional"></div>
       </div>
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-          <div class="form-label">ITEMS</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-sm" onclick="ordAddLine('tire')">+ Tire</button>
-            <button class="btn btn-sm btn-ghost" onclick="openUtPicker()">+ From Used Stock</button>
-            <button class="btn btn-sm btn-ghost" onclick="ordAddLine('part')">+ Part</button>
-          </div>
+        <div class="form-label" style="margin-bottom:6px;">WHAT IS THE CUSTOMER ORDERING? <span style="color:var(--text3);font-weight:400;">— tap to add, mix as many as you need</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px;">
+          <button class="btn" style="justify-content:center;" onclick="ordAddLine('tire')">🛞 New Tires</button>
+          <button class="btn btn-ghost" style="justify-content:center;border:1px solid var(--accent);color:var(--accent);" onclick="ordToggleStock()" id="ord-stock-btn">♻ Used Tires</button>
+          <button class="btn btn-ghost" style="justify-content:center;border:1px solid var(--border);" onclick="ordAddLine('part')">🔧 Parts</button>
+          <button class="btn btn-ghost" style="justify-content:center;border:1px solid var(--border);" onclick="ordAddLine('other')">📦 Other</button>
         </div>
+        <div id="ord-stock-panel" style="display:none;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:10px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <span style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;letter-spacing:.06em;">♻ USED TIRE INVENTORY — pick what the customer wants</span>
+            <span style="display:flex;gap:6px;"><button class="btn btn-sm btn-ghost" onclick="closeOrderModal();openUsedTireModal()">+ Add to inventory</button><button class="btn btn-sm btn-ghost" onclick="ordToggleStock(false)">✕</button></span>
+          </div>
+          <input class="form-input" id="ord-stock-q" placeholder="Filter by size e.g. 17 or 225/65" oninput="renderOrdStock()" style="margin-bottom:6px;">
+          <div id="ord-stock-list" style="max-height:240px;overflow:auto;"></div>
+        </div>
+        <datalist id="ord-part-list"></datalist>
         <div id="ord-lines" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
@@ -1514,20 +1537,6 @@ input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner
         <button class="btn btn-ghost" onclick="closeUsedTireModal()">Cancel</button>
         <button class="btn" onclick="saveUsedTire()">Save</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- USED TIRE PICKER -->
-<div id="modal-utpicker" class="modal" style="display:none;" onclick="if(event.target===this)closeUtPicker()">
-  <div class="modal-box" style="max-width:640px;">
-    <div class="modal-header">
-      <span>Pick From Used Stock</span>
-      <button onclick="closeUtPicker()" class="modal-close">&#x2715;</button>
-    </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
-      <input class="form-input" id="utp-search" placeholder="Search size e.g. 17 or 225/65" oninput="renderUtPicker()">
-      <div id="utp-list" style="max-height:50vh;overflow:auto;"></div>
     </div>
   </div>
 </div>
@@ -2743,7 +2752,7 @@ function resetActivity() { _lastActivity = Date.now(); }
 function startSessionTimer() {
   clearInterval(_sessionTimer);
   _sessionTimer = setInterval(() => {
-    if(!currentUser) return;
+    if(!currentUser || isRemembered()) return;   // "Keep me signed in" = no idle sign-out
     const idle = Date.now() - _lastActivity;
     const left = SESSION_MS - idle;
     if(left <= 0) { autoLogout(); }
@@ -4382,6 +4391,8 @@ async function doLogin() {
     }
     clearLockout(userDef.id);
     errEl.style.display = 'none';
+    try { localStorage.setItem('asp_remember_on', document.getElementById('login-remember')?.checked ? '1' : '0'); } catch(e) {}
+    storeBrowserCredential(document.getElementById('login-user').value.trim(), password);
     errEl.textContent = 'Invalid username or password.';
     // Block entry if still on default password — force a new one
     if(isDefaultPassword(userDef, storedHash) && !localStorage.getItem('pwCustom_' + userDef.id)) {
@@ -4579,6 +4590,7 @@ function scheduleDrivePush() {
 
 // noStamp: used after merging Drive data, so remote edits keep their own timestamps
 function saveLocal(noStamp) {
+  custIndex._c = null;
   try {
     if(!noStamp) stampStore();
     const data = JSON.stringify(store);
@@ -4708,6 +4720,17 @@ if(store.parts.length === 0) {
   ];
   save();
 }
+// One-time: shop's technician list (fixed ids so two devices don't each add their own copy)
+if(!localStorage.getItem('mig_techs_2026_11')) {
+  const drop = /^(alex kowalski|maria santos|james okafor)$/i;
+  store.mechanics.forEach(m => { if(!m._deleted && drop.test((m.name || '').trim())) { m._deleted = true; m._deletedAt = Date.now(); } });
+  [{ id: 1762300000001, name: 'Amjad' }, { id: 1762300000002, name: 'Rob' }].forEach(t => {
+    if(store.mechanics.some(m => m.id === t.id || (!m._deleted && (m.name || '').trim().toLowerCase() === t.name.toLowerCase()))) return;
+    store.mechanics.push({ id: t.id, name: t.name, role: 'Technician', phone: '' });
+  });
+  localStorage.setItem('mig_techs_2026_11', '1');
+  save();
+}
 
 // ─── CAR DATA ───────────────────────────────────────────────────────────────
 const CAR_MAKES = {
@@ -4807,7 +4830,7 @@ function showPage(name) {
 let dashRange = 'today';
 function setDashRange(range) {
   dashRange = range;
-  ['today','week','month','year','all'].forEach(r => {
+  ['today','yesterday','week','lastweek','month','lastmonth','year','all'].forEach(r => {
     const btn = document.getElementById('dr-'+r);
     if(btn) btn.classList.toggle('active', r===range);
   });
@@ -4820,14 +4843,17 @@ function getDashDates() {
   if(dashRange==='custom') {
     return { from: document.getElementById('dr-from').value||'2000-01-01', to: document.getElementById('dr-to').value||today };
   }
-  if(dashRange==='today') return { from: today, to: today };
-  if(dashRange==='week') {
-    const d = new Date(); d.setDate(d.getDate()-d.getDay());
-    return { from: d.toISOString().slice(0,10), to: today };
-  }
-  if(dashRange==='month') return { from: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, to: today };
-  if(dashRange==='year') return { from: `${now.getFullYear()}-01-01`, to: today };
-  return { from: '2000-01-01', to: '2099-12-31' }; // all time
+  if(dashRange==='all') return { from: '2000-01-01', to: '2099-12-31' };
+  // Same periods as Sales Records (week starts Monday, local dates)
+  return getDateRangeForFilter(dashRange) || { from: today, to: today };
+}
+// This month so far vs the same days last month
+function monthGlance() {
+  const cur = getDateRangeForFilter('month'), lm = getDateRangeForFilter('lastmonth');
+  const lmTo = lm.from.slice(0, 8) + String(Math.min(+cur.to.slice(8, 10), +lm.to.slice(8, 10))).padStart(2, '0');
+  const pick = (f, t) => store.salesRecords.filter(s => !s._deleted && s.date >= f && s.date <= t);
+  const tot = arr => ({ sales: arr.reduce((a, s) => a + (s.saleTotal || s.charged || 0), 0), labour: arr.reduce((a, s) => a + getSaleLabour(s), 0), jobs: arr.length });
+  return { now: tot(pick(cur.from, cur.to)), prev: tot(pick(lm.from, lmTo)), lastFull: tot(pick(lm.from, lm.to)) };
 }
 
 function renderDashboard() {
@@ -4886,8 +4912,20 @@ function renderDashboard() {
   const gstRate = gstPct()/100;
   const gstCollected = filteredSales.reduce((a,s) => a + getSaleGst(s), 0);
 
+  const labourP = filteredSales.reduce((a,s) => a + getSaleLabour(s), 0);
+  const g = monthGlance();
+  const delta = (a, b) => b > 0 ? `<span style="font-size:11px;font-weight:600;color:${a >= b ? 'var(--green)' : 'var(--red)'};">${a >= b ? '▲' : '▼'} ${Math.abs((a - b) / b * 100).toFixed(0)}%</span>` : '';
+  const mName = new Date().toLocaleDateString('en-CA', { month: 'long' });
+  const gl = (label, v, p, money) => `<div style="min-width:120px;"><div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.06em;">${label}</div><div style="font-size:20px;font-weight:700;">${money ? '$' + v.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : v} ${delta(v, p)}</div></div>`;
   document.getElementById('dash-metrics').innerHTML = `
+    <div style="grid-column:1/-1;background:linear-gradient(90deg,rgba(232,160,32,0.10),transparent);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 16px;display:flex;gap:22px;flex-wrap:wrap;align-items:center;">
+      <div style="font-size:12px;font-weight:600;color:var(--accent);min-width:110px;">${mName.toUpperCase()} SO FAR<div style="font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">vs same days last month</div></div>
+      ${gl('SALES', g.now.sales, g.prev.sales, true)}${gl('LABOUR', g.now.labour, g.prev.labour, true)}${gl('JOBS', g.now.jobs, g.prev.jobs)}
+      ${gl('AVG TICKET', g.now.jobs ? g.now.sales / g.now.jobs : 0, g.prev.jobs ? g.prev.sales / g.prev.jobs : 0, true)}
+      <div style="font-size:11px;color:var(--text3);margin-left:auto;">Last month total: <b class="mono" style="color:var(--text2)">$${g.lastFull.sales.toFixed(2)}</b> · labour <b class="mono" style="color:var(--text2)">$${g.lastFull.labour.toFixed(2)}</b></div>
+    </div>
     <div class="metric"><div class="metric-label">GROSS REVENUE</div><div class="metric-value green">$${revenue.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-label">LABOUR</div><div class="metric-value accent">$${labourP.toFixed(2)}</div></div>
     <div class="metric"><div class="metric-label">CASH COLLECTED</div><div class="metric-value green">$${collected.toFixed(2)}</div></div>
     <div class="metric"><div class="metric-label">GST COLLECTED</div><div class="metric-value accent">$${gstCollected.toFixed(2)}</div></div>
     <div class="metric"><div class="metric-label">NET PROFIT</div><div class="metric-value">${profit>=0?'$'+profit.toFixed(2):'−$'+Math.abs(profit).toFixed(2)}</div></div>
@@ -5465,14 +5503,20 @@ if(!store.poCounter) store.poCounter = 1;
 function renderPOs() {
   if(!store.purchaseOrders) store.purchaseOrders = [];
   const q = (document.getElementById('po-search')?.value||'').toLowerCase();
+  const per = document.getElementById('po-period')?.value || '';
+  const prEl = document.getElementById('po-range'); if(prEl) prEl.style.display = per === 'range' ? 'inline-flex' : 'none';
+  const dr = per ? getDateRangeForFilter(per, 'po-from', 'po-to') : null;
   const pos = [...store.purchaseOrders]
     .sort((a,b) => (b.date||'').localeCompare(a.date||''))
+    .filter(po => !po._deleted && (!dr || ((po.date||'') >= dr.from && (po.date||'') <= dr.to)))
     .filter(po => !q ||
       (po.supplier||'').toLowerCase().includes(q) ||
       (po.customer||'').toLowerCase().includes(q) ||
       (po.num||'').toLowerCase().includes(q) ||
       (po.items||[]).some(i => (i.name||'').toLowerCase().includes(q))
     );
+  const poTotEl = document.getElementById('po-period-total');
+  if(poTotEl) poTotEl.textContent = (per || q) ? `${pos.length} order(s) · cost $${pos.filter(p => p.status !== 'cancelled').reduce((a,p) => a + (p.items||[]).reduce((b,i) => b + (i.qty||0)*(i.cost||0), 0), 0).toFixed(2)}` : '';
   document.getElementById('po-table').innerHTML = pos.length ? pos.map(po => {
     const totalCost = (po.items||[]).reduce((a,i) => a + (i.qty||0)*(i.cost||0), 0);
     const totalSell = (po.items||[]).reduce((a,i) => a + (i.qty||0)*(i.sell||0), 0);
@@ -6384,33 +6428,65 @@ function addSaleLine(type) {
 const VEHICLE_TYPES = ['','Sedan / Car','SUV / Truck','Van','Diesel','Heavy Duty'];
 const SERVICE_TYPES = ['','Oil Change','Brake Service','Tire Service','Transmission Service','Air Filter','Coolant Flush','Battery Replacement','Wheel Alignment','Inspection','General Repair','Other'];
 // Service picked on a sale line — the Service Tracker counts the line under this exact name
-const LINE_SERVICES = ['Rotors & Pads','Pads only','CV axle','Sway bar link','Radiator','Tie rod end inner','Tie rod end outer','Tire patch','Tire swap',
-  'Oil Change SUV','Oil Change Sedan','Sale Inspection','Uber Inspection','Insurance Inspection','Scan / Diag','Shock absorber','Struts','Sensors',
-  'Battery change','Transmission oil','Coolant','Windshield washer','Windshield','Window','Other'];
+const LINE_SERVICES = ['A/C recharge','Alternator','Ball joint','Battery change','Belt (serpentine)','Brake caliper','Brake drums & shoes','Brake fluid flush',
+  'Brake light bulb','Cabin air filter','Control arm','Coolant','CV axle','Differential oil','Engine air filter','Exhaust / Muffler','Fog light bulb','Fuel filter',
+  'Fuel pump','Headlight bulb','Hub / Wheel bearing','Ignition coil','Insurance Inspection','Motor mount','O2 sensor','Oil Change Sedan','Oil Change SUV',
+  'Pads only','Power steering fluid','Radiator','Rotors & Pads','Sale Inspection','Scan / Diag','Sensors','Shock absorber','Spark plugs','Starter','Struts',
+  'Sway bar link','Tail light bulb','Thermostat','Tie rod end inner','Tie rod end outer','Timing belt / chain','Tire install & balance','Tire patch','Tire swap',
+  'TPMS sensor','Transmission oil','Uber Inspection','Valve cover gasket','Water pump','Wheel alignment','Window','Windshield','Windshield washer','Wiper blades','Other'];
+// Built-in list + names the shop added (Settings → synced), A–Z, Other last
+function allLineServices() {
+  const custom = (typeof store !== 'undefined' && store.settings && store.settings.customServices) || [];
+  const list = [...new Set([...LINE_SERVICES.filter(s => s !== 'Other'), ...custom])].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+  return [...list, 'Other'];
+}
 const LINE_OIL_GRADES = ['5W20', '5W30', '0W20'];
 function isOilPick(v) { return /^oil change (suv|sedan)$/i.test(String(v || '').trim()); }
 const LINE_SVC_CAT = { 'Rotors & Pads':'Brakes', 'Pads only':'Brakes', 'CV axle':'Suspension', 'Sway bar link':'Suspension', 'Tie rod end inner':'Suspension',
   'Tie rod end outer':'Suspension', 'Shock absorber':'Suspension', 'Struts':'Suspension', 'Radiator':'Engine', 'Coolant':'Oil & Fluids',
   'Tire patch':'Tires', 'Tire swap':'Tires', 'Oil Change SUV':'Oil & Fluids', 'Oil Change Sedan':'Oil & Fluids', 'Sale Inspection':'Service',
   'Uber Inspection':'Service', 'Insurance Inspection':'Service', 'Scan / Diag':'Service', 'Sensors':'Electrical', 'Battery change':'Electrical',
-  'Transmission oil':'Transmission', 'Windshield washer':'Oil & Fluids', 'Windshield':'Body Parts', 'Window':'Body Parts' };
+  'Transmission oil':'Transmission', 'Windshield washer':'Oil & Fluids', 'Windshield':'Body Parts', 'Window':'Body Parts',
+  'A/C recharge':'Service', 'Alternator':'Electrical', 'Ball joint':'Suspension', 'Belt (serpentine)':'Engine', 'Brake caliper':'Brakes', 'Brake drums & shoes':'Brakes',
+  'Brake fluid flush':'Brakes', 'Brake light bulb':'Electrical', 'Cabin air filter':'Filters', 'Control arm':'Suspension', 'Differential oil':'Oil & Fluids',
+  'Engine air filter':'Filters', 'Exhaust / Muffler':'Engine', 'Fog light bulb':'Electrical', 'Fuel filter':'Filters', 'Fuel pump':'Engine', 'Headlight bulb':'Electrical',
+  'Hub / Wheel bearing':'Suspension', 'Ignition coil':'Engine', 'Motor mount':'Engine', 'O2 sensor':'Electrical', 'Power steering fluid':'Oil & Fluids',
+  'Spark plugs':'Engine', 'Starter':'Electrical', 'Tail light bulb':'Electrical', 'Thermostat':'Engine', 'Timing belt / chain':'Engine', 'Tire install & balance':'Tires',
+  'TPMS sensor':'Tires', 'Valve cover gasket':'Engine', 'Water pump':'Engine', 'Wheel alignment':'Tires', 'Wiper blades':'Body Parts' };
 // Category from the service picked; labour lines stay Labour (not stock, counted as labour)
 function lineCat(base, svc) { return base === 'Labour' ? 'Labour' : LINE_SVC_CAT[svc] || base || 'Parts'; }
 function lineVehType(base, svc) { return /^oil change suv$/i.test(svc || '') ? 'SUV / Truck' : /^oil change sedan$/i.test(svc || '') ? 'Sedan / Car' : base || ''; }
 // Old service names saved on earlier sales -> the new list (anything else shows blank)
 function lineSvcValue(data) {
   const v = String(data.serviceType || '').trim();
-  if(LINE_SERVICES.includes(v)) return v;
+  if(allLineServices().includes(v)) return v;
   if(/^oil change$/i.test(v)) return /suv|truck/i.test(data.vehicleType || '') ? 'Oil Change SUV' : /sedan|car/i.test(data.vehicleType || '') ? 'Oil Change Sedan' : '';
   return ({ 'Coolant Flush': 'Coolant', 'Battery Replacement': 'Battery change', 'Transmission Service': 'Transmission oil' })[v] || '';
 }
 function lineSvcCell(data, style) {
   const v = lineSvcValue(data);
-  return `<select class="ln-svc" onchange="onLineSvcPick(this)" style="${style}"><option value="">— Service —</option>${LINE_SERVICES.map(o => `<option${o === v ? ' selected' : ''}>${escHtml(o)}</option>`).join('')}</select>`
+  return `<select class="ln-svc" onchange="onLineSvcPick(this)" style="${style}">${lineSvcOptions(v)}</select>`
     + `<select class="ln-grade" onchange="onLineSvcPick(this)" style="${style}margin-top:4px;${isOilPick(v) ? '' : 'display:none;'}"><option value="">Oil grade</option>${LINE_OIL_GRADES.map(g => `<option${g === data.oilGrade ? ' selected' : ''}>${g}</option>`).join('')}</select>`;
+}
+function lineSvcOptions(v) {
+  return `<option value="">— Service —</option>${allLineServices().map(o => `<option${o === v ? ' selected' : ''}>${escHtml(o)}</option>`).join('')}<option value="__add">＋ Add new service…</option>`;
+}
+// "＋ Add new service…": saved to the shared list and picked on this line
+function addCustomService(sel) {
+  const name = (prompt('Name of the service / part to add to the list:', '') || '').trim().replace(/\s+/g, ' ');
+  const found = name && allLineServices().find(s => s.toLowerCase() === name.toLowerCase());
+  if(name && !found) {
+    store.settings.customServices = [...(store.settings.customServices || []), name];
+    store.settings._updatedAt = Date.now();
+    save();
+    document.querySelectorAll('select.ln-svc').forEach(s => { if(s !== sel) { const k = s.value; s.innerHTML = lineSvcOptions(k); } });
+    showToast(`"${name}" added to the service list`);
+  }
+  sel.innerHTML = lineSvcOptions(found || name || '');
 }
 // Oil changes show the grade; an empty (or auto-filled) description takes the service name
 function onLineSvcPick(sel) {
+  if(sel.value === '__add') addCustomService(sel);
   const tr = sel.closest('tr'), svc = tr.querySelector('.ln-svc'), gr = tr.querySelector('.ln-grade');
   const oil = isOilPick(svc.value);
   gr.style.display = oil ? '' : 'none';
@@ -6771,12 +6847,25 @@ function getDateRangeForFilter(filter, fromId, toId) {
   return null; // 'all'
 }
 
+const _edmTimeFmt = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Edmonton', hour:'2-digit', minute:'2-digit', hour12:true });
+function fmtEdmTime(t) { return _edmTimeFmt.format(new Date(t)); }
+// Search boxes: redraw once typing pauses, not on every key
+function debounceRender(fn, ms) { clearTimeout(debounceRender._t); debounceRender._t = setTimeout(fn, ms || 200); }
+let _salesShow = 200;   // rows drawn; "Show more" adds 200
+// Every word must appear somewhere in the sale: customer, phone, car, VIN, service, items, notes, tech, payment, SAL #, date
+function saleMatchesSearch(s, q) {
+  const hay = [s.num, s.date, s.custName, s.custPhone, s.year, s.make, s.model, s.vin, s.mainService, s.notes, s.mechanicName, s.payment,
+    s.flag && s.flag.note, ...(s.items || []).map(i => (i.desc || '') + ' ' + (i.serviceType || ''))].join(' ').toLowerCase();
+  const ph = normPhone(s.custPhone);
+  return q.split(/\s+/).filter(Boolean).every(w => hay.includes(w) || (/^\d{3,}$/.test(w) && ph.includes(w)));
+}
 function getSalesDateRange(filter) {
   return getDateRangeForFilter(filter, 'sales-range-from', 'sales-range-to');
 }
 
 function setSalesDateFilter(preset) {
   _salesDateFilter = preset;
+  _salesShow = 200;
   ['all','today','yesterday','week','lastweek','month','lastmonth','year','range'].forEach(k => {
     const btn = document.getElementById('sfbtn-'+k);
     if(btn) btn.classList.toggle('active', k === preset);
@@ -6831,7 +6920,7 @@ function renderSalesPage() {
     if(_salesSort.col==='num') return dir*(a.num||'').localeCompare(b.num||'');
     return 0;
   }).filter(s=>{
-    const matchQ=!q||s.custName.toLowerCase().includes(q)||[s.year,s.make,s.model].join(' ').toLowerCase().includes(q)||s.mainService.toLowerCase().includes(q);
+    const matchQ=!q||saleMatchesSearch(s,q);
     const matchC=!cat||s.cat===cat;
     const matchM=!mech||s.mechanicId==mech;
     const matchD=!dateRange||(s.date>=dateRange.from&&s.date<=dateRange.to);
@@ -6844,7 +6933,7 @@ function renderSalesPage() {
   const rf=document.getElementById('sales-filter-review');
   if(rf){ rf.options[1].text=`🚩 Needs review (${nReview})`; rf.options[2].text=`🚩 Flagged (${nFlag})`; rf.options[3].text=`⚠ Possible repeats (${nRep})`; rf.style.borderColor=nReview?'var(--red)':''; }
   const tbody=document.getElementById('sales-table');
-  tbody.innerHTML=rows.length?rows.map(s=>{
+  tbody.innerHTML=rows.length?rows.slice(0,_salesShow).map(s=>{
     const bal = getSaleBalance(s);
     const hasBal = bal > 0.01;
     const statusBadge = hasBal
@@ -6854,10 +6943,11 @@ function renderSalesPage() {
     const rowStyle=s.flag?' style="background:rgba(224,85,85,0.08);box-shadow:inset 3px 0 0 var(--red)"'
       :rep?` style="background:rgba(232,160,32,${rep.repeat?'0.12':'0.05'});box-shadow:inset 3px 0 0 var(--accent)"`:'';
     const tags=(s.flag?`<div style="font-size:10px;color:var(--red);font-weight:600;margin-top:3px;">🚩 ${escHtml(s.flag.note||'Needs review')}${s.flag.by?' — '+escHtml(s.flag.by):''}</div>`:'')
-      +(rep?`<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:3px;">⚠ ${rep.repeat?'Looks like a repeat of':'Same customer, same day:'} ${rep.others.map(o=>escHtml(o.num)).join(', ')}</div>`:'');
+      +(rep?`<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:3px;">⚠ ${rep.repeat?'Looks like a repeat of':'Same customer, same day:'} ${rep.others.map(o=>escHtml(o.num)).join(', ')}</div>`:'')
+      +(q&&s.notes&&q.split(/\s+/).some(w=>w&&s.notes.toLowerCase().includes(w))?`<div style="font-size:10px;color:var(--text2);margin-top:3px;">📝 ${escHtml(s.notes.length>90?s.notes.slice(0,90)+'…':s.notes)}</div>`:'');
     return `<tr${rowStyle}>
       <td class="mono" style="font-size:11px;color:var(--accent)">${s.num||'—'}</td>
-      <td class="mono text-muted" style="font-size:12px">${s.date}${s._createdAt?`<br><span style="font-size:10px;color:var(--text3)">${new Date(s._createdAt).toLocaleTimeString('en-CA',{timeZone:'America/Edmonton',hour:'2-digit',minute:'2-digit',hour12:true})}</span>`:''}</td>
+      <td class="mono text-muted" style="font-size:12px">${s.date}${s._createdAt?`<br><span style="font-size:10px;color:var(--text3)">${fmtEdmTime(s._createdAt)}</span>`:''}</td>
       <td><div style="font-weight:500">${escHtml(s.custName)}</div><div style="font-size:11px;color:var(--text3)">${escHtml(s.custPhone||'')}</div></td>
       <td style="font-size:12px">${[s.year,s.make,s.model].filter(Boolean).join(' ')||'—'}</td>
       <td style="font-size:12px">${escHtml(s.mainService)}${tags}</td>
@@ -6878,7 +6968,7 @@ function renderSalesPage() {
         ${canDelete ? `<button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deleteSale(${s.id})">🗑</button>` : ''}
       </td>
     </tr>`;
-  }).join('') : `<tr><td colspan="13" style="color:var(--text3);text-align:center;padding:24px;">No sales yet. Use ⚡ Quick Sale or + Full Sale to start.</td></tr>`;
+  }).join('') + (rows.length>_salesShow?`<tr><td colspan="13" style="text-align:center;padding:14px;"><button class="btn btn-sm" onclick="_salesShow+=200;renderSalesPage()">Show more — ${rows.length-_salesShow} older sale(s)</button> <span style="font-size:11px;color:var(--text3);margin-left:6px;">Showing ${_salesShow} of ${rows.length}</span></td></tr>`:'') : `<tr><td colspan="13" style="color:var(--text3);text-align:center;padding:24px;">${q?'No sales match “'+escHtml(q)+'”.':'No sales yet. Use ⚡ Quick Sale or + Full Sale to start.'}</td></tr>`;
 }
 
 function makeSaleInvoice(id) {
@@ -7441,9 +7531,39 @@ function custMatches(cust, custId, name, phone) {
   return !!name && name.trim().toLowerCase() === (cust.name || '').trim().toLowerCase();
 }
 
+// Sales/docs grouped the same way custMatches links them. Rebuilt per task, on save, or when the store is swapped.
+function custIndex() {
+  const c = custIndex._c;
+  if(c && c.sales === store.salesRecords && c.docs === store.docs && c.ns === store.salesRecords.length && c.nd === store.docs.length) return c;
+  const mk = () => ({ id: new Map(), phone: new Map(), name: new Map() });
+  const push = (m, k, v) => { if(!m.has(k)) m.set(k, []); m.get(k).push(v); };
+  const add = (ix, r, i, custId, name, phone) => {
+    if(custId) return push(ix.id, custId, [i, r]);
+    const p = normPhone(phone);
+    if(p) return push(ix.phone, p, [i, r]);
+    if(name) push(ix.name, name.trim().toLowerCase(), [i, r]);
+  };
+  const s = mk(), d = mk();
+  store.salesRecords.forEach((r, i) => { if(!r._deleted) add(s, r, i, r.custId, r.custName, r.custPhone); });
+  store.docs.forEach((r, i) => { if(!r._deleted) add(d, r, i, r.custId, r.customer, r.phone); });
+  custIndex._c = { sales: store.salesRecords, docs: store.docs, ns: store.salesRecords.length, nd: store.docs.length, s, d, stats: new Map() };
+  if(typeof setTimeout === 'function') setTimeout(() => { custIndex._c = null; }, 0);
+  return custIndex._c;
+}
+function custRecords(ix, cust) {
+  const p = normPhone(cust.phone), n = (cust.name || '').trim().toLowerCase();
+  return [...(ix.id.get(cust.id) || []), ...(p ? ix.phone.get(p) || [] : []), ...(n ? ix.name.get(n) || [] : [])]
+    .sort((a, b) => a[0] - b[0]).map(x => x[1]);
+}
 function getCustomerStats(cust) {
-  const sales = store.salesRecords.filter(s => !s._deleted && custMatches(cust, s.custId, s.custName, s.custPhone));
-  const docs = store.docs.filter(d => !d._deleted && custMatches(cust, d.custId, d.customer, d.phone));
+  const ix = custIndex();
+  let st = ix.stats.get(cust);
+  if(!st) { st = custStatsCompute(cust, ix); ix.stats.set(cust, st); }
+  return st;
+}
+function custStatsCompute(cust, ix) {
+  const sales = custRecords(ix.s, cust);
+  const docs = custRecords(ix.d, cust);
   const invoices = docs.filter(d => d.type==='invoice');
   const pendingInvoices = invoices.filter(d => d.status==='pending' || d.status==='partial');
   const totalRevenue = sales.reduce((a,s) => a + (s.saleTotal||s.charged||0), 0);
@@ -7911,6 +8031,7 @@ function ordTotals(o) {
 
 function ordLineLabel(l) {
   if(l.type === 'part') return [l.desc, l.partNo ? '#' + l.partNo : ''].filter(Boolean).join(' ') || 'Part';
+  if(l.type === 'other') return l.desc || 'Item';
   return [l.cond === 'used' ? 'Used' : 'New', l.size, l.studded === 'studded' ? 'Studded' : (l.studded === 'non-studded' ? 'Non-studded' : ''), l.season, l.brand].filter(Boolean).join(' ');
 }
 
@@ -7931,9 +8052,9 @@ function makeOrderSale(o, amount, method, date, kind) {
     id, num: `SAL-${String(store.saleCounter).padStart(4,'0')}`, _createdAt: Date.now(),
     date, custName: o.custName, custPhone: o.custPhone || '', custId: o.custId || null, payment: method,
     mechanicId: '', mechanicName: '', vin: '', year: '', make: '', model: '', mileage: '',
-    items: [{ desc, cat: 'Tires', vehicleType: '', serviceType: '', qty: 1, cost, sell: amount - gst, labour: 0, lineCharged: amount - gst, lineProfit: profit }],
+    items: [{ desc, cat: (o.lines || []).every(l => l.type === 'tire') ? 'Tires' : 'Parts', vehicleType: '', serviceType: '', qty: 1, cost, sell: amount - gst, labour: 0, lineCharged: amount - gst, lineProfit: profit }],
     totalCost: cost, gst, charged: amount, profit,
-    notes: o.notes || '', mainService: label, cat: 'Tires', oilTypes: '',
+    notes: o.notes || '', mainService: label, cat: (o.lines || []).every(l => l.type === 'tire') ? 'Tires' : 'Parts', oilTypes: '',
     saleTotal: amount, salePaid: amount, saleBalance: 0,
     salePayments: [{ date, amount, method, note: label }],
     saleStatus: 'paid', orderId: o.id
@@ -7996,6 +8117,7 @@ function ordCancel(o, mode, date) {
   o.cancelledAt = date;
 }
 
+function ordLineIcon(l) { return l.type === 'part' ? '🔧' : l.type === 'other' ? '📦' : (l.cond === 'used' ? '♻' : '🛞'); }
 function ordMatches(o, q) {
   if(!q) return true;
   q = q.toLowerCase();
@@ -8044,6 +8166,7 @@ function renderOrderSheet() {
   const owing = r2(open.reduce((a, o) => a + Math.max(0, ordTotals(o).balance), 0));
   const arrived = open.filter(o => o.status === 'arrived').length;
   const avail = (store.usedTires || []).filter(u => !u._deleted && u.status === 'available');
+  const sc = document.getElementById('ord-stock-count'); if(sc) sc.textContent = avail.length ? `(${avail.length})` : '';
   const card = (label, val, color) => `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:var(--text3);">${label}</div><div style="font-size:20px;font-weight:700;${color ? 'color:' + color + ';' : ''}">${val}</div></div>`;
   document.getElementById('ord-summary').innerHTML =
     card('Open Orders', open.length) + card('Deposits Held', '$' + held.toFixed(2), 'var(--green)') +
@@ -8071,7 +8194,7 @@ function renderOrderSheet() {
       <td class="mono" style="font-size:11px;color:var(--accent)">${o.num}</td>
       <td class="mono text-muted" style="font-size:12px">${o.date}</td>
       <td><div style="font-weight:500">${escHtml(o.custName)}</div><div style="font-size:11px;color:var(--text3)">${escHtml(o.custPhone || '')}</div></td>
-      <td style="font-size:12px">${(o.lines || []).map(l => `${parseFloat(l.qty) || 0}× ${escHtml(ordLineLabel(l))}`).join('<br>')}</td>
+      <td style="font-size:12px">${(o.lines || []).map(l => `${ordLineIcon(l)} ${parseFloat(l.qty) || 0}× ${escHtml(ordLineLabel(l))}`).join('<br>')}</td>
       <td class="mono">$${t.total.toFixed(2)}</td>
       <td class="mono" style="color:var(--green)">$${t.paid.toFixed(2)}</td>
       <td class="mono" style="color:${t.balance > 0.005 && o.status !== 'cancelled' ? 'var(--red)' : 'var(--text3)'}">$${(o.status === 'cancelled' ? 0 : t.balance).toFixed(2)}</td>
@@ -8132,8 +8255,11 @@ function openOrderModal(id, preset) {
   document.getElementById('ord-notes').value = o?.notes || '';
   document.getElementById('ord-gst').checked = o ? !!o.chargeGst : true;
   document.getElementById('ord-cust-list').innerHTML = store.customers.filter(c => !c._deleted).map(c => `<option value="${escHtml(c.name)}">${escHtml(c.phone || '')}</option>`).join('');
-  _ordLines = o ? JSON.parse(JSON.stringify(o.lines || [])) : (preset ? [preset] : [{ type:'tire', cond:'new', size:'', studded:'non-studded', season:'Winter', brand:'', qty:4, price:0, cost:0 }]);
+  _ordLines = o ? JSON.parse(JSON.stringify(o.lines || [])) : (preset ? [preset] : []);
   _ordPrevStock = o ? (o.lines || []).map(l => l.stockId).filter(Boolean) : [];
+  document.getElementById('ord-part-list').innerHTML = [...new Set([...store.parts.filter(p => !p._deleted).map(p => p.name), ...allLineServices().filter(s => s !== 'Other')])]
+    .map(n => `<option value="${escHtml(n)}"></option>`).join('');
+  ordToggleStock(false);
   document.getElementById('ord-pay-amt').value = '';
   document.getElementById('ord-pay-label').textContent = o ? 'PAYMENTS' : 'DEPOSIT (optional)';
   document.getElementById('ord-pay-btn').classList.toggle('hidden', !o || !!closed);
@@ -8172,15 +8298,32 @@ function ordMethodGst() {
 }
 
 function ordAddLine(type) {
-  _ordLines.push(type === 'part'
-    ? { type:'part', desc:'', partNo:'', qty:1, price:0, cost:0 }
+  _ordLines.push(type === 'part' || type === 'other'
+    ? { type, desc:'', partNo:'', qty:1, price:0, cost:0 }
     : { type:'tire', cond:'new', size:'', studded:'non-studded', season:'Winter', brand:'', qty:4, price:0, cost:0 });
   ordRenderLines();
+  const last = document.getElementById('ord-lines').lastElementChild?.querySelector('input[type="text"]');
+  if(last) last.focus();
+}
+// Used tires that fit a size typed on a tire line
+function ordStockFor(size) {
+  const k = String(size || '').toLowerCase().replace(/\s+/g, '');
+  if(k.length < 3) return [];
+  const taken = _ordLines.map(l => l.stockId).filter(Boolean);
+  return (store.usedTires || []).filter(u => !u._deleted && u.status === 'available' && !taken.includes(u.id) && String(u.size || '').toLowerCase().replace(/\s+/g, '').includes(k));
+}
+function ordStockHint(i) {
+  const l = _ordLines[i];
+  if(!l || l.type !== 'tire' || l.stockId) return '';
+  const n = ordStockFor(l.size).length;
+  return n ? `<a href="#" style="font-size:11px;color:var(--accent);" onclick="event.preventDefault();ordToggleStock(true,'${escHtml(String(l.size).replace(/'/g, ''))}')">♻ ${n} used in stock for this size — view</a>` : '';
 }
 function ordRemoveLine(i) { _ordLines.splice(i, 1); ordRenderLines(); }
 function ordSetLine(i, k, v) {
   const l = _ordLines[i]; if(!l) return;
   l[k] = ['qty','price','cost'].includes(k) ? (parseFloat(v) || 0) : v;
+  if(k === 'size' || k === 'cond') { const h = document.getElementById('ord-hint-' + i); if(h) h.innerHTML = ordStockHint(i); }
+  if(k === 'cond' && v === 'used') ordToggleStock(true, l.size);
   ordRenderTotals();
 }
 function ordRenderLines() {
@@ -8188,9 +8331,12 @@ function ordRenderLines() {
   const inp = (i, k, val, ph, type, w) => `<input class="form-input" type="${type || 'text'}" ${type === 'number' ? 'step="0.01" min="0"' : ''} value="${escHtml(val ?? '')}" placeholder="${ph}" oninput="ordSetLine(${i},'${k}',this.value)" style="${w ? 'max-width:' + w + ';' : ''}">`;
   const cell = (label, html, cls) => `<div class="${cls || ''}" style="display:flex;flex-direction:column;gap:2px;min-width:0;"><label class="form-label">${label}</label>${html}</div>`;
   document.getElementById('ord-lines').innerHTML = _ordLines.length ? _ordLines.map((l, i) => {
-    const head = l.type === 'part' ? 'PART' : (l.stockId ? `USED TIRE — from stock ${escHtml(l.stockNum || '')}` : 'TIRE');
-    const fields = l.type === 'part'
-      ? cell('Part', inp(i, 'desc', l.desc, 'Brake pads')) + cell('Part #', inp(i, 'partNo', l.partNo, 'Optional'))
+    const head = l.type === 'part' ? '🔧 PART' : l.type === 'other' ? '📦 OTHER ITEM' : (l.stockId ? `♻ USED TIRE — from inventory ${escHtml(l.stockNum || '')}` : (l.cond === 'used' ? '♻ USED TIRE' : '🛞 NEW TIRE'));
+    const partIn = `<input class="form-input" type="text" list="ord-part-list" value="${escHtml(l.desc ?? '')}" placeholder="${l.type === 'other' ? 'What do they want?' : 'Start typing — e.g. Brake pads'}" oninput="ordSetLine(${i},'desc',this.value)">`;
+    const fields = l.type === 'other'
+      ? `<div style="grid-column:span 2;display:flex;flex-direction:column;gap:2px;"><label class="form-label">Description</label>${partIn}</div>`
+      : l.type === 'part'
+      ? cell('Part', partIn) + cell('Part #', inp(i, 'partNo', l.partNo, 'Optional'))
       : cell('New / Used', l.stockId ? `<div class="form-input" style="opacity:.7">Used</div>` : sel(i, 'cond', [['new','New'],['used','Used']], l.cond))
         + cell('Size', inp(i, 'size', l.size, '225/65R17'))
         + cell('Type', sel(i, 'studded', [['non-studded','Non-studded'],['studded','Studded']], l.studded))
@@ -8204,8 +8350,9 @@ function ordRenderLines() {
         ${cell('Price each $', inp(i, 'price', l.price, '0.00', 'number'))}
         ${cell('Cost each $', inp(i, 'cost', l.cost, '0.00', 'number'), 'col-cost')}
       </div>
+      <div id="ord-hint-${i}" style="margin-top:4px;">${ordStockHint(i)}</div>
     </div>`;
-  }).join('') : '<div style="color:var(--text3);font-size:12px;">No items — add a tire or part.</div>';
+  }).join('') : '<div style="color:var(--text3);font-size:12px;border:1px dashed var(--border);border-radius:8px;padding:14px;text-align:center;">No items yet — tap New Tires, Used Tires, Parts or Other above.</div>';
   ordRenderTotals();
 }
 function ordDraft() {
@@ -8226,8 +8373,8 @@ function saveOrder() {
   const custName = document.getElementById('ord-cust').value.trim();
   const custPhone = document.getElementById('ord-phone').value.trim();
   if(!custName && !custPhone) { showToast('Enter the customer name or phone'); return; }
-  const lines = _ordLines.filter(l => (parseFloat(l.qty) || 0) > 0 && (l.type === 'part' ? l.desc : (l.size || l.stockId)));
-  if(!lines.length) { showToast('Add at least one item with a size (tires) or name (parts) and qty'); return; }
+  const lines = _ordLines.filter(l => (parseFloat(l.qty) || 0) > 0 && (l.type === 'tire' ? (l.size || l.stockId) : String(l.desc || '').trim()));
+  if(!lines.length) { showToast('Add at least one item: a tire with a size, or a part / other item with a name, and a qty'); return; }
   const date = document.getElementById('ord-date').value || todayLocal();
   const rec = o || { id: Date.now(), num: `ORD-${String(store.ordCounter).padStart(4,'0')}`, _createdAt: Date.now(), payments: [], createdBy: currentUser?.displayName || '' };
   Object.assign(rec, {
@@ -8394,28 +8541,33 @@ function ordNewFromSize() {
   const size = document.getElementById('ut-search').value.trim().toUpperCase();
   openOrderModal(null, { type:'tire', cond:'new', size, studded:'non-studded', season:'Winter', brand:'', qty:4, price:0, cost:0 });
 }
-function openUtPicker() {
-  document.getElementById('utp-search').value = '';
-  renderUtPicker();
-  document.getElementById('modal-utpicker').style.display = 'flex';
+// Used tire inventory panel inside the order modal
+function ordToggleStock(open, size) {
+  const p = document.getElementById('ord-stock-panel');
+  if(!p) return;
+  const show = open === undefined ? p.style.display === 'none' : !!open;
+  p.style.display = show ? '' : 'none';
+  const n = (store.usedTires || []).filter(u => !u._deleted && u.status === 'available').length;
+  document.getElementById('ord-stock-btn').textContent = `♻ Used Tires${n ? ` (${n} in stock)` : ''}`;
+  if(show) { document.getElementById('ord-stock-q').value = size || ''; renderOrdStock(); }
 }
-function closeUtPicker() { document.getElementById('modal-utpicker').style.display = 'none'; }
-function renderUtPicker() {
-  const q = document.getElementById('utp-search').value.trim();
+function renderOrdStock() {
+  const q = document.getElementById('ord-stock-q').value.trim();
   const taken = _ordLines.map(l => l.stockId).filter(Boolean);
   const list = (store.usedTires || []).filter(u => !u._deleted && (u.status === 'available' || _ordPrevStock.includes(u.id)) && !taken.includes(u.id) && utMatches(u, q));
-  document.getElementById('utp-list').innerHTML = list.length ? list.map(u => `
+  document.getElementById('ord-stock-list').innerHTML = list.length ? list.map(u => `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
       <div><span class="mono" style="font-weight:600">${escHtml(u.size)}</span> <span style="font-size:12px;color:var(--text2)">${escHtml(u.brand || '')} · ${u.studded === 'studded' ? 'Studded' : 'Non-studded'} · ${escHtml(u.season || '')}${u.tread ? ' · ' + u.tread + '/32' : ''}</span>
         <div style="font-size:11px;color:var(--text3)">${u.num} · Qty ${parseInt(u.qty) || 0} · $${r2(u.price).toFixed(2)} ea${u.location ? ' · ' + escHtml(u.location) : ''}</div></div>
       <button class="btn btn-sm btn-green" onclick="ordPickStock(${u.id})">Add</button>
-    </div>`).join('') : '<div style="color:var(--text3);font-size:13px;padding:12px 0;">No available used tires match.</div>';
+    </div>`).join('') : `<div style="color:var(--text3);font-size:13px;padding:8px 0;">${(store.usedTires || []).some(u => !u._deleted && u.status === 'available') ? 'No used tires match that size.' : 'No used tires in inventory yet.'} <a href="#" style="color:var(--accent)" onclick="event.preventDefault();ordAddLine('tire');_ordLines[_ordLines.length-1].size=document.getElementById('ord-stock-q').value.trim().toUpperCase();ordRenderLines();">Order new tires instead</a> · <a href="#" style="color:var(--accent)" onclick="event.preventDefault();closeOrderModal();openUsedTireModal()">Add used tires to inventory</a></div>`;
 }
 function ordPickStock(id) {
   const u = store.usedTires.find(x => x.id === id);
   if(!u) return;
   _ordLines.push(stockToLine(u));
-  closeUtPicker(); ordRenderLines();
+  renderOrdStock(); ordRenderLines();
+  showToast(`${u.num} ${u.size} added — it will be reserved when you save`);
 }
 
 // ─── NAV BADGES ────────────────────────────────────────────────────────────────
@@ -8857,14 +9009,29 @@ function savePartialPay() {
 }
 
 // ─── SESSION PERSISTENCE ──────────────────────────────────────────────────────
+const REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
+function isRemembered() { try { return localStorage.getItem('asp_remember_on') === '1'; } catch(e) { return false; } }
 function saveSession(page) {
   try {
     if(currentUser) sessionStorage.setItem('autoshop_user', JSON.stringify({ id: currentUser.id }));
     if(page) sessionStorage.setItem('autoshop_page', page);
+    if(currentUser && isRemembered()) localStorage.setItem('asp_remember', JSON.stringify({ id: currentUser.id, until: Date.now() + REMEMBER_MS }));
   } catch(e) {}
 }
 function clearSession() {
-  try { sessionStorage.removeItem('autoshop_user'); sessionStorage.removeItem('autoshop_page'); } catch(e) {}
+  try { sessionStorage.removeItem('autoshop_user'); sessionStorage.removeItem('autoshop_page'); localStorage.removeItem('asp_remember'); } catch(e) {}
+}
+// "Keep me signed in": user id saved on this device for 30 days (cleared on Sign Out)
+function rememberedUser() {
+  try {
+    const r = JSON.parse(localStorage.getItem('asp_remember') || 'null');
+    if(r && r.until > Date.now() && isRemembered()) return JSON.stringify({ id: r.id });
+  } catch(e) {}
+  return null;
+}
+// Ask the browser to offer "Save password" (Chrome/Edge); other browsers use the <form> submit
+function storeBrowserCredential(id, password) {
+  try { if(id && window.PasswordCredential && navigator.credentials) navigator.credentials.store(new PasswordCredential({ id, password })).catch(() => {}); } catch(e) {}
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
@@ -8873,7 +9040,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Bootstrap password hashes using JS crypto (ensures correct hashes on all platforms)
   await initPasswordHashes();
   try {
-    const savedUser = sessionStorage.getItem('autoshop_user');
+    const rc = document.getElementById('login-remember'); if(rc) rc.checked = isRemembered();
+    const savedUser = sessionStorage.getItem('autoshop_user') || rememberedUser();
     const savedPage = sessionStorage.getItem('autoshop_page') || 'dashboard';
     if(savedUser) {
       const _parsed = JSON.parse(savedUser);
@@ -8952,8 +9120,10 @@ function updateSidebarClock() {
   const el = document.getElementById('sidebar-clock');
   if(!el) return;
   const now = new Date();
-  const d = now.toLocaleDateString('en-CA',{timeZone:'America/Edmonton',weekday:'short',month:'short',day:'numeric'});
-  const t = now.toLocaleTimeString('en-CA',{timeZone:'America/Edmonton',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  const f = updateSidebarClock._f || (updateSidebarClock._f = [
+    new Intl.DateTimeFormat('en-CA',{timeZone:'America/Edmonton',weekday:'short',month:'short',day:'numeric'}),
+    new Intl.DateTimeFormat('en-CA',{timeZone:'America/Edmonton',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})]);
+  const d = f[0].format(now), t = f[1].format(now);
   el.textContent = `${d} · ${t}`;
 }
 setInterval(updateSidebarClock, 1000);
@@ -10069,7 +10239,7 @@ function saleTires(s) {
     .reduce((a, i) => a + (parseFloat(i.qty) || 0), 0);
 }
 // Service picked from the line's dropdown (oil changes and "Other" go through the usual rules)
-function pickedSvc(i) { const v = String(i.serviceType || '').trim(); return LINE_SERVICES.includes(v) && v !== 'Other' && !isOilPick(v) ? v : ''; }
+function pickedSvc(i) { const v = String(i.serviceType || '').trim(); return allLineServices().includes(v) && v !== 'Other' && !isOilPick(v) ? v : ''; }
 function isOilRelated(i, cfg) {
   if(pickedSvc(i)) return false;
   return isOilPick(i.serviceType) || isOilChangeText(i.desc, cfg) || !!oilLine(i) || /oil\s*filter/i.test(i.desc || '');
